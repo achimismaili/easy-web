@@ -1,0 +1,8 @@
+{
+  "name": "easy-web-workspace",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ]
+}
