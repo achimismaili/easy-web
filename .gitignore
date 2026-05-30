@@ -1,25 +1,9 @@
-# Dependencies
 node_modules/
-
-# Build output
 dist/
-build/
 .turbo/
-
-# Environment
+*.log
 .env
 .env.*
 !.env.example
-
-# OS / editor
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+coverage/
+.cache/

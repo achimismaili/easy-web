@@ -1,8 +1,26 @@
 {
-  "name": "easy-web-workspace",
+  "name": "@itci/easy-web-root",
+  "version": "0.0.0",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "examples/*"
-  ]
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "volta": {
+    "node": "22.12.0"
+  },
+  "scripts": {
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "build": "turbo run build",
+    "publish-packages": "turbo run publish-packages"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "@eslint/js": "^9.0.0",
+    "typescript-eslint": "^8.0.0",
+    "eslint-plugin-astro": "^1.0.0",
+    "typescript": "^5.5.0",
+    "prettier": "^3.0.0",
+    "eslint": "^9.0.0"
+  }
 }
