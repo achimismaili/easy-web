@@ -1,0 +1,11 @@
+{
+  "name": "@itci/easy-web-cms-adapters",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Placeholder CMS adapter package for future easy-web integrations.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://IT-CI@dev.azure.com/IT-CI/WebSites/_git/easy-web"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@itci/easy-web-content-blocks",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Placeholder content block package for future easy-web rendering helpers.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://IT-CI@dev.azure.com/IT-CI/WebSites/_git/easy-web"
+  }
+}

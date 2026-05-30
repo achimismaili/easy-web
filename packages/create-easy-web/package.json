@@ -1,0 +1,11 @@
+{
+  "name": "@itci/create-easy-web",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Placeholder package for the future easy-web project generator.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://IT-CI@dev.azure.com/IT-CI/WebSites/_git/easy-web"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@itci/easy-web-azure-functions-utils",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Placeholder Azure Functions utility package for future easy-web tooling.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://IT-CI@dev.azure.com/IT-CI/WebSites/_git/easy-web"
+  }
+}
