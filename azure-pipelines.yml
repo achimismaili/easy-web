@@ -25,7 +25,7 @@ stages:
             displayName: Lint
           - script: pnpm typecheck
             displayName: Typecheck
-          - script: pnpm test --passWithNoTests
+          - script: pnpm test
             displayName: Test
           - script: pnpm build
             displayName: Build
