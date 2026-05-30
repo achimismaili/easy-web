@@ -1,0 +1,11 @@
+:root {
+  --ew-bg: #ffffff;
+  --ew-fg: #1a1a1a;
+  --ew-accent: #0066cc;
+}
+
+[data-theme="dark"] {
+  --ew-bg: #1a1a1a;
+  --ew-fg: #f5f5f5;
+  --ew-accent: #4da6ff;
+}
