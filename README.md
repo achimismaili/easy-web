@@ -1,6 +1,6 @@
 # easy-web
 
-Baseline `@ismaili/easy-web-*` package family. This repository will host the reusable component library, layouts, i18n primitives, and theme tokens shared across all `ismaili.de` web instances.
+Baseline `@itci/easy-web-*` package family. This repository will host the reusable component library, layouts, i18n primitives, and theme tokens shared across all `ismaili.de` web instances.
 
 This is a **scaffold-only** state. No framework, packages, or code yet — those land via a future plan.
 
@@ -10,7 +10,7 @@ For full architecture, role boundaries, and how this repo relates to instance re
 
 | Path | Purpose |
 | :--- | :--- |
-| `packages/` | Future `@ismaili/easy-web-*` workspace packages |
+| `packages/` | Future `@itci/easy-web-*` workspace packages |
 | `examples/` | Reference instances consuming the packages |
 | `scripts/` | Workspace-level tooling |
 | `docs/` | Repo-local notes; canonical docs live in `WebSites/docs/` |
