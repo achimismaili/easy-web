@@ -7,3 +7,6 @@ dist/
 !.env.example
 coverage/
 .cache/
+
+# Per-package .npmrc files may contain auth tokens — root .npmrc handles auth
+packages/**/.npmrc
