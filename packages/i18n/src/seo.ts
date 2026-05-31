@@ -32,7 +32,7 @@ function buildUrl(baseUrl: string, localePath: string, path: string, stripLocale
 
   const localeSegment = '/' + localePath
   if (cleanPath === '/') {
-    return base + localeSegment + suffix
+    return base + localeSegment + '/' + suffix
   }
   return base + localeSegment + cleanPath + suffix
 }
