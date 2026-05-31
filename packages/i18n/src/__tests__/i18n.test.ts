@@ -7,7 +7,7 @@ const i18n = createI18n({
   baseUrl: 'https://x.dev',
 })
 
-describe('i18n', () => {
+describe('i18n integration', () => {
   it('localizedHref returns path unchanged for de', () => {
     expect(localizedHref({ path: '/', locale: 'de', defaultLocale: 'de' })).toBe('/')
     expect(i18n.localizedHref('/', 'de')).toBe('/')
@@ -30,5 +30,12 @@ describe('i18n', () => {
 
     expect(locale).toBe('en')
     expect(i18n.defaultLocale).toBe('de')
+  })
+  it('getAlternateLinks produces correct hreflangs', () => {
+    const links = i18n.getAlternateLinks('/test')
+    const hreflangs = links.map(l => l.hreflang)
+    expect(hreflangs).toContain('de')
+    expect(hreflangs).toContain('en')
+    expect(hreflangs).toContain('x-default')
   })
 })
