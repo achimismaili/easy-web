@@ -1,5 +1,10 @@
 /**
  * Returns a localized path.
+ *
+ * De-localizes `path` before re-prefixing so calling `localizedHref` on an
+ * already-prefixed path never produces a double-prefix (e.g. `/en/en/foo`).
+ * Query strings and hash fragments are preserved.
+ *
  * @deprecated v0.1: localizedHref(path, locale) → v0.2: localizedHref({ path, locale, defaultLocale })
  */
 export function localizedHref(opts: {
@@ -7,9 +12,25 @@ export function localizedHref(opts: {
   locale: string;
   defaultLocale: string;
 }): string {
-  if (opts.locale === opts.defaultLocale) return opts.path
-  const prefix = '/' + opts.locale
-  return prefix + (opts.path === '/' ? '' : opts.path)
+  const qIdx = opts.path.indexOf('?')
+  const pathWithHash = qIdx === -1 ? opts.path : opts.path.slice(0, qIdx)
+  const search = qIdx === -1 ? '' : opts.path.slice(qIdx)
+
+  const hIdx = pathWithHash.indexOf('#')
+  const pathOnly = hIdx === -1 ? pathWithHash : pathWithHash.slice(0, hIdx)
+  const hash = hIdx === -1 ? '' : pathWithHash.slice(hIdx)
+
+  const segments = pathOnly.split('/').filter(Boolean)
+  if (segments.length > 0 && (segments[0] === opts.locale || segments[0] === opts.defaultLocale)) {
+    segments.shift()
+  }
+
+  const cleanPath = '/' + segments.join('/')
+
+  if (opts.locale === opts.defaultLocale) {
+    return cleanPath + search + hash
+  }
+  return '/' + opts.locale + (cleanPath === '/' ? '' : cleanPath) + search + hash
 }
 
 /**
