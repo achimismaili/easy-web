@@ -1,22 +1,34 @@
-import { describe, it, expect } from 'vitest'
-import { localizedHref, getLocaleFromPath, defaultLocale } from '../index.js'
+import { describe, expect, it } from 'vitest'
+import { createI18n, getLocaleFromPath, localizedHref } from '../index.js'
+
+const i18n = createI18n({
+  locales: ['de', 'en'] as const,
+  defaultLocale: 'de',
+  baseUrl: 'https://x.dev',
+})
 
 describe('i18n', () => {
   it('localizedHref returns path unchanged for de', () => {
-    expect(localizedHref('/', 'de')).toBe('/')
+    expect(localizedHref({ path: '/', locale: 'de', defaultLocale: 'de' })).toBe('/')
+    expect(i18n.localizedHref('/', 'de')).toBe('/')
   })
   it('localizedHref prefixes /en for en', () => {
-    expect(localizedHref('/', 'en')).toBe('/en')
+    expect(localizedHref({ path: '/', locale: 'en', defaultLocale: 'de' })).toBe('/en')
+    expect(i18n.localizedHref('/', 'en')).toBe('/en')
   })
   it('getLocaleFromPath returns en for /en paths', () => {
-    expect(getLocaleFromPath('/en')).toBe('en')
-    expect(getLocaleFromPath('/en/about')).toBe('en')
+    expect(getLocaleFromPath({ pathname: '/en', locales: i18n.locales, defaultLocale: i18n.defaultLocale })).toBe('en')
+    expect(i18n.getLocaleFromPath('/en/about')).toBe('en')
   })
   it('getLocaleFromPath returns de for root and other paths', () => {
-    expect(getLocaleFromPath('/')).toBe('de')
-    expect(getLocaleFromPath('/about')).toBe('de')
+    expect(getLocaleFromPath({ pathname: '/', locales: i18n.locales, defaultLocale: i18n.defaultLocale })).toBe('de')
+    expect(i18n.getLocaleFromPath('/about')).toBe('de')
   })
-  it('defaultLocale is de', () => {
-    expect(defaultLocale).toBe('de')
+  it('factory return narrows locales', () => {
+    type Locale = (typeof i18n.locales)[number]
+    const locale: Locale = i18n.getLocaleFromPath('/en/about')
+
+    expect(locale).toBe('en')
+    expect(i18n.defaultLocale).toBe('de')
   })
 })

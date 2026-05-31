@@ -1,12 +1,4 @@
-export type SupportedLocale = 'de' | 'en'
-
-export const defaultLocale: SupportedLocale = 'de'
-
-export function localizedHref(path: string, locale: SupportedLocale): string {
-  if (locale === 'de') return path
-  return '/en' + (path === '/' ? '' : path)
-}
-
-export function getLocaleFromPath(pathname: string): SupportedLocale {
-  return pathname.startsWith('/en') ? 'en' : 'de'
-}
+export { createI18n, type I18nConfig } from './factory.js'
+export * from './formatters.js'
+export * from './routing.js'
+export * from './seo.js'
