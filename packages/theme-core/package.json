@@ -1,23 +1,29 @@
 {
   "name": "@itci/easy-web-theme-core",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": ["dist", "styles"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tokens.css": "./styles/tokens.css"
+  },
+  "files": ["dist", "styles", "README.md"],
+  "sideEffects": ["*.css"],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "astro": ">=4.0.0 <7.0.0"
-  },
   "devDependencies": {
     "vitest": "^3.2.4",
     "@vitest/coverage-v8": "^3.2.4",
     "typescript": "^5.5.0"
+  },
+  "publishConfig": {
+    "registry": "https://pkgs.dev.azure.com/IT-CI/WebSites/_packaging/websites/npm/registry/"
   },
   "repository": {
     "type": "git",
