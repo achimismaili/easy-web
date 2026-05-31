@@ -46,7 +46,6 @@ export const tokens = {
     base: 'var(--ew-text-base)',
     lg: 'var(--ew-text-lg)',
     xl: 'var(--ew-text-xl)',
-    '2xl': 'var(--ew-text-2xl)',
     '3xl': 'var(--ew-text-3xl)',
   },
   leading: {
@@ -68,7 +67,6 @@ export const tokens = {
     10: 'var(--ew-space-10)',
     11: 'var(--ew-space-11)',
     12: 'var(--ew-space-12)',
-    16: 'var(--ew-space-16)',
   },
   radius: {
     none: 'var(--ew-radius-none)',
