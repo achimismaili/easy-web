@@ -1,7 +1,7 @@
 export type AlternateLink = { hreflang: string; href: string }
 
 function normalizePath(path: string): string {
-  return path.startsWith('/') ? path : '/' + path
+  return path.startsWith('/') ? path : `/${path}`
 }
 
 function buildUrl(baseUrl: string, localePath: string, path: string, stripLocales: string[] = []): string {
@@ -16,10 +16,11 @@ function buildUrl(baseUrl: string, localePath: string, path: string, stripLocale
 
   const normalizedPathOnly = normalizePath(pathOnly)
   const segments = normalizedPathOnly.split('/').filter((s, i) => i > 0 || s !== '')
+  const wasLocaleOnlyPath = segments.length === 1 && stripLocales.includes(segments[0] ?? '')
   let cleanPath: string
   if (segments.length > 0 && stripLocales.includes(segments[0])) {
     const rest = segments.slice(1)
-    cleanPath = rest.length > 0 ? '/' + rest.join('/') : '/'
+    cleanPath = rest.length > 0 ? `/${rest.join('/')}` : '/'
   } else {
     cleanPath = normalizedPathOnly
   }
@@ -30,11 +31,14 @@ function buildUrl(baseUrl: string, localePath: string, path: string, stripLocale
     return base + cleanPath + suffix
   }
 
-  const localeSegment = '/' + localePath
+  const localeSegment = `/${localePath}`
   if (cleanPath === '/') {
-    return base + localeSegment + '/' + suffix
+    if (wasLocaleOnlyPath) {
+      return `${base}${localeSegment}${suffix}`
+    }
+    return `${base}${localeSegment}/${suffix}`
   }
-  return base + localeSegment + cleanPath + suffix
+  return `${base}${localeSegment}${cleanPath}${suffix}`
 }
 
 export function getAlternateLinks(opts: {

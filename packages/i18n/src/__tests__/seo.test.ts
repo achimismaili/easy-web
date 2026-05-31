@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getAlternateLinks, getCanonicalUrl } from '../seo.js';
 
 describe('getAlternateLinks', () => {
@@ -48,5 +48,36 @@ describe('getCanonicalUrl', () => {
   });
   it('handles root path', () => {
     expect(getCanonicalUrl({ path: '/', locale: 'de', defaultLocale: 'de', baseUrl: 'https://dev.ismaili.de' })).toBe('https://dev.ismaili.de/');
+  });
+});
+
+describe('SEO helpers with already-localized input', () => {
+  it('getAlternateLinks: no href contains /en/en for path /en', () => {
+    const links = getAlternateLinks({ path: '/en', locales: ['de', 'en'], defaultLocale: 'de', baseUrl: 'https://dev.ismaili.de' });
+    expect(links.every(l => !l.href.includes('/en/en'))).toBe(true);
+  });
+
+  it('getAlternateLinks: en hreflang href is /en (not /en/en)', () => {
+    const links = getAlternateLinks({ path: '/en', locales: ['de', 'en'], defaultLocale: 'de', baseUrl: 'https://dev.ismaili.de' });
+    const en = links.find(l => l.hreflang === 'en');
+    expect(en?.href).toBe('https://dev.ismaili.de/en');
+  });
+
+  it('getAlternateLinks: root path / produces /en/ for en hreflang', () => {
+    const links = getAlternateLinks({ path: '/', locales: ['de', 'en'], defaultLocale: 'de', baseUrl: 'https://dev.ismaili.de' });
+    const en = links.find(l => l.hreflang === 'en');
+    expect(en?.href).toBe('https://dev.ismaili.de/en/');
+  });
+
+  it('getCanonicalUrl: already-localized /en resolves to /en', () => {
+    expect(getCanonicalUrl({ path: '/en', locale: 'en', defaultLocale: 'de', baseUrl: 'https://dev.ismaili.de' })).toBe('https://dev.ismaili.de/en');
+  });
+
+  it('getCanonicalUrl: already-localized /en/about resolves to /en/about', () => {
+    expect(getCanonicalUrl({ path: '/en/about', locale: 'en', defaultLocale: 'de', baseUrl: 'https://dev.ismaili.de' })).toBe('https://dev.ismaili.de/en/about');
+  });
+
+  it('getCanonicalUrl: /de/about with default locale resolves to /about', () => {
+    expect(getCanonicalUrl({ path: '/de/about', locale: 'de', defaultLocale: 'de', baseUrl: 'https://dev.ismaili.de' })).toBe('https://dev.ismaili.de/about');
   });
 });
