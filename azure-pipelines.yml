@@ -45,6 +45,8 @@ stages:
             displayName: Install pnpm
           - script: pnpm install --frozen-lockfile
             displayName: Install dependencies
+          - script: pnpm build
+            displayName: Build
           - task: npmAuthenticate@0
             inputs:
               workingFile: .npmrc
