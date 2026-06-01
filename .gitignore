@@ -8,5 +8,61 @@ dist/
 coverage/
 .cache/
 
-# Per-package .npmrc files may contain auth tokens — root .npmrc handles auth
+# Per-package .npmrc files may contain auth tokens - root .npmrc handles auth
 packages/**/.npmrc
+
+# === Secrets & credentials (NEVER commit) =====================================
+# Root .npmrc is tracked but auth line is templated as ${ADO_NPM_TOKEN}.
+# `npm/pnpm login` will overwrite it locally with a real JWT - that change must
+# stay in working tree only. See WebSites/docs/operations/secrets.md.
+
+# Token-bearing variants of package-manager configs
+.npmrc.local
+**/.npmrc.local
+.yarnrc.local
+.yarnrc.yml.local
+.netrc
+
+# Keys & certificates
+*.pem
+*.key
+*.pfx
+*.p12
+*.cer
+*.crt
+*.der
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+id_ecdsa
+id_ecdsa.*
+*.ppk
+
+# Cloud provider credentials
+.aws/credentials
+.azure/credentials
+.azure/accessTokens.json
+.azure/azureProfile.json
+gcloud-key.json
+**/service-account*.json
+**/local.settings.json
+
+# Terraform (state may contain plaintext secrets)
+*.tfvars
+!*.tfvars.example
+!*.tfvars.sample
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Secrets by convention
+secrets.json
+secrets.yml
+secrets.yaml
+*.secrets.json
+*.secret
+
+# Editor backups (could mirror secret content)
+*.bak
+*~
