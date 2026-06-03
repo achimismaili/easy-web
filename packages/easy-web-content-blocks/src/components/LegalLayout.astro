@@ -1,0 +1,53 @@
+---
+/**
+ * LegalLayout – narrow content wrapper for legal pages (privacy, imprint, etc.).
+ * Pure Astro component using --ew-* design tokens.
+ */
+interface Props {
+  title: string;
+  lastUpdated?: string;
+}
+
+const { title, lastUpdated } = Astro.props;
+---
+
+<article class="ew-legal">
+  <div class="ew-legal__inner">
+    <h1 class="ew-legal__title">{title}</h1>
+    {lastUpdated && <p class="ew-legal__updated">{lastUpdated}</p>}
+    <div class="ew-legal__content">
+      <slot />
+    </div>
+  </div>
+</article>
+
+<style>
+  .ew-legal {
+    padding: var(--ew-space-8) var(--ew-space-5);
+  }
+  .ew-legal__inner {
+    max-width: 45rem;
+    margin: 0 auto;
+  }
+  .ew-legal__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-3xl);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-4);
+    line-height: var(--ew-leading-tight);
+  }
+  .ew-legal__updated {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    color: var(--ew-muted);
+    margin: 0 0 var(--ew-space-6);
+    line-height: var(--ew-leading-normal);
+  }
+  .ew-legal__content {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-base);
+    color: var(--ew-on-surface);
+    line-height: var(--ew-leading-loose);
+  }
+</style>

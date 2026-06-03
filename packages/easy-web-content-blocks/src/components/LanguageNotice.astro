@@ -1,0 +1,32 @@
+---
+/**
+ * LanguageNotice – subtle info box for language/binding disclaimers.
+ * Pure Astro component using --ew-* design tokens.
+ */
+interface Props {
+  message: string;
+}
+
+const { message } = Astro.props;
+---
+
+<div class="ew-language-notice">
+  <p class="ew-language-notice__text">{message}</p>
+</div>
+
+<style>
+  .ew-language-notice {
+    background: var(--ew-surface-muted);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-md);
+    padding: var(--ew-space-3) var(--ew-space-4);
+    margin: 0 0 var(--ew-space-5);
+  }
+  .ew-language-notice__text {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    color: var(--ew-muted);
+    margin: 0;
+    line-height: var(--ew-leading-normal);
+  }
+</style>
