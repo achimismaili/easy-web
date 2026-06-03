@@ -11,9 +11,13 @@ interface Props {
   navItems: Array<{ label: string; href: string }>;
   currentLang: string;
   pathname: string;
+  /** Explicit alternate locale URL to pass to LanguageSwitch. */
+  alternateHref?: string;
+  /** Accessible label for the mobile menu toggle button. */
+  menuLabel?: string;
 }
 
-const { siteName, navItems, currentLang, pathname } = Astro.props;
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
 ---
 
 <header class="ew-header">
@@ -25,7 +29,7 @@ const { siteName, navItems, currentLang, pathname } = Astro.props;
     <button
       type="button"
       class="ew-header__menu-btn"
-      aria-label="Toggle navigation menu"
+      aria-label={menuLabel}
       aria-expanded="false"
       aria-controls="ew-header-nav"
       data-testid="mobile-menu-toggle"
@@ -53,7 +57,7 @@ const { siteName, navItems, currentLang, pathname } = Astro.props;
       </ul>
       <div class="ew-header__actions">
         <ThemeToggle />
-        <LanguageSwitch currentLang={currentLang} pathname={pathname} />
+        <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />
       </div>
     </nav>
   </div>
@@ -124,7 +128,6 @@ const { siteName, navItems, currentLang, pathname } = Astro.props;
     font-size: var(--ew-text-sm);
     font-weight: 500;
     text-decoration: none;
-    transition: color 0.15s ease, background 0.15s ease;
   }
   .ew-header__link:hover {
     color: var(--ew-on-surface);

@@ -10,28 +10,31 @@ interface Props {
   pathname: string;
   /** The default locale that uses bare paths (no prefix). Defaults to "de". */
   defaultLocale?: string;
+  /** Explicit alternate URL for translated slugs (e.g. /en/privacy/ for /datenschutz/). Bypasses automatic derivation. */
+  alternateHref?: string;
+  /** Accessible label override. */
+  ariaLabel?: string;
 }
 
-const { currentLang, pathname, defaultLocale = 'de' } = Astro.props;
+const { currentLang, pathname, defaultLocale = 'de', alternateHref: explicitHref, ariaLabel } = Astro.props;
 
 const isDefault = currentLang === defaultLocale;
 const alternateLang = isDefault ? 'en' : defaultLocale;
 const label = alternateLang.toUpperCase();
 
-function getAlternateHref(): string {
+function deriveAlternateHref(): string {
   if (isDefault) {
-    // de → en: prepend /en/ prefix
     return `/en${pathname === '/' ? '/' : pathname}`;
   }
-  // en → de: strip the /en prefix
   const stripped = pathname.replace(/^\/en\/?/, '/');
   return stripped || '/';
 }
 
-const alternateHref = getAlternateHref();
+const resolvedHref = explicitHref ?? deriveAlternateHref();
+const resolvedAriaLabel = ariaLabel ?? `Switch to ${alternateLang}`;
 ---
 
-<a href={alternateHref} class="ew-lang-switch" aria-label={`Switch to ${alternateLang}`} hreflang={alternateLang}>
+<a href={resolvedHref} class="ew-lang-switch" aria-label={resolvedAriaLabel} hreflang={alternateLang}>
   {label}
 </a>
 
@@ -50,7 +53,6 @@ const alternateHref = getAlternateHref();
     font-weight: 600;
     text-decoration: none;
     letter-spacing: 0.04em;
-    transition: background 0.15s ease;
   }
   .ew-lang-switch:hover {
     background: var(--ew-surface-muted);
