@@ -1,0 +1,78 @@
+---
+/**
+ * Hero – prominent page banner with title, optional subtitle, and optional CTA.
+ * Pure Astro component using --ew-* design tokens.
+ */
+interface Props {
+  title: string;
+  subtitle?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  variant?: 'centered' | 'left-aligned';
+}
+
+const { title, subtitle, ctaLabel, ctaHref, variant = 'centered' } = Astro.props;
+---
+
+<section class:list={['ew-hero', `ew-hero--${variant}`]}>
+  <div class="ew-hero__inner">
+    <h1 class="ew-hero__title">{title}</h1>
+    {subtitle && <p class="ew-hero__subtitle">{subtitle}</p>}
+    {ctaLabel && ctaHref && (
+      <a href={ctaHref} class="ew-hero__cta">{ctaLabel}</a>
+    )}
+  </div>
+</section>
+
+<style>
+  .ew-hero {
+    background: var(--ew-surface-muted);
+    padding: var(--ew-space-9) var(--ew-space-5);
+  }
+  .ew-hero__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+  .ew-hero--centered {
+    text-align: center;
+  }
+  .ew-hero--centered .ew-hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .ew-hero--left-aligned {
+    text-align: left;
+  }
+  .ew-hero__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-3xl);
+    font-weight: 800;
+    line-height: var(--ew-leading-tight);
+    color: var(--ew-on-surface);
+    margin: 0;
+  }
+  .ew-hero__subtitle {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    line-height: var(--ew-leading-normal);
+    color: var(--ew-muted);
+    margin: var(--ew-space-4) 0 0;
+    max-width: 40rem;
+  }
+  .ew-hero__cta {
+    display: inline-block;
+    margin-top: var(--ew-space-6);
+    padding: var(--ew-space-3) var(--ew-space-6);
+    background: var(--ew-primary);
+    color: var(--ew-on-primary);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-base);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--ew-radius-md);
+  }
+  .ew-hero__cta:hover {
+    opacity: 0.9;
+  }
+</style>
