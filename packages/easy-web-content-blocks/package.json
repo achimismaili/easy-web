@@ -1,11 +1,31 @@
 {
   "name": "@itci/easy-web-content-blocks",
-  "version": "0.0.0",
-  "private": false,
-  "description": "Placeholder content block package for future easy-web rendering helpers.",
-  "license": "UNLICENSED",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Reusable Astro content-block components for the easy-web ecosystem.",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./components/*": "./src/components/*.astro"
+  },
+  "files": ["dist", "src/components", "README.md"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "astro": ">=6.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "astro": "^6.4.0"
+  },
+  "publishConfig": {
+    "registry": "https://pkgs.dev.azure.com/IT-CI/WebSites/_packaging/websites/npm/registry/"
+  },
   "repository": {
     "type": "git",
     "url": "https://IT-CI@dev.azure.com/IT-CI/WebSites/_git/easy-web"
-  }
+  },
+  "license": "UNLICENSED"
 }
