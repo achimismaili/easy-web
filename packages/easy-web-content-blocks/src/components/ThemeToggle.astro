@@ -1,0 +1,73 @@
+---
+/**
+ * ThemeToggle – switches between light and dark themes using @itci/easy-web-theme-core.
+ * Pure Astro component with inline vanilla JS. No framework dependency.
+ */
+---
+
+<button
+  type="button"
+  class="ew-theme-toggle"
+  aria-label="Toggle color theme"
+  title="Toggle color theme"
+>
+  <svg class="ew-theme-toggle__icon ew-theme-toggle__icon--sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+  <svg class="ew-theme-toggle__icon ew-theme-toggle__icon--moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+</button>
+
+<style>
+  .ew-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-md);
+    color: var(--ew-on-surface);
+    cursor: pointer;
+    padding: var(--ew-space-2);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .ew-theme-toggle:hover {
+    background: var(--ew-surface-muted);
+  }
+  .ew-theme-toggle:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+
+  /* Default: show sun, hide moon (light mode) */
+  .ew-theme-toggle__icon--moon { display: none; }
+  .ew-theme-toggle__icon--sun  { display: block; }
+
+  :global([data-theme="dark"]) .ew-theme-toggle__icon--sun  { display: none; }
+  :global([data-theme="dark"]) .ew-theme-toggle__icon--moon { display: block; }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .ew-theme-toggle__icon--sun  { display: none; }
+    :global(:root:not([data-theme="light"])) .ew-theme-toggle__icon--moon { display: block; }
+  }
+</style>
+
+<script>
+  import { applyTheme, getPreferredTheme } from '@itci/easy-web-theme-core';
+
+  const btn = document.querySelector('.ew-theme-toggle') as HTMLButtonElement | null;
+  btn?.addEventListener('click', () => {
+    const current = getPreferredTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  });
+</script>

@@ -1,0 +1,62 @@
+---
+/**
+ * LanguageSwitch – links to the alternate locale version of the current page.
+ * Convention: default locale (e.g. "de") lives at `/`, non-default (e.g. "en") at `/en/…`.
+ */
+interface Props {
+  /** Current page language, e.g. "de" or "en". */
+  currentLang: string;
+  /** Current page pathname, e.g. "/" or "/en/about". */
+  pathname: string;
+  /** The default locale that uses bare paths (no prefix). Defaults to "de". */
+  defaultLocale?: string;
+}
+
+const { currentLang, pathname, defaultLocale = 'de' } = Astro.props;
+
+const isDefault = currentLang === defaultLocale;
+const alternateLang = isDefault ? 'en' : defaultLocale;
+const label = alternateLang.toUpperCase();
+
+function getAlternateHref(): string {
+  if (isDefault) {
+    // de → en: prepend /en/ prefix
+    return `/en${pathname === '/' ? '/' : pathname}`;
+  }
+  // en → de: strip the /en prefix
+  const stripped = pathname.replace(/^\/en\/?/, '/');
+  return stripped || '/';
+}
+
+const alternateHref = getAlternateHref();
+---
+
+<a href={alternateHref} class="ew-lang-switch" aria-label={`Switch to ${alternateLang}`} hreflang={alternateLang}>
+  {label}
+</a>
+
+<style>
+  .ew-lang-switch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    padding: var(--ew-space-1) var(--ew-space-2);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-md);
+    color: var(--ew-on-surface);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: background 0.15s ease;
+  }
+  .ew-lang-switch:hover {
+    background: var(--ew-surface-muted);
+  }
+  .ew-lang-switch:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+</style>
