@@ -1,0 +1,82 @@
+---
+/**
+ * CtaSection – call-to-action banner with heading, optional body, and button.
+ * Pure Astro component using --ew-* design tokens.
+ */
+interface Props {
+  heading: string;
+  body?: string;
+  buttonLabel: string;
+  buttonHref: string;
+  variant?: 'default' | 'muted' | 'primary';
+}
+
+const { heading, body, buttonLabel, buttonHref, variant = 'default' } = Astro.props;
+---
+
+<section class:list={['ew-cta', `ew-cta--${variant}`]}>
+  <div class="ew-cta__inner">
+    <h2 class="ew-cta__heading">{heading}</h2>
+    {body && <p class="ew-cta__body">{body}</p>}
+    <a class="ew-cta__button" href={buttonHref}>{buttonLabel}</a>
+  </div>
+</section>
+
+<style>
+  .ew-cta {
+    padding: var(--ew-space-9) var(--ew-space-5);
+    text-align: center;
+  }
+  .ew-cta__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .ew-cta--default {
+    background: var(--ew-surface);
+    color: var(--ew-on-surface);
+  }
+  .ew-cta--muted {
+    background: var(--ew-surface-muted);
+    color: var(--ew-on-surface);
+  }
+  .ew-cta--primary {
+    background: var(--ew-primary);
+    color: var(--ew-on-primary);
+  }
+  .ew-cta__heading {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-3xl);
+    font-weight: 800;
+    line-height: var(--ew-leading-tight);
+    margin: 0;
+  }
+  .ew-cta__body {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    line-height: var(--ew-leading-normal);
+    margin: var(--ew-space-4) 0 0;
+    max-width: 40rem;
+  }
+  .ew-cta__button {
+    display: inline-block;
+    margin-top: var(--ew-space-6);
+    padding: var(--ew-space-3) var(--ew-space-6);
+    background: var(--ew-primary);
+    color: var(--ew-on-primary);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-base);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--ew-radius-md);
+  }
+  .ew-cta--primary .ew-cta__button {
+    background: var(--ew-on-primary);
+    color: var(--ew-primary);
+  }
+  .ew-cta__button:hover {
+    opacity: 0.9;
+  }
+</style>

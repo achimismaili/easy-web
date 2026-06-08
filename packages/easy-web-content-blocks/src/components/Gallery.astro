@@ -1,0 +1,86 @@
+---
+/**
+ * Gallery – pure CSS grid image gallery.
+ * Responsive: 3 columns (desktop) → 2 columns (tablet) → 1 column (mobile).
+ * No JavaScript, no lightbox, no lazy-load script.
+ * Uses --ew-* design tokens.
+ */
+interface GalleryImage {
+  src: string;
+  alt: string;
+}
+
+interface Props {
+  images: GalleryImage[];
+  title?: string;
+}
+
+const { images, title } = Astro.props;
+---
+
+{images.length > 0 && (
+  <section class="ew-gallery">
+    <div class="ew-gallery__inner">
+      {title && <h2 class="ew-gallery__title">{title}</h2>}
+      <div class="ew-gallery__grid">
+        {images.map(img => (
+          <div class="ew-gallery__item">
+            <img
+              src={img.src}
+              alt={img.alt}
+              class="ew-gallery__img"
+              loading="lazy"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .ew-gallery {
+    padding: var(--ew-space-8) var(--ew-space-5);
+  }
+
+  .ew-gallery__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+
+  .ew-gallery__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-5);
+    line-height: var(--ew-leading-tight);
+  }
+
+  .ew-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ew-space-4);
+  }
+
+  @media (max-width: 768px) {
+    .ew-gallery__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ew-gallery__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ew-gallery__img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: var(--ew-radius-md);
+    aspect-ratio: 4/3;
+    display: block;
+  }
+</style>

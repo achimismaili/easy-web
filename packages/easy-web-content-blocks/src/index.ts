@@ -12,4 +12,7 @@
 // import LanguageNotice from '@itci/easy-web-content-blocks/components/LanguageNotice';
 // import Prose from '@itci/easy-web-content-blocks/components/Prose';
 // import BlogPostCard from '@itci/easy-web-content-blocks/components/BlogPostCard';
+// import CtaSection from '@itci/easy-web-content-blocks/components/CtaSection';
+// import ContactSection from '@itci/easy-web-content-blocks/components/ContactSection';
+// import Gallery from '@itci/easy-web-content-blocks/components/Gallery';
 export {};

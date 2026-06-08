@@ -1,0 +1,73 @@
+---
+/**
+ * ContactSection – centered mailto-only contact call to action.
+ * Pure Astro component using --ew-* design tokens.
+ */
+interface Props {
+  heading: string;
+  body?: string;
+  email: string;
+  buttonLabel: string;
+}
+
+const { heading, body, email, buttonLabel } = Astro.props;
+---
+
+<section class="ew-contact">
+  <div class="ew-contact__inner">
+    <h2 class="ew-contact__heading">{heading}</h2>
+    {body && <p class="ew-contact__body">{body}</p>}
+    <a href={`mailto:${email}`} class="ew-contact__button">{buttonLabel}</a>
+  </div>
+</section>
+
+<style>
+  .ew-contact {
+    background: var(--ew-surface-muted);
+    padding: var(--ew-space-8) var(--ew-space-5);
+    text-align: center;
+  }
+
+  .ew-contact__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ew-contact__heading {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-3xl);
+    font-weight: 800;
+    line-height: var(--ew-leading-tight);
+    color: var(--ew-on-surface);
+    margin: 0;
+  }
+
+  .ew-contact__body {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    line-height: var(--ew-leading-normal);
+    color: var(--ew-muted);
+    margin: var(--ew-space-4) 0 0;
+    max-width: 40rem;
+  }
+
+  .ew-contact__button {
+    display: inline-block;
+    margin-top: var(--ew-space-6);
+    padding: var(--ew-space-3) var(--ew-space-6);
+    background: var(--ew-primary);
+    color: var(--ew-on-primary);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-base);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--ew-radius-md);
+  }
+
+  .ew-contact__button:hover {
+    opacity: 0.9;
+  }
+</style>
