@@ -39,6 +39,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@azure/msal-browser": "4",
-    "@azure/msal-react": "3"
+    "@azure/msal-react": "3",
+    "@microsoft/microsoft-graph-client": "^3.0.7"
   }
 }
