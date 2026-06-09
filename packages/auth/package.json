@@ -6,6 +6,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./components/*": {
+      "types": "./dist/components/*.d.ts",
+      "import": "./dist/components/*.js"
+    },
+    "./hooks/*": {
+      "types": "./dist/hooks/*.d.ts",
+      "import": "./dist/hooks/*.js"
+    },
+    "./graph/*": {
+      "types": "./dist/graph/*.d.ts",
+      "import": "./dist/graph/*.js"
     }
   },
   "files": [
