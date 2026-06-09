@@ -1,0 +1,29 @@
+{
+  "name": "@itci/easy-web-auth",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "publishConfig": {
+    "registry": "https://pkgs.dev.azure.com/IT-CI/WebSites/_packaging/websites/npm/registry/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://IT-CI@dev.azure.com/IT-CI/WebSites/_git/easy-web"
+  },
+  "license": "UNLICENSED"
+}
