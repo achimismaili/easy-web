@@ -1,5 +1,17 @@
 # @itci/easy-web-content-blocks
 
+## 0.2.0
+
+### Features
+
+- `CtaSection` component — standalone call-to-action banner with three variants (`default`, `muted`, `primary`)
+- `ContactSection` component — centered mailto-only contact CTA
+- `Gallery` component — pure CSS grid image gallery, responsive 3 → 2 → 1 columns, no JavaScript, no lightbox
+
+### Peer dependencies
+
+- Bumped Astro peer dependency to `>= 6.0.0`
+
 ## 0.1.0
 
 ### Features

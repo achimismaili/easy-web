@@ -31,10 +31,11 @@ This repo is **one of several siblings** in the ismaili.de web ecosystem. All re
 This constraint lives inside this repo's own `packages/auth/src/components/AuthProvider.tsx` source as a docstring, and is codified ecosystem-wide in [ADR 0010 — React Auth Components Within a Single Astro Island](../websites/docs/decisions/0010-react-auth-single-island.md). Two sibling `client:*` directives = two independent React roots = two `MsalProvider` instances = two `PublicClientApplication` instances = corrupted `sessionStorage` token cache.
 
 When changing anything in `packages/auth/`:
-- **Preserve the `useRef` singleton** in `AuthProvider.tsx` — it guarantees one `PublicClientApplication` per React root.
+- **Preserve the `useRef` singleton** in `AuthProvider.tsx` — it guarantees one `PublicClientApplication` per React root. Note: this guards against accidental double-mount *within one root*, not against two roots on the same page. The island-boundary rule (ADR 0010) still applies.
 - **Do not export a default `<AuthProvider>` that auto-mounts** — instances must explicitly choose the island boundary.
-- **Document any new auth-consuming component** (`useAuth`, `useMsal`, etc.) with the same constraint warning the existing components carry.
+- **Document any new auth- or Graph-consuming component** (`useAuth`, `useMsal`, `useGraphClient`, etc.) with the same constraint warning the existing components carry.
 - **The barrel `src/index.ts` exports all public APIs** — `AuthProvider`, `LoginButton`, `ProtectedContent`, `UserAvatar`, `useAuth`, `useGraphClient`, `useSharePointList`, `useSharePointFiles`, the Graph utilities, and the SharePoint UI components (`SharePointGallery`, `SharePointFileList`, `SharePointListView`). Do not silently change consumer import paths in already-published versions without a semver-major bump.
+- **The dual-island bug ADR 0010 describes was hit and fixed in the pilot on 2026-06-10** (`dev.ismaili.de` commit `5af3390`, "auth-demo uses single island"). The package's `useRef` singleton was not enough — the integrator had mounted `<AuthShell>` in `Base.astro` *and* a second `<AuthProvider>`-bearing island on the same page. If you ship a higher-level convenience wrapper here that absorbs Pattern 2's per-instance shell, make sure it does not encourage page-level mounts on layouts that already provide one.
 
 ## Workspace layout
 
@@ -43,7 +44,7 @@ When changing anything in `packages/auth/`:
 | `packages/theme-core/` | `@itci/easy-web-theme-core` — CSS design tokens, light/dark theme, no-flash script | Real (consumed at ^0.3.x by instances) |
 | `packages/i18n/` | `@itci/easy-web-i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers | Real (consumed at ^0.3.x by instances) |
 | `packages/easy-web-content-blocks/` | `@itci/easy-web-content-blocks` — Hero, Section, CardGrid, Card, and other reusable page blocks | Real (consumed at ^0.2.x by instances) |
-| `packages/auth/` | `@itci/easy-web-auth` — MSAL.js + Microsoft Graph wrapper, `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>` | Real at v0.1.0 — fully wired (AuthProvider, useAuth, LoginButton, ProtectedContent, UserAvatar, Graph client, SharePoint hooks and UI components). Published to Azure Artifacts. |
+| `packages/auth/` | `@itci/easy-web-auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). | Real at v0.1.0 — fully wired (AuthProvider, useAuth, LoginButton, ProtectedContent, UserAvatar, Graph client, SharePoint hooks and UI components). Published to Azure Artifacts. |
 | `packages/easy-web-cms-adapters/` | `@itci/easy-web-cms-adapters` — CMS adapter contract per ADR 0006 | Stub |
 | `packages/easy-web-azure-functions-utils/` | `@itci/easy-web-azure-functions-utils` — server-side helpers for Azure Functions | Stub |
 | `packages/create-easy-web/` | `@itci/create-easy-web` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline | Stub |
