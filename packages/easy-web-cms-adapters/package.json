@@ -1,6 +1,7 @@
 {
   "name": "@itci/easy-web-cms-adapters",
   "version": "0.0.0",
+  "packageManager": "pnpm@9.15.4",
   "private": false,
   "description": "Placeholder CMS adapter package for future easy-web integrations.",
   "license": "UNLICENSED",
