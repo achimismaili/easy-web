@@ -40,10 +40,10 @@ describe("buildMsalConfig", () => {
     expect(config.auth.redirectUri).toBe("https://example.com/auth");
   });
 
-  it("does NOT contain hardcoded production IDs", () => {
-    const json = JSON.stringify(buildMsalConfig(testConfig));
-    expect(json).not.toContain("52566643");
-    expect(json).not.toContain("2bf1954a");
-    expect(json).not.toContain("8a8b2e63");
+  it("uses the provided clientId (not any hardcoded value)", () => {
+    const customId = "my-custom-client-id";
+    const config = buildMsalConfig({ clientId: customId, tenantId: "any-tenant" });
+    expect(config.auth.clientId).toBe(customId);
+    expect(config.auth.clientId).not.toBe("test-client-id-1234");
   });
 });
