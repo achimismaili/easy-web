@@ -80,7 +80,14 @@ importers:
 
   packages/easy-web-azure-functions-utils: {}
 
-  packages/easy-web-cms-adapters: {}
+  packages/easy-web-cms-adapters:
+    devDependencies:
+      astro:
+        specifier: ^6.4.0
+        version: 6.4.2(rollup@4.60.4)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
 
   packages/easy-web-content-blocks:
     devDependencies:
