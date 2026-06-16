@@ -10,7 +10,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./components/*": "./src/components/*.astro"
+    "./components/*": "./src/components/*.astro",
+    "./src/components/*.astro": "./src/components/*.astro"
   },
   "files": ["dist", "src/components", "README.md"],
   "main": "./dist/index.js",
