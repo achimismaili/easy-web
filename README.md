@@ -12,7 +12,7 @@ For full architecture, role boundaries, and how this repo relates to instance re
 | `@itci/easy-web-i18n` | `^0.3.x` | `localizedHref`, `getLocaleFromPath`, alternate-link helpers |
 | `@itci/easy-web-content-blocks` | `^0.2.x` | Hero, Section, CardGrid, Card, Header, Footer, ThemeToggle |
 | `@itci/easy-web-auth` | `^0.1.x` | MSAL.js auth, Microsoft Graph, SharePoint components |
-| `@itci/easy-web-cms-adapters` | stub | CMS adapter contract (ADR 0006) |
+| `@itci/easy-web-cms-adapters` | `^0.1.x` | Admin page mounting, config scaffolding, and frontmatter types for Decap CMS |
 | `@itci/easy-web-azure-functions-utils` | stub | Server-side Azure Functions helpers |
 | `@itci/create-easy-web` | stub | Scaffold CLI for new site instances (ADR 0003) |
 
