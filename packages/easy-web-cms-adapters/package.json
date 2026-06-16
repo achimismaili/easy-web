@@ -2,9 +2,31 @@
   "name": "@itci/easy-web-cms-adapters",
   "version": "0.0.0",
   "packageManager": "pnpm@9.15.4",
+  "type": "module",
   "private": false,
   "description": "Placeholder CMS adapter package for future easy-web integrations.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./components/*": "./src/components/*.astro"
+  },
+  "files": ["dist", "src/components", "README.md"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
   "license": "UNLICENSED",
+  "peerDependencies": {
+    "astro": ">=6.0.0"
+  },
+  "devDependencies": {
+    "astro": "^6.4.0",
+    "typescript": "^5.5.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://IT-CI@dev.azure.com/IT-CI/WebSites/_git/easy-web"
