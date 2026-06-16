@@ -4,7 +4,7 @@
   "packageManager": "pnpm@9.15.4",
   "type": "module",
   "private": false,
-  "description": "Placeholder CMS adapter package for future easy-web integrations.",
+  "description": "Decap CMS integration for the easy-web ecosystem — AdminPage component, frontmatter types, and config scaffold.",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
