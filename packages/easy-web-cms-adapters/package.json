@@ -1,6 +1,6 @@
 {
   "name": "@itci/easy-web-cms-adapters",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
   "private": false,
