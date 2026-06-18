@@ -1,25 +1,28 @@
 {
   "name": "@itci/easy-web-content-blocks",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
   "description": "Reusable Astro content-block components for the easy-web ecosystem.",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./components/*": "./src/components/*.astro"
+    "./components/*": "./src/components/*.astro",
+    "./schemas/*": "./src/schemas/*.ts"
   },
-  "files": ["dist", "src/components", "README.md"],
+  "files": ["dist", "src/components", "src/schemas", "README.md"],
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "astro": ">=6.0.0"
+    "astro": ">=6.0.0",
+    "zod": ">=4.0.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
-    "astro": "^6.4.0"
+    "astro": "^6.4.0",
+    "zod": "^4.0.0"
   },
   "publishConfig": {
     "registry": "https://pkgs.dev.azure.com/IT-CI/WebSites/_packaging/websites/npm/registry/"
