@@ -1,0 +1,31 @@
+---
+import type { GalleryEntry } from '../schemas/galleries';
+import GalleryImageGrid from './GalleryImageGrid.astro';
+import GalleryHeroSlider from './GalleryHeroSlider.astro';
+
+interface Props {
+  entry: { data: GalleryEntry } | undefined | null;
+}
+
+const { entry } = Astro.props;
+const data = entry?.data;
+---
+
+{data?.kind === 'image-grid' && (
+  <GalleryImageGrid
+    title={data.title}
+    columns={data.columns}
+    gap={data.gap}
+    aspectRatio={data.aspectRatio}
+    items={data.items}
+  />
+)}
+{data?.kind === 'hero-slider' && (
+  <GalleryHeroSlider
+    title={data.title}
+    autoplay={data.autoplay}
+    interval={data.interval}
+    height={data.height}
+    slides={data.slides}
+  />
+)}
