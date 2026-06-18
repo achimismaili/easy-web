@@ -1,86 +1,86 @@
 ---
-/**
- * Prose – wrapper for rendered Markdown/HTML content.
- * Styles headings, paragraphs, lists, links, inline code, code blocks,
- * and blockquotes via a scoped wrapper class with :global() selectors.
- * Pure Astro component using --ew-* design tokens.
- */
 ---
 
 <div class="ew-prose">
-  <slot />
+  <div class="ew-prose__inner">
+    <slot />
+  </div>
 </div>
 
 <style>
   .ew-prose {
+    padding: var(--ew-space-8) var(--ew-space-5);
+  }
+  .ew-prose__inner {
     font-family: var(--ew-font-sans);
     font-size: var(--ew-text-base);
     line-height: var(--ew-leading-loose);
     color: var(--ew-on-surface);
     max-width: 45rem;
+    margin: 0 auto;
   }
 
-  .ew-prose :global(h1) {
+  .ew-prose__inner :global(h1) {
     font-size: var(--ew-text-3xl);
     font-weight: 700;
     line-height: var(--ew-leading-tight);
     margin: var(--ew-space-7) 0 var(--ew-space-4);
   }
 
-  .ew-prose :global(h2) {
+  .ew-prose__inner :global(h2) {
     font-size: var(--ew-text-xl);
     font-weight: 700;
     line-height: var(--ew-leading-tight);
     margin: var(--ew-space-7) 0 var(--ew-space-3);
   }
 
-  .ew-prose :global(h3) {
+  .ew-prose__inner :global(h3) {
     font-size: var(--ew-text-lg);
     font-weight: 600;
     line-height: var(--ew-leading-tight);
     margin: var(--ew-space-6) 0 var(--ew-space-3);
   }
 
-  .ew-prose :global(h4),
-  .ew-prose :global(h5),
-  .ew-prose :global(h6) {
+  .ew-prose__inner :global(h4),
+  .ew-prose__inner :global(h5),
+  .ew-prose__inner :global(h6) {
     font-size: var(--ew-text-base);
     font-weight: 600;
     line-height: var(--ew-leading-tight);
     margin: var(--ew-space-5) 0 var(--ew-space-2);
   }
 
-  .ew-prose :global(p) {
+  .ew-prose__inner :global(p) {
     margin: 0 0 var(--ew-space-4);
   }
 
-  .ew-prose :global(a) {
+  .ew-prose__inner :global(a) {
     color: var(--ew-primary);
     text-decoration: underline;
     text-underline-offset: 0.15em;
   }
 
-  .ew-prose :global(a:hover) {
+  .ew-prose__inner :global(a:hover) {
     text-decoration-thickness: 2px;
   }
 
-  .ew-prose :global(ul),
-  .ew-prose :global(ol) {
+  .ew-prose__inner :global(ul),
+  .ew-prose__inner :global(ol) {
     margin: 0 0 var(--ew-space-4);
     padding-left: var(--ew-space-5);
   }
 
-  .ew-prose :global(li) {
+  .ew-prose__inner :global(li) {
     margin-bottom: var(--ew-space-1);
   }
 
-  .ew-prose :global(li > ul),
-  .ew-prose :global(li > ol) {
+  .ew-prose__inner :global(li > ul),
+  .ew-prose__inner :global(li > ol) {
     margin-top: var(--ew-space-1);
     margin-bottom: 0;
   }
 
-  .ew-prose :global(blockquote) {
+  .ew-prose__inner :global(blockquote) {
     border-left: 3px solid var(--ew-primary);
     margin: 0 0 var(--ew-space-4);
     padding: var(--ew-space-2) var(--ew-space-4);
@@ -88,11 +88,11 @@
     font-style: italic;
   }
 
-  .ew-prose :global(blockquote p:last-child) {
+  .ew-prose__inner :global(blockquote p:last-child) {
     margin-bottom: 0;
   }
 
-  .ew-prose :global(code) {
+  .ew-prose__inner :global(code) {
     font-family: var(--ew-font-mono);
     font-size: 0.9em;
     background: var(--ew-surface-muted);
@@ -100,7 +100,7 @@
     padding: 0.15em 0.35em;
   }
 
-  .ew-prose :global(pre) {
+  .ew-prose__inner :global(pre) {
     margin: 0 0 var(--ew-space-4);
     padding: var(--ew-space-4);
     background: var(--ew-surface-muted);
@@ -108,49 +108,49 @@
     overflow-x: auto;
   }
 
-  .ew-prose :global(pre code) {
+  .ew-prose__inner :global(pre code) {
     background: none;
     padding: 0;
     border-radius: 0;
     font-size: var(--ew-text-sm);
   }
 
-  .ew-prose :global(hr) {
+  .ew-prose__inner :global(hr) {
     border: none;
     border-top: 1px solid var(--ew-border);
     margin: var(--ew-space-6) 0;
   }
 
-  .ew-prose :global(img) {
+  .ew-prose__inner :global(img) {
     max-width: 100%;
     height: auto;
     border-radius: var(--ew-radius-md);
   }
 
-  .ew-prose :global(table) {
+  .ew-prose__inner :global(table) {
     width: 100%;
     border-collapse: collapse;
     margin: 0 0 var(--ew-space-4);
     font-size: var(--ew-text-sm);
   }
 
-  .ew-prose :global(th),
-  .ew-prose :global(td) {
+  .ew-prose__inner :global(th),
+  .ew-prose__inner :global(td) {
     border: 1px solid var(--ew-border);
     padding: var(--ew-space-2) var(--ew-space-3);
     text-align: left;
   }
 
-  .ew-prose :global(th) {
+  .ew-prose__inner :global(th) {
     font-weight: 600;
     background: var(--ew-surface-muted);
   }
 
-  .ew-prose :global(:first-child) {
+  .ew-prose__inner :global(:first-child) {
     margin-top: 0;
   }
 
-  .ew-prose :global(:last-child) {
+  .ew-prose__inner :global(:last-child) {
     margin-bottom: 0;
   }
 </style>
