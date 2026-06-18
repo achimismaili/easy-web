@@ -2,6 +2,10 @@
 import type { GalleryEntry } from '../schemas/galleries';
 import GalleryImageGrid from './GalleryImageGrid.astro';
 import GalleryHeroSlider from './GalleryHeroSlider.astro';
+import GalleryCarousel from './GalleryCarousel.astro';
+import GalleryMasonryGrid from './GalleryMasonryGrid.astro';
+import GalleryFeatureHighlight from './GalleryFeatureHighlight.astro';
+import GalleryLightboxGrid from './GalleryLightboxGrid.astro';
 
 interface Props {
   entry: { data: GalleryEntry } | undefined | null;
@@ -27,5 +31,39 @@ const data = entry?.data;
     interval={data.interval}
     height={data.height}
     slides={data.slides}
+  />
+)}
+{data?.kind === 'carousel' && (
+  <GalleryCarousel
+    title={data.title}
+    autoplay={data.autoplay}
+    interval={data.interval}
+    showDots={data.showDots}
+    showArrows={data.showArrows}
+    slides={data.slides}
+  />
+)}
+{data?.kind === 'masonry-grid' && (
+  <GalleryMasonryGrid
+    title={data.title}
+    columns={data.columns}
+    gap={data.gap}
+    items={data.items}
+  />
+)}
+{data?.kind === 'feature-highlight' && (
+  <GalleryFeatureHighlight
+    title={data.title}
+    gap={data.gap}
+    items={data.items}
+  />
+)}
+{data?.kind === 'lightbox-grid' && (
+  <GalleryLightboxGrid
+    title={data.title}
+    columns={data.columns}
+    gap={data.gap}
+    aspectRatio={data.aspectRatio}
+    items={data.items}
   />
 )}
