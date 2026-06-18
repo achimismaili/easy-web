@@ -1,6 +1,6 @@
 # @itci/easy-web-content-blocks
 
-Reusable Astro content-block components for the IT-CI ismaili.de web ecosystem. Eighteen pure-Astro components covering page chrome (Header, Footer, ThemeToggle, LanguageSwitch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system with multiple variants, blog post cards, legal-page layouts, banners, and styled prose. All components use the `--ew-*` design tokens from `@itci/easy-web-theme-core`; no styling system of their own.
+Reusable Astro content-block components for the IT-CI ismaili.de web ecosystem. Twenty-two pure-Astro components covering page chrome (Header, Footer, ThemeToggle, LanguageSwitch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system with six variants, blog post cards, legal-page layouts, banners, and styled prose. All components use the `--ew-*` design tokens from `@itci/easy-web-theme-core`; no styling system of their own.
 
 ## Installation
 
@@ -140,12 +140,16 @@ All components use the `--ew-*` design tokens from `@itci/easy-web-theme-core`. 
 
 The gallery system is **CMS-driven**: content authors create gallery entries in their site's `src/content/galleries/` directory; pages decide which entry to load and where to place it. Each entry has a `kind` field that selects the rendering variant.
 
-Phase 1 ships two variants:
+Six variants are available:
 
 | `kind` | Component | Use case |
 | :--- | :--- | :--- |
 | `image-grid` | `GalleryImageGrid` | Static N-column uniform grid. Component previews, team photos, sponsors. |
 | `hero-slider` | `GalleryHeroSlider` | Full-bleed editorial carousel with title + subtitle + optional CTA per slide. |
+| `carousel` | `GalleryCarousel` | Image slider with optional captions. Constrained-width container; no per-slide CTA. |
+| `masonry-grid` | `GalleryMasonryGrid` | Pinterest-style variable-height grid via CSS columns. Photography, portfolios. |
+| `feature-highlight` | `GalleryFeatureHighlight` | Alternating image+text+link rows. Product feature showcase, service descriptions. |
+| `lightbox-grid` | `GalleryLightboxGrid` | Uniform grid + click-to-expand modal. Photo albums, event galleries. Vanilla JS modal with keyboard navigation. |
 
 Schema is exported from this package and consumed by each instance's `content.config.ts`:
 
@@ -180,6 +184,10 @@ const previewEntry = await getEntry('galleries', 'about-component-preview-de');
 | `GallerySection` | `entry: { data: GalleryEntry }` | — | Dispatcher. Renders the correct variant based on `entry.data.kind`. Renders nothing when `entry` is null/undefined. |
 | `GalleryImageGrid` | `items: GalleryImageGridData['items']` | `title?`, `columns?: 2 \| 3 \| 4 \| 6`, `gap?: 'sm' \| 'md' \| 'lg'`, `aspectRatio?: 'square' \| '4/3' \| '16/9' \| 'auto'` | Pure CSS grid (responsive). Item `href` wraps in `<a>`. Item `caption` renders as `<figcaption>`. |
 | `GalleryHeroSlider` | `slides: GalleryHeroSliderData['slides']` | `title?`, `autoplay?: boolean`, `interval?: number` (ms), `height?: 'sm' \| 'md' \| 'lg' \| 'full'` | Vanilla JS slider. Pause on hover/focus, keyboard arrows, dot navigation, respects `prefers-reduced-motion`. |
+| `GalleryCarousel` | `slides: GalleryCarouselData['slides']` | `title?`, `autoplay?: boolean` (default `false`), `interval?: number`, `showDots?: boolean`, `showArrows?: boolean` | Constrained-width slider with optional per-slide caption (overlay at bottom). Same JS controls as `GalleryHeroSlider`. |
+| `GalleryMasonryGrid` | `items: GalleryMasonryGridData['items']` | `title?`, `columns?: 2 \| 3 \| 4`, `gap?: 'sm' \| 'md' \| 'lg'` | Pure CSS columns; no JS. `break-inside: avoid` keeps items intact. Falls back to fewer columns on smaller breakpoints. |
+| `GalleryFeatureHighlight` | `items: GalleryFeatureHighlightData['items']` | `title?`, `gap?: 'sm' \| 'md' \| 'lg'` | Alternating image-left / image-right rows; per-item `imagePosition` overrides the alternation. Stacks on mobile (image first). |
+| `GalleryLightboxGrid` | `items: GalleryLightboxGridData['items']` | `title?`, `columns?: 2 \| 3 \| 4`, `gap?: 'sm' \| 'md' \| 'lg'`, `aspectRatio?: 'square' \| '4/3' \| 'auto'` | Grid + modal lightbox. Click image to expand; keyboard `Esc`/arrows navigate; backdrop click closes; restores focus to trigger on close. Body scroll locked while open. |
 
 ### Blog
 
