@@ -1,6 +1,6 @@
 # @itci/easy-web-content-blocks
 
-Reusable Astro content-block components for the IT-CI ismaili.de web ecosystem. Sixteen pure-Astro components covering page chrome (Header, Footer, ThemeToggle, LanguageSwitch), hero/CTA/contact sections, cards and grids, gallery, blog post cards, legal-page layouts, banners, and styled prose. All components use the `--ew-*` design tokens from `@itci/easy-web-theme-core`; no styling system of their own.
+Reusable Astro content-block components for the IT-CI ismaili.de web ecosystem. Eighteen pure-Astro components covering page chrome (Header, Footer, ThemeToggle, LanguageSwitch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system with multiple variants, blog post cards, legal-page layouts, banners, and styled prose. All components use the `--ew-*` design tokens from `@itci/easy-web-theme-core`; no styling system of their own.
 
 ## Installation
 
@@ -135,7 +135,51 @@ All components use the `--ew-*` design tokens from `@itci/easy-web-theme-core`. 
 | `Section` | — | `id?: string`, `class?: string` | Generic content wrapper. `id` enables anchor-link targets. Slot-based. |
 | `CardGrid` | — | — | Responsive CSS grid (3 → 2 → 1 columns by breakpoint). Slot in `Card`s. |
 | `Card` | `title: string` | `description?: string`, `href?: string`, `image?: string`, `imageAlt?: string` | Content card. Renders as `<a>` when `href` is provided, plain `<div>` otherwise. Image is `loading="lazy"`. |
-| `Gallery` | `images: Array<{ src: string; alt: string }>` | `title?: string` | Pure CSS grid image gallery (3 / 2 / 1 columns responsive). All images `loading="lazy"`. No lightbox, no JavaScript. Renders nothing when `images` is empty. |
+
+### Gallery system
+
+The gallery system is **CMS-driven**: content authors create gallery entries in their site's `src/content/galleries/` directory; pages decide which entry to load and where to place it. Each entry has a `kind` field that selects the rendering variant.
+
+Phase 1 ships two variants:
+
+| `kind` | Component | Use case |
+| :--- | :--- | :--- |
+| `image-grid` | `GalleryImageGrid` | Static N-column uniform grid. Component previews, team photos, sponsors. |
+| `hero-slider` | `GalleryHeroSlider` | Full-bleed editorial carousel with title + subtitle + optional CTA per slide. |
+
+Schema is exported from this package and consumed by each instance's `content.config.ts`:
+
+```ts
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { gallerySchema } from '@itci/easy-web-content-blocks/schemas/galleries';
+
+const galleries = defineCollection({
+  loader: glob({ pattern: '**/*.{yml,yaml}', base: './src/content/galleries' }),
+  schema: gallerySchema,
+});
+```
+
+Use the `GallerySection` dispatcher in pages — it switches on `entry.data.kind` and renders the right variant:
+
+```astro
+---
+import GallerySection from '@itci/easy-web-content-blocks/components/GallerySection';
+import { getEntry } from 'astro:content';
+
+const heroEntry = await getEntry('galleries', 'home-hero-de');
+const previewEntry = await getEntry('galleries', 'about-component-preview-de');
+---
+<GallerySection entry={heroEntry} />
+<!-- ...other page content... -->
+<GallerySection entry={previewEntry} />
+```
+
+| Component | Required props | Optional props | Notes |
+| :--- | :--- | :--- | :--- |
+| `GallerySection` | `entry: { data: GalleryEntry }` | — | Dispatcher. Renders the correct variant based on `entry.data.kind`. Renders nothing when `entry` is null/undefined. |
+| `GalleryImageGrid` | `items: GalleryImageGridData['items']` | `title?`, `columns?: 2 \| 3 \| 4 \| 6`, `gap?: 'sm' \| 'md' \| 'lg'`, `aspectRatio?: 'square' \| '4/3' \| '16/9' \| 'auto'` | Pure CSS grid (responsive). Item `href` wraps in `<a>`. Item `caption` renders as `<figcaption>`. |
+| `GalleryHeroSlider` | `slides: GalleryHeroSliderData['slides']` | `title?`, `autoplay?: boolean`, `interval?: number` (ms), `height?: 'sm' \| 'md' \| 'lg' \| 'full'` | Vanilla JS slider. Pause on hover/focus, keyboard arrows, dot navigation, respects `prefers-reduced-motion`. |
 
 ### Blog
 
