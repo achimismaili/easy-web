@@ -1,0 +1,218 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import LanguageSwitch from './LanguageSwitch.astro';
+
+interface Props {
+  siteName: string;
+  navItems: Array<{ label: string; href: string }>;
+  currentLang: string;
+  pathname: string;
+  alternateHref?: string;
+  menuLabel?: string;
+}
+
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
+const navId = `ew-header-centered-nav-${Math.random().toString(36).slice(2, 9)}`;
+const mid = Math.ceil(navItems.length / 2);
+const leftItems = navItems.slice(0, mid);
+const rightItems = navItems.slice(mid);
+---
+
+<header class="ew-header-centered" data-testid="header-centered">
+  <div class="ew-header-centered__inner">
+    <nav id={navId} class="ew-header-centered__nav" aria-label="Main navigation">
+      <ul class="ew-header-centered__links ew-header-centered__links--left">
+        {leftItems.map((item) => (
+          <li>
+            <a href={item.href} class:list={['ew-header-centered__link', { 'ew-header-centered__link--active': pathname === item.href }]}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header-centered__brand">
+        {siteName}
+      </a>
+
+      <div class="ew-header-centered__right">
+        <ul class="ew-header-centered__links ew-header-centered__links--right">
+          {rightItems.map((item) => (
+            <li>
+              <a href={item.href} class:list={['ew-header-centered__link', { 'ew-header-centered__link--active': pathname === item.href }]}>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div class="ew-header-centered__actions">
+          <slot name="actions">
+            <ThemeToggle />
+            <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />
+          </slot>
+        </div>
+      </div>
+    </nav>
+
+    <button
+      type="button"
+      class="ew-header-centered__menu-btn"
+      aria-label={menuLabel}
+      aria-expanded="false"
+      aria-controls={navId}
+      data-testid="mobile-menu-toggle"
+    >
+      <svg class="ew-header-centered__menu-icon ew-header-centered__menu-icon--open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+      <svg class="ew-header-centered__menu-icon ew-header-centered__menu-icon--close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<style>
+  .ew-header-centered {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--ew-surface);
+    border-bottom: 1px solid var(--ew-border);
+  }
+  .ew-header-centered__inner {
+    display: flex;
+    align-items: center;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--ew-space-3) var(--ew-space-5);
+    position: relative;
+  }
+  .ew-header-centered__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--ew-space-3);
+  }
+  .ew-header-centered__brand {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-lg);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .ew-header-centered__brand:hover {
+    color: var(--ew-primary);
+  }
+  .ew-header-centered__links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--ew-space-1);
+  }
+  .ew-header-centered__link {
+    display: block;
+    padding: var(--ew-space-2) var(--ew-space-3);
+    border-radius: var(--ew-radius-md);
+    color: var(--ew-muted);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .ew-header-centered__link:hover {
+    color: var(--ew-on-surface);
+    background: var(--ew-surface-muted);
+  }
+  .ew-header-centered__link--active {
+    color: var(--ew-on-surface);
+    background: var(--ew-surface-muted);
+  }
+  .ew-header-centered__right {
+    display: flex;
+    align-items: center;
+    gap: var(--ew-space-3);
+  }
+  .ew-header-centered__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--ew-space-2);
+  }
+  .ew-header-centered__menu-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--ew-on-surface);
+    cursor: pointer;
+    padding: var(--ew-space-1);
+    position: absolute;
+    right: var(--ew-space-5);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .ew-header-centered__menu-btn:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+  .ew-header-centered__menu-icon--close { display: none; }
+
+  @media (max-width: 768px) {
+    .ew-header-centered__menu-btn {
+      display: flex;
+    }
+    .ew-header-centered__nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      background: var(--ew-surface);
+      border-bottom: 1px solid var(--ew-border);
+      padding: var(--ew-space-4) var(--ew-space-5);
+      gap: var(--ew-space-4);
+    }
+    .ew-header-centered__nav[data-open] {
+      display: flex;
+    }
+    .ew-header-centered__links {
+      flex-direction: column;
+      gap: var(--ew-space-1);
+    }
+    .ew-header-centered__right {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--ew-space-3);
+      width: 100%;
+    }
+    .ew-header-centered__actions {
+      padding-top: var(--ew-space-3);
+      border-top: 1px solid var(--ew-border);
+      width: 100%;
+    }
+    .ew-header-centered__menu-btn[aria-expanded="true"] .ew-header-centered__menu-icon--open { display: none; }
+    .ew-header-centered__menu-btn[aria-expanded="true"] .ew-header-centered__menu-icon--close { display: block; }
+  }
+</style>
+
+<script>
+  function initHeader(headerEl: Element) {
+    const btn = headerEl.querySelector('.ew-header-centered__menu-btn') as HTMLButtonElement | null;
+    const nav = headerEl.querySelector('.ew-header-centered__nav') as HTMLElement | null;
+    if (!btn || !nav) return;
+    btn.addEventListener('click', () => {
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      isOpen ? nav.removeAttribute('data-open') : nav.setAttribute('data-open', '');
+    });
+  }
+  document.querySelectorAll('.ew-header-centered').forEach(initHeader);
+</script>

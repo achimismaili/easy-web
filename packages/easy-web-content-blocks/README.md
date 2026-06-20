@@ -115,10 +115,60 @@ All components use the `--ew-*` design tokens from `@itci/easy-web-theme-core`. 
 
 | Component | Required props | Optional props | Notes |
 | :--- | :--- | :--- | :--- |
-| `Header` | `siteName: string`, `navItems: Array<{ label: string; href: string }>`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Sticky responsive header. Mobile hamburger menu (vanilla JS, no framework). Renders nested `ThemeToggle` + `LanguageSwitch`. Highlights the nav item matching `pathname`. |
+| `Header` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Sticky responsive header with `actions` slot. Mobile hamburger menu (scoped vanilla JS). Default slot fallback renders `ThemeToggle` + `LanguageSwitch`. `data-testid="header-classic"`. |
+| `HeaderCentered` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Variant: brand centered, nav links split left/right. Same `actions` slot and mobile hamburger. `data-testid="header-centered"`. |
+| `HeaderHideOnScroll` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Variant: `position: fixed` header that slides off screen on scroll-down, reappears on scroll-up. Compensates body padding via JS. `data-testid="header-hide-on-scroll"`. |
+| `HeaderFlyout` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Variant: items with `children[]` show a flyout dropdown (hover/focus desktop, click mobile, keyboard accessible). `data-testid="header-flyout"`. |
 | `Footer` | `siteName: string`, `legalLinks: Array<{ label: string; href: string }>` | — | Simple copyright + legal-link footer. |
 | `ThemeToggle` | — | — | Light / dark / system trio button. Talks to `@itci/easy-web-theme-core` via `data-theme` on `<html>` and `localStorage`. |
 | `LanguageSwitch` | `currentLang: string`, `pathname: string` | `alternateHref?: string` | DE ↔ EN switcher. If `alternateHref` is provided, links there directly; otherwise infers the alternate path from `pathname`. |
+
+#### Header `actions` slot
+
+All four header variants expose a named `actions` slot. When the slot receives content, it replaces the default `ThemeToggle` + `LanguageSwitch` controls. When the slot is empty, the fallback renders those controls unchanged (backward compatible).
+
+```astro
+---
+import Header from '@itci/easy-web-content-blocks/components/Header';
+import HeaderCentered from '@itci/easy-web-content-blocks/components/HeaderCentered';
+import HeaderHideOnScroll from '@itci/easy-web-content-blocks/components/HeaderHideOnScroll';
+import HeaderFlyout from '@itci/easy-web-content-blocks/components/HeaderFlyout';
+---
+
+<!-- Default: ThemeToggle + LanguageSwitch rendered automatically -->
+<Header siteName="My Site" navItems={navItems} currentLang="de" pathname={pathname} />
+
+<!-- Custom slot content replaces ThemeToggle + LanguageSwitch -->
+<HeaderCentered siteName="My Site" navItems={navItems} currentLang="de" pathname={pathname}>
+  <fragment slot="actions">
+    <MyCustomButton />
+  </fragment>
+</HeaderCentered>
+
+<!-- Flyout: navItems may include children[] for dropdown panels -->
+<HeaderFlyout siteName="My Site" navItems={navItemsWithChildren} currentLang="de" pathname={pathname} />
+```
+
+Selecting the header variant in a Base layout via a `headerVariant` prop:
+
+```astro
+---
+// Base.astro
+import Header from '@itci/easy-web-content-blocks/components/Header';
+import HeaderCentered from '@itci/easy-web-content-blocks/components/HeaderCentered';
+import HeaderHideOnScroll from '@itci/easy-web-content-blocks/components/HeaderHideOnScroll';
+import HeaderFlyout from '@itci/easy-web-content-blocks/components/HeaderFlyout';
+
+interface Props {
+  headerVariant?: 'classic' | 'centered' | 'hide-on-scroll' | 'flyout';
+  // …other props
+}
+const { headerVariant = 'classic' } = Astro.props;
+const HeaderComponents = { classic: Header, centered: HeaderCentered, 'hide-on-scroll': HeaderHideOnScroll, flyout: HeaderFlyout };
+const ActiveHeader = HeaderComponents[headerVariant];
+---
+<ActiveHeader siteName={siteName} navItems={navItems} currentLang={lang} pathname={pathname} alternateHref={alternateHref} />
+```
 
 ### Hero / call-to-action / contact
 

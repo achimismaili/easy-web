@@ -1,0 +1,224 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import LanguageSwitch from './LanguageSwitch.astro';
+
+interface Props {
+  siteName: string;
+  navItems: Array<{ label: string; href: string }>;
+  currentLang: string;
+  pathname: string;
+  /** Explicit alternate locale URL to pass to LanguageSwitch. */
+  alternateHref?: string;
+  /** Accessible label for the mobile menu toggle button. */
+  menuLabel?: string;
+}
+
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
+const navId = `ew-header-hos-nav-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<header class="ew-header-hide-on-scroll" data-testid="header-hide-on-scroll">
+  <div class="ew-header-hide-on-scroll__inner">
+    <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header-hide-on-scroll__brand">
+      {siteName}
+    </a>
+
+    <button
+      type="button"
+      class="ew-header-hide-on-scroll__menu-btn"
+      aria-label={menuLabel}
+      aria-expanded="false"
+      aria-controls={navId}
+      data-testid="mobile-menu-toggle"
+    >
+      <svg class="ew-header-hide-on-scroll__menu-icon ew-header-hide-on-scroll__menu-icon--open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+      <svg class="ew-header-hide-on-scroll__menu-icon ew-header-hide-on-scroll__menu-icon--close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <nav id={navId} class="ew-header-hide-on-scroll__nav" aria-label="Main navigation">
+      <ul class="ew-header-hide-on-scroll__links">
+        {navItems.map((item) => (
+          <li>
+            <a href={item.href} class:list={['ew-header-hide-on-scroll__link', { 'ew-header-hide-on-scroll__link--active': pathname === item.href }]}> 
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="ew-header-hide-on-scroll__actions">
+        <slot name="actions">
+          <ThemeToggle />
+          <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />
+        </slot>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .ew-header-hide-on-scroll {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    transition: transform 0.3s ease;
+    background: var(--ew-surface);
+    border-bottom: 1px solid var(--ew-border);
+  }
+  .ew-header-hide-on-scroll--hidden {
+    transform: translateY(-100%);
+  }
+  .ew-header-hide-on-scroll__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--ew-space-3) var(--ew-space-5);
+  }
+  .ew-header-hide-on-scroll__brand {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-lg);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .ew-header-hide-on-scroll__brand:hover {
+    color: var(--ew-primary);
+  }
+
+  .ew-header-hide-on-scroll__menu-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--ew-on-surface);
+    cursor: pointer;
+    padding: var(--ew-space-1);
+  }
+  .ew-header-hide-on-scroll__menu-btn:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+  .ew-header-hide-on-scroll__menu-icon--close { display: none; }
+
+  .ew-header-hide-on-scroll__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--ew-space-5);
+  }
+  .ew-header-hide-on-scroll__links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--ew-space-1);
+  }
+  .ew-header-hide-on-scroll__link {
+    display: block;
+    padding: var(--ew-space-2) var(--ew-space-3);
+    border-radius: var(--ew-radius-md);
+    color: var(--ew-muted);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .ew-header-hide-on-scroll__link:hover {
+    color: var(--ew-on-surface);
+    background: var(--ew-surface-muted);
+  }
+  .ew-header-hide-on-scroll__link--active {
+    color: var(--ew-on-surface);
+    background: var(--ew-surface-muted);
+  }
+  .ew-header-hide-on-scroll__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--ew-space-2);
+  }
+
+  @media (max-width: 768px) {
+    .ew-header-hide-on-scroll__menu-btn {
+      display: flex;
+    }
+    .ew-header-hide-on-scroll__nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      background: var(--ew-surface);
+      border-bottom: 1px solid var(--ew-border);
+      padding: var(--ew-space-4) var(--ew-space-5);
+      gap: var(--ew-space-4);
+    }
+    .ew-header-hide-on-scroll__nav[data-open] {
+      display: flex;
+    }
+    .ew-header-hide-on-scroll__links {
+      flex-direction: column;
+      gap: var(--ew-space-1);
+    }
+    .ew-header-hide-on-scroll__actions {
+      padding-top: var(--ew-space-3);
+      border-top: 1px solid var(--ew-border);
+    }
+    .ew-header-hide-on-scroll__menu-btn[aria-expanded="true"] .ew-header-hide-on-scroll__menu-icon--open { display: none; }
+    .ew-header-hide-on-scroll__menu-btn[aria-expanded="true"] .ew-header-hide-on-scroll__menu-icon--close { display: block; }
+  }
+</style>
+
+<script>
+  function initHeader(headerEl: Element) {
+    const applyPadding = () => {
+      document.body.style.paddingTop = `${headerEl.getBoundingClientRect().height}px`;
+    };
+    applyPadding();
+
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          if (currentScrollY > lastScrollY && currentScrollY > 80) {
+            headerEl.classList.add('ew-header-hide-on-scroll--hidden');
+          } else {
+            headerEl.classList.remove('ew-header-hide-on-scroll--hidden');
+          }
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', applyPadding);
+
+    const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(applyPadding) : null;
+    resizeObserver?.observe(headerEl);
+
+    const btn = headerEl.querySelector('.ew-header-hide-on-scroll__menu-btn') as HTMLButtonElement | null;
+    const nav = headerEl.querySelector('.ew-header-hide-on-scroll__nav') as HTMLElement | null;
+    if (btn && nav) {
+      btn.addEventListener('click', () => {
+        const isOpen = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!isOpen));
+        isOpen ? nav.removeAttribute('data-open') : nav.setAttribute('data-open', '');
+      });
+    }
+  }
+  document.querySelectorAll('.ew-header-hide-on-scroll').forEach(initHeader);
+</script>

@@ -1,0 +1,360 @@
+---
+/**
+ * HeaderFlyout – responsive site header with dropdown flyout navigation.
+ * Pure Astro component with scoped vanilla JS for mobile and flyout behavior.
+ */
+import type { NavItem } from '@itci/easy-web-cms-adapters';
+import ThemeToggle from './ThemeToggle.astro';
+import LanguageSwitch from './LanguageSwitch.astro';
+
+interface Props {
+  siteName: string;
+  navItems: NavItem[];
+  currentLang: string;
+  pathname: string;
+  /** Explicit alternate locale URL to pass to LanguageSwitch. */
+  alternateHref?: string;
+  /** Accessible label for the mobile menu toggle button. */
+  menuLabel?: string;
+}
+
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
+const navId = `ew-header-flyout-nav-${Math.random().toString(36).slice(2, 9)}`;
+const dropdownIdPrefix = `${navId}-dropdown`;
+---
+
+<header class="ew-header-flyout" data-testid="header-flyout">
+  <div class="ew-header-flyout__inner">
+    <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header-flyout__brand">
+      {siteName}
+    </a>
+
+    <button
+      type="button"
+      class="ew-header-flyout__menu-btn"
+      aria-label={menuLabel}
+      aria-expanded="false"
+      aria-controls={navId}
+      data-testid="mobile-menu-toggle"
+    >
+      <svg class="ew-header-flyout__menu-icon ew-header-flyout__menu-icon--open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+      <svg class="ew-header-flyout__menu-icon ew-header-flyout__menu-icon--close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <nav id={navId} class="ew-header-flyout__nav" aria-label="Main navigation">
+      <ul class="ew-header-flyout__links">
+        {navItems.map((item, index) => {
+          const hasChildren = Boolean(item.children && item.children.length > 0);
+          const dropdownId = `${dropdownIdPrefix}-${index}`;
+          return (
+            <li class="ew-header-flyout__item">
+              {hasChildren ? (
+                <div class="ew-header-flyout__dropdown-wrapper">
+                  <button
+                    type="button"
+                    class:list={[
+                      'ew-header-flyout__link',
+                      'ew-header-flyout__trigger',
+                      { 'ew-header-flyout__link--active': pathname === item.href }
+                    ]}
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    aria-controls={dropdownId}
+                  >
+                    <span>{item.label}</span>
+                    <svg class="ew-header-flyout__chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 6l4 4 4-4"></path>
+                    </svg>
+                  </button>
+                  <ul id={dropdownId} class="ew-header-flyout__dropdown" role="menu">
+                    {item.children?.map((child) => (
+                      <li class="ew-header-flyout__dropdown-item" role="none">
+                        <a
+                          href={child.href}
+                          class:list={[
+                            'ew-header-flyout__dropdown-link',
+                            { 'ew-header-flyout__dropdown-link--active': pathname === child.href }
+                          ]}
+                          role="menuitem"
+                        >
+                          {child.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <a href={item.href} class:list={['ew-header-flyout__link', { 'ew-header-flyout__link--active': pathname === item.href }]}> 
+                  {item.label}
+                </a>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <div class="ew-header-flyout__actions">
+        <slot name="actions">
+          <ThemeToggle />
+          <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />
+        </slot>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .ew-header-flyout {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--ew-surface);
+    border-bottom: 1px solid var(--ew-border);
+  }
+  .ew-header-flyout__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--ew-space-3) var(--ew-space-5);
+  }
+  .ew-header-flyout__brand {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-lg);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .ew-header-flyout__brand:hover {
+    color: var(--ew-primary);
+  }
+
+  .ew-header-flyout__menu-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--ew-on-surface);
+    cursor: pointer;
+    padding: var(--ew-space-1);
+  }
+  .ew-header-flyout__menu-btn:focus-visible,
+  .ew-header-flyout__link:focus-visible,
+  .ew-header-flyout__dropdown-link:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+  .ew-header-flyout__menu-icon--close { display: none; }
+
+  .ew-header-flyout__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--ew-space-5);
+  }
+  .ew-header-flyout__links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--ew-space-1);
+  }
+  .ew-header-flyout__item {
+    margin: 0;
+  }
+  .ew-header-flyout__link {
+    display: flex;
+    align-items: center;
+    gap: var(--ew-space-1);
+    padding: var(--ew-space-2) var(--ew-space-3);
+    border: none;
+    border-radius: var(--ew-radius-md);
+    background: transparent;
+    color: var(--ew-muted);
+    cursor: pointer;
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    font-weight: 500;
+    line-height: var(--ew-leading-normal);
+    text-decoration: none;
+  }
+  .ew-header-flyout__link:hover,
+  .ew-header-flyout__link[aria-expanded="true"] {
+    color: var(--ew-on-surface);
+    background: var(--ew-surface-muted);
+  }
+  .ew-header-flyout__link--active {
+    color: var(--ew-on-surface);
+    background: var(--ew-surface-muted);
+  }
+  .ew-header-flyout__trigger[aria-expanded="true"] .ew-header-flyout__chevron {
+    transform: rotate(180deg);
+  }
+  .ew-header-flyout__chevron {
+    flex: none;
+  }
+  .ew-header-flyout__dropdown-wrapper {
+    position: relative;
+  }
+  .ew-header-flyout__dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 12rem;
+    background: var(--ew-surface);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-md);
+    padding: var(--ew-space-2);
+    list-style: none;
+    margin: 0;
+    z-index: 200;
+  }
+  .ew-header-flyout__dropdown[data-open] {
+    display: block;
+  }
+  .ew-header-flyout__dropdown-link {
+    display: block;
+    padding: var(--ew-space-2) var(--ew-space-3);
+    border-radius: var(--ew-radius-sm);
+    color: var(--ew-muted);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .ew-header-flyout__dropdown-link:hover,
+  .ew-header-flyout__dropdown-link--active {
+    color: var(--ew-on-surface);
+    background: var(--ew-surface-muted);
+  }
+  .ew-header-flyout__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--ew-space-2);
+  }
+
+  @media (max-width: 768px) {
+    .ew-header-flyout__menu-btn {
+      display: flex;
+    }
+    .ew-header-flyout__nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      background: var(--ew-surface);
+      border-bottom: 1px solid var(--ew-border);
+      padding: var(--ew-space-4) var(--ew-space-5);
+      gap: var(--ew-space-4);
+    }
+    .ew-header-flyout__nav[data-open] {
+      display: flex;
+    }
+    .ew-header-flyout__links {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--ew-space-1);
+    }
+    .ew-header-flyout__link {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .ew-header-flyout__dropdown {
+      position: static;
+      min-width: 0;
+      margin-top: var(--ew-space-1);
+      border-radius: var(--ew-radius-md);
+    }
+    .ew-header-flyout__actions {
+      padding-top: var(--ew-space-3);
+      border-top: 1px solid var(--ew-border);
+    }
+    .ew-header-flyout__menu-btn[aria-expanded="true"] .ew-header-flyout__menu-icon--open { display: none; }
+    .ew-header-flyout__menu-btn[aria-expanded="true"] .ew-header-flyout__menu-icon--close { display: block; }
+  }
+</style>
+
+<script>
+  function initHeader(headerEl: Element) {
+    const menuBtn = headerEl.querySelector('.ew-header-flyout__menu-btn') as HTMLButtonElement | null;
+    const nav = headerEl.querySelector('.ew-header-flyout__nav') as HTMLElement | null;
+
+    if (menuBtn && nav) {
+      menuBtn.addEventListener('click', () => {
+        const isOpen = menuBtn.getAttribute('aria-expanded') === 'true';
+        menuBtn.setAttribute('aria-expanded', String(!isOpen));
+        isOpen ? nav.removeAttribute('data-open') : nav.setAttribute('data-open', '');
+      });
+    }
+
+    const closeAllDropdowns = () => {
+      headerEl.querySelectorAll('.ew-header-flyout__trigger').forEach((trigger) => {
+        const wrapper = trigger.closest('.ew-header-flyout__dropdown-wrapper');
+        const dropdown = wrapper?.querySelector('.ew-header-flyout__dropdown');
+        trigger.setAttribute('aria-expanded', 'false');
+        dropdown?.removeAttribute('data-open');
+      });
+    };
+
+    headerEl.querySelectorAll('.ew-header-flyout__trigger').forEach((trigger) => {
+      const button = trigger as HTMLButtonElement;
+      const wrapper = button.closest('.ew-header-flyout__dropdown-wrapper');
+      const dropdown = wrapper?.querySelector('.ew-header-flyout__dropdown') as HTMLElement | null;
+      if (!wrapper || !dropdown) return;
+
+      const open = () => {
+        closeAllDropdowns();
+        button.setAttribute('aria-expanded', 'true');
+        dropdown.setAttribute('data-open', '');
+      };
+      const close = () => {
+        button.setAttribute('aria-expanded', 'false');
+        dropdown.removeAttribute('data-open');
+      };
+
+      wrapper.addEventListener('mouseenter', open);
+      wrapper.addEventListener('mouseleave', close);
+      wrapper.addEventListener('focusin', open);
+      wrapper.addEventListener('focusout', (event) => {
+        const nextTarget = event.relatedTarget as Node | null;
+        if (!nextTarget || !wrapper.contains(nextTarget)) close();
+      });
+
+      button.addEventListener('click', () => {
+        button.getAttribute('aria-expanded') === 'true' ? close() : open();
+      });
+      button.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          open();
+        }
+        if (event.key === 'Escape') {
+          close();
+        }
+      });
+      dropdown.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          close();
+          button.focus();
+        }
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!headerEl.contains(event.target as Node)) closeAllDropdowns();
+    });
+  }
+
+  document.querySelectorAll('.ew-header-flyout').forEach(initHeader);
+</script>

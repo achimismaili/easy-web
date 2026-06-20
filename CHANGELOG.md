@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] — 2026-06-20
+
+### @itci/easy-web-content-blocks
+
+- Added `actions` named slot to `Header.astro` (backward compatible — fallback renders `ThemeToggle` + `LanguageSwitch`). Mobile toggle JS refactored to scoped `initHeader(el)` pattern; safe for multi-header pages. `data-testid="header-classic"` added.
+- New component: `HeaderCentered.astro` — brand centered, nav links split left/right. Same props + slot + scoped JS.
+- New component: `HeaderHideOnScroll.astro` — `position: fixed` header that hides on scroll-down and reappears on scroll-up (`translateY`). Body padding offset applied via JS.
+- New component: `HeaderFlyout.astro` — nav items with `children[]` show flyout dropdown panels (hover/focus desktop, click mobile, full keyboard accessibility with `aria-expanded`/`aria-haspopup`).
+
+### @itci/easy-web-cms-adapters
+
+- `NavItem` interface extended with optional `children?: NavItem[]` (recursive, backward compatible).
+
+---
+
 ## [0.3.0] — 2026-05-31
 
 ### @itci/easy-web-theme-core

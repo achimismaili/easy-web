@@ -18,9 +18,10 @@ interface Props {
 }
 
 const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
+const navId = `ew-header-nav-${Math.random().toString(36).slice(2, 9)}`;
 ---
 
-<header class="ew-header">
+<header class="ew-header" data-testid="header-classic">
   <div class="ew-header__inner">
     <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header__brand">
       {siteName}
@@ -31,7 +32,7 @@ const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'T
       class="ew-header__menu-btn"
       aria-label={menuLabel}
       aria-expanded="false"
-      aria-controls="ew-header-nav"
+      aria-controls={navId}
       data-testid="mobile-menu-toggle"
     >
       <svg class="ew-header__menu-icon ew-header__menu-icon--open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -45,7 +46,7 @@ const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'T
       </svg>
     </button>
 
-    <nav id="ew-header-nav" class="ew-header__nav" aria-label="Main navigation">
+    <nav id={navId} class="ew-header__nav" aria-label="Main navigation">
       <ul class="ew-header__links">
         {navItems.map((item) => (
           <li>
@@ -56,8 +57,10 @@ const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'T
         ))}
       </ul>
       <div class="ew-header__actions">
-        <ThemeToggle />
-        <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />
+        <slot name="actions">
+          <ThemeToggle />
+          <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />
+        </slot>
       </div>
     </nav>
   </div>
@@ -178,16 +181,15 @@ const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'T
 </style>
 
 <script>
-  const btn = document.querySelector('[data-testid="mobile-menu-toggle"]') as HTMLButtonElement | null;
-  const nav = document.getElementById('ew-header-nav');
-
-  btn?.addEventListener('click', () => {
-    const isOpen = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', String(!isOpen));
-    if (!isOpen) {
-      nav?.setAttribute('data-open', '');
-    } else {
-      nav?.removeAttribute('data-open');
-    }
-  });
+  function initHeader(headerEl: Element) {
+    const btn = headerEl.querySelector('.ew-header__menu-btn') as HTMLButtonElement | null;
+    const nav = headerEl.querySelector('.ew-header__nav') as HTMLElement | null;
+    if (!btn || !nav) return;
+    btn.addEventListener('click', () => {
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      isOpen ? nav.removeAttribute('data-open') : nav.setAttribute('data-open', '');
+    });
+  }
+  document.querySelectorAll('.ew-header').forEach(initHeader);
 </script>
