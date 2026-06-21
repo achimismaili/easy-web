@@ -15,16 +15,18 @@ interface Props {
   alternateHref?: string;
   /** Accessible label for the mobile menu toggle button. */
   menuLabel?: string;
+  /** Optional logo URL. When provided, renders an <img> in the brand area instead of site name text. */
+  logo?: string;
 }
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo } = Astro.props;
 const navId = `ew-header-nav-${Math.random().toString(36).slice(2, 9)}`;
 ---
 
 <header class="ew-header" data-testid="header-classic">
   <div class="ew-header__inner">
     <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header__brand">
-      {siteName}
+      {logo ? <img src={logo} alt={siteName} class="ew-header__logo" /> : siteName}
     </a>
 
     <button
@@ -93,6 +95,11 @@ const navId = `ew-header-nav-${Math.random().toString(36).slice(2, 9)}`;
   .ew-header__brand:hover {
     color: var(--ew-primary);
   }
+  .ew-header__logo {
+    height: 1.5rem;
+    width: auto;
+    display: block;
+  }
 
   /* Mobile menu button */
   .ew-header__menu-btn {
@@ -144,6 +151,9 @@ const navId = `ew-header-nav-${Math.random().toString(36).slice(2, 9)}`;
     display: flex;
     align-items: center;
     gap: var(--ew-space-2);
+    border-left: 1px solid var(--ew-border);
+    padding-left: var(--ew-space-3);
+    margin-left: var(--ew-space-1);
   }
 
   /* Mobile: <=768px */
@@ -171,6 +181,9 @@ const navId = `ew-header-nav-${Math.random().toString(36).slice(2, 9)}`;
       gap: var(--ew-space-1);
     }
     .ew-header__actions {
+      border-left: none;
+      padding-left: 0;
+      margin-left: 0;
       padding-top: var(--ew-space-3);
       border-top: 1px solid var(--ew-border);
     }

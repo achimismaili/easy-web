@@ -11,16 +11,18 @@ interface Props {
   alternateHref?: string;
   /** Accessible label for the mobile menu toggle button. */
   menuLabel?: string;
+  /** Optional logo URL. When provided, renders an <img> in the brand area instead of site name text. */
+  logo?: string;
 }
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo } = Astro.props;
 const navId = `ew-header-hos-nav-${Math.random().toString(36).slice(2, 9)}`;
 ---
 
 <header class="ew-header-hide-on-scroll" data-testid="header-hide-on-scroll">
   <div class="ew-header-hide-on-scroll__inner">
     <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header-hide-on-scroll__brand">
-      {siteName}
+      {logo ? <img src={logo} alt={siteName} class="ew-header-hide-on-scroll__logo" /> : siteName}
     </a>
 
     <button
@@ -95,6 +97,11 @@ const navId = `ew-header-hos-nav-${Math.random().toString(36).slice(2, 9)}`;
   .ew-header-hide-on-scroll__brand:hover {
     color: var(--ew-primary);
   }
+  .ew-header-hide-on-scroll__logo {
+    height: 1.5rem;
+    width: auto;
+    display: block;
+  }
 
   .ew-header-hide-on-scroll__menu-btn {
     display: none;
@@ -144,6 +151,9 @@ const navId = `ew-header-hos-nav-${Math.random().toString(36).slice(2, 9)}`;
     display: flex;
     align-items: center;
     gap: var(--ew-space-2);
+    border-left: 1px solid var(--ew-border);
+    padding-left: var(--ew-space-3);
+    margin-left: var(--ew-space-1);
   }
 
   @media (max-width: 768px) {
@@ -170,6 +180,9 @@ const navId = `ew-header-hos-nav-${Math.random().toString(36).slice(2, 9)}`;
       gap: var(--ew-space-1);
     }
     .ew-header-hide-on-scroll__actions {
+      border-left: none;
+      padding-left: 0;
+      margin-left: 0;
       padding-top: var(--ew-space-3);
       border-top: 1px solid var(--ew-border);
     }

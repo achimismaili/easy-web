@@ -9,9 +9,11 @@ interface Props {
   pathname: string;
   alternateHref?: string;
   menuLabel?: string;
+  /** Optional logo URL. When provided, renders an <img> in the brand area instead of site name text. */
+  logo?: string;
 }
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo } = Astro.props;
 const navId = `ew-header-centered-nav-${Math.random().toString(36).slice(2, 9)}`;
 const mid = Math.ceil(navItems.length / 2);
 const leftItems = navItems.slice(0, mid);
@@ -32,7 +34,7 @@ const rightItems = navItems.slice(mid);
       </ul>
 
       <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header-centered__brand">
-        {siteName}
+        {logo ? <img src={logo} alt={siteName} class="ew-header-centered__logo" /> : siteName}
       </a>
 
       <div class="ew-header-centered__right">
@@ -110,6 +112,11 @@ const rightItems = navItems.slice(mid);
   .ew-header-centered__brand:hover {
     color: var(--ew-primary);
   }
+  .ew-header-centered__logo {
+    height: 1.5rem;
+    width: auto;
+    display: block;
+  }
   .ew-header-centered__links {
     display: flex;
     list-style: none;
@@ -144,6 +151,9 @@ const rightItems = navItems.slice(mid);
     display: flex;
     align-items: center;
     gap: var(--ew-space-2);
+    border-left: 1px solid var(--ew-border);
+    padding-left: var(--ew-space-3);
+    margin-left: var(--ew-space-1);
   }
   .ew-header-centered__menu-btn {
     display: none;
@@ -194,6 +204,9 @@ const rightItems = navItems.slice(mid);
       width: 100%;
     }
     .ew-header-centered__actions {
+      border-left: none;
+      padding-left: 0;
+      margin-left: 0;
       padding-top: var(--ew-space-3);
       border-top: 1px solid var(--ew-border);
       width: 100%;

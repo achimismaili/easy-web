@@ -1,6 +1,6 @@
 {
   "name": "@itci/easy-web-content-blocks",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
   "description": "Reusable Astro content-block components for the easy-web ecosystem.",

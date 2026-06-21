@@ -16,9 +16,11 @@ interface Props {
   alternateHref?: string;
   /** Accessible label for the mobile menu toggle button. */
   menuLabel?: string;
+  /** Optional logo URL. When provided, renders an <img> in the brand area instead of site name text. */
+  logo?: string;
 }
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu' } = Astro.props;
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo } = Astro.props;
 const navId = `ew-header-flyout-nav-${Math.random().toString(36).slice(2, 9)}`;
 const dropdownIdPrefix = `${navId}-dropdown`;
 ---
@@ -26,7 +28,7 @@ const dropdownIdPrefix = `${navId}-dropdown`;
 <header class="ew-header-flyout" data-testid="header-flyout">
   <div class="ew-header-flyout__inner">
     <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header-flyout__brand">
-      {siteName}
+      {logo ? <img src={logo} alt={siteName} class="ew-header-flyout__logo" /> : siteName}
     </a>
 
     <button
@@ -136,6 +138,11 @@ const dropdownIdPrefix = `${navId}-dropdown`;
   .ew-header-flyout__brand:hover {
     color: var(--ew-primary);
   }
+  .ew-header-flyout__logo {
+    height: 1.5rem;
+    width: auto;
+    display: block;
+  }
 
   .ew-header-flyout__menu-btn {
     display: none;
@@ -239,6 +246,9 @@ const dropdownIdPrefix = `${navId}-dropdown`;
     display: flex;
     align-items: center;
     gap: var(--ew-space-2);
+    border-left: 1px solid var(--ew-border);
+    padding-left: var(--ew-space-3);
+    margin-left: var(--ew-space-1);
   }
 
   @media (max-width: 768px) {
@@ -277,6 +287,9 @@ const dropdownIdPrefix = `${navId}-dropdown`;
       border-radius: var(--ew-radius-md);
     }
     .ew-header-flyout__actions {
+      border-left: none;
+      padding-left: 0;
+      margin-left: 0;
       padding-top: var(--ew-space-3);
       border-top: 1px solid var(--ew-border);
     }

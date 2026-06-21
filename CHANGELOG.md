@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] — 2026-06-22
+
+### @itci/easy-web-content-blocks
+
+- Added optional `logo?: string` prop to all 4 header components (`Header`, `HeaderCentered`, `HeaderHideOnScroll`, `HeaderFlyout`). When provided, renders an `<img>` in the brand area instead of site name text. Backward compatible.
+- Added visual separator (border-left) between nav links and actions area on desktop. Removed on mobile (border-top already present).
+
+---
+
 ## [0.5.0] — 2026-06-20
 
 ### @itci/easy-web-content-blocks
