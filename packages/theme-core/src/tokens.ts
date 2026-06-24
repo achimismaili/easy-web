@@ -76,6 +76,43 @@ export const tokens = {
     xl: 'var(--ew-radius-xl)',
     full: 'var(--ew-radius-full)',
   },
+  shadow: {
+    xs: 'var(--ew-shadow-xs)',
+    sm: 'var(--ew-shadow-sm)',
+    md: 'var(--ew-shadow-md)',
+    lg: 'var(--ew-shadow-lg)',
+    xl: 'var(--ew-shadow-xl)',
+    '2xl': 'var(--ew-shadow-2xl)',
+    inner: 'var(--ew-shadow-inner)',
+  },
+  motion: {
+    duration: {
+      instant: 'var(--ew-duration-instant)',
+      fast: 'var(--ew-duration-fast)',
+      normal: 'var(--ew-duration-normal)',
+      moderate: 'var(--ew-duration-moderate)',
+      slow: 'var(--ew-duration-slow)',
+      slower: 'var(--ew-duration-slower)',
+    },
+    ease: {
+      default: 'var(--ew-ease-default)',
+      in: 'var(--ew-ease-in)',
+      out: 'var(--ew-ease-out)',
+      inOut: 'var(--ew-ease-in-out)',
+      spring: 'var(--ew-ease-spring)',
+    },
+  },
+  zIndex: {
+    hide: 'var(--ew-z-hide)',
+    base: 'var(--ew-z-base)',
+    raised: 'var(--ew-z-raised)',
+    dropdown: 'var(--ew-z-dropdown)',
+    sticky: 'var(--ew-z-sticky)',
+    overlay: 'var(--ew-z-overlay)',
+    modal: 'var(--ew-z-modal)',
+    popover: 'var(--ew-z-popover)',
+    toast: 'var(--ew-z-toast)',
+  },
 } as const;
 
 export type Tokens = typeof tokens;

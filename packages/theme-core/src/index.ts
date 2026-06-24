@@ -6,3 +6,4 @@ export {
 	type Theme,
 } from "./helper.js";
 export { type Tokens, tokens } from "./tokens.js";
+export { breakpoints, type Breakpoint } from './breakpoints.js';

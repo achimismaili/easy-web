@@ -1,6 +1,6 @@
 {
   "name": "@itci/easy-web-theme-core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
   "exports": {
@@ -8,7 +8,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./tokens.css": "./styles/tokens.css"
+    "./tokens.css": "./styles/tokens.css",
+    "./fonts.css": "./styles/fonts.css"
   },
   "files": ["dist", "styles", "README.md"],
   "sideEffects": ["*.css"],

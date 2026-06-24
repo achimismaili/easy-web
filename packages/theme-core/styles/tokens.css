@@ -67,6 +67,49 @@
   --ew-radius-lg: 0.5rem;
   --ew-radius-xl: 0.75rem;
   --ew-radius-full: 9999px;
+
+  /* Shadows */
+  --ew-shadow-color: 0 0 0;
+  --ew-shadow-xs:   0 1px 2px rgb(var(--ew-shadow-color) / 0.05);
+  --ew-shadow-sm:   0 1px 3px rgb(var(--ew-shadow-color) / 0.10), 0 1px 2px rgb(var(--ew-shadow-color) / 0.06);
+  --ew-shadow-md:   0 4px 6px rgb(var(--ew-shadow-color) / 0.07), 0 2px 4px rgb(var(--ew-shadow-color) / 0.06);
+  --ew-shadow-lg:   0 10px 15px rgb(var(--ew-shadow-color) / 0.10), 0 4px 6px rgb(var(--ew-shadow-color) / 0.05);
+  --ew-shadow-xl:   0 20px 25px rgb(var(--ew-shadow-color) / 0.10), 0 8px 10px rgb(var(--ew-shadow-color) / 0.04);
+  --ew-shadow-2xl:  0 25px 50px rgb(var(--ew-shadow-color) / 0.25);
+  --ew-shadow-inner: inset 0 2px 4px rgb(var(--ew-shadow-color) / 0.06);
+
+  /* Motion — Durations */
+  --ew-duration-instant:  0ms;
+  --ew-duration-fast:     100ms;
+  --ew-duration-normal:   200ms;
+  --ew-duration-moderate: 300ms;
+  --ew-duration-slow:     500ms;
+  --ew-duration-slower:   700ms;
+
+  /* Motion — Easings */
+  --ew-ease-default:  cubic-bezier(0.4, 0, 0.2, 1);
+  --ew-ease-in:       cubic-bezier(0.4, 0, 1, 1);
+  --ew-ease-out:      cubic-bezier(0, 0, 0.2, 1);
+  --ew-ease-in-out:   cubic-bezier(0.4, 0, 0.6, 1);
+  --ew-ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Breakpoints (Tailwind-compatible — note: CSS vars cannot be used in @media queries; use as reference values) */
+  --ew-bp-sm:  640px;
+  --ew-bp-md:  768px;
+  --ew-bp-lg:  1024px;
+  --ew-bp-xl:  1280px;
+  --ew-bp-2xl: 1536px;
+
+  /* Z-Index Scale */
+  --ew-z-hide:     -1;
+  --ew-z-base:      0;
+  --ew-z-raised:    1;
+  --ew-z-dropdown:  1000;
+  --ew-z-sticky:    1100;
+  --ew-z-overlay:   1200;
+  --ew-z-modal:     1300;
+  --ew-z-popover:   1400;
+  --ew-z-toast:     1500;
 }
 
 [data-theme="dark"] {
@@ -79,6 +122,16 @@
   --ew-muted: #9ca3af;
   --ew-danger: #f87171;
   --ew-on-danger: #190404;
+
+  /* Shadow color — brighter in dark mode so shadows remain visible */
+  --ew-shadow-color: 0 0 0;
+  --ew-shadow-xs:   0 1px 2px rgb(var(--ew-shadow-color) / 0.30);
+  --ew-shadow-sm:   0 1px 3px rgb(var(--ew-shadow-color) / 0.40), 0 1px 2px rgb(var(--ew-shadow-color) / 0.30);
+  --ew-shadow-md:   0 4px 6px rgb(var(--ew-shadow-color) / 0.35), 0 2px 4px rgb(var(--ew-shadow-color) / 0.30);
+  --ew-shadow-lg:   0 10px 15px rgb(var(--ew-shadow-color) / 0.40), 0 4px 6px rgb(var(--ew-shadow-color) / 0.25);
+  --ew-shadow-xl:   0 20px 25px rgb(var(--ew-shadow-color) / 0.40), 0 8px 10px rgb(var(--ew-shadow-color) / 0.20);
+  --ew-shadow-2xl:  0 25px 50px rgb(var(--ew-shadow-color) / 0.55);
+  --ew-shadow-inner: inset 0 2px 4px rgb(var(--ew-shadow-color) / 0.30);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -92,5 +145,26 @@
     --ew-muted: #9ca3af;
     --ew-danger: #f87171;
     --ew-on-danger: #190404;
+
+    /* Shadow color — brighter in dark mode so shadows remain visible */
+    --ew-shadow-color: 0 0 0;
+    --ew-shadow-xs:   0 1px 2px rgb(var(--ew-shadow-color) / 0.30);
+    --ew-shadow-sm:   0 1px 3px rgb(var(--ew-shadow-color) / 0.40), 0 1px 2px rgb(var(--ew-shadow-color) / 0.30);
+    --ew-shadow-md:   0 4px 6px rgb(var(--ew-shadow-color) / 0.35), 0 2px 4px rgb(var(--ew-shadow-color) / 0.30);
+    --ew-shadow-lg:   0 10px 15px rgb(var(--ew-shadow-color) / 0.40), 0 4px 6px rgb(var(--ew-shadow-color) / 0.25);
+    --ew-shadow-xl:   0 20px 25px rgb(var(--ew-shadow-color) / 0.40), 0 8px 10px rgb(var(--ew-shadow-color) / 0.20);
+    --ew-shadow-2xl:  0 25px 50px rgb(var(--ew-shadow-color) / 0.55);
+    --ew-shadow-inner: inset 0 2px 4px rgb(var(--ew-shadow-color) / 0.30);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ew-duration-instant:  0ms;
+    --ew-duration-fast:     0ms;
+    --ew-duration-normal:   0ms;
+    --ew-duration-moderate: 0ms;
+    --ew-duration-slow:     0ms;
+    --ew-duration-slower:   0ms;
   }
 }

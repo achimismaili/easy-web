@@ -1,0 +1,45 @@
+/**
+ * @itci/easy-web-theme-core — Opt-in self-hosted fonts
+ *
+ * Import AFTER tokens.css to activate Inter and JetBrains Mono.
+ * Instances must also provide font files at the paths below.
+ *
+ * Usage (in your layout):
+ *   import '@itci/easy-web-theme-core/tokens.css';
+ *   import '@itci/easy-web-theme-core/fonts.css';
+ *
+ * Place these files in your site's public/fonts/ directory:
+ *   public/fonts/Inter-Variable.woff2
+ *   public/fonts/JetBrainsMono-Variable.woff2
+ *
+ * Download Inter Variable from:
+ *   https://github.com/rsms/inter/releases (Inter.var.woff2)
+ * Download JetBrains Mono Variable from:
+ *   https://github.com/JetBrains/JetBrainsMono/releases (JetBrainsMono[wght].woff2)
+ *
+ * For best performance, add preload links in your <head>:
+ *   <link rel="preload" as="font" href="/fonts/Inter-Variable.woff2" type="font/woff2" crossorigin>
+ *   <link rel="preload" as="font" href="/fonts/JetBrainsMono-Variable.woff2" type="font/woff2" crossorigin>
+ */
+
+@font-face {
+  font-family: 'Inter Variable';
+  src: url('/fonts/Inter-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Variable';
+  src: url('/fonts/JetBrainsMono-Variable.woff2') format('woff2-variations');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Override font-family variables to use the self-hosted fonts */
+:root {
+  --ew-font-sans: 'Inter Variable', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ew-font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
