@@ -8,6 +8,7 @@
   --ew-muted: #6b7280;
   --ew-danger: #dc2626;
   --ew-on-danger: #ffffff;
+  --ew-accent: #f59e0b;
 
   --ew-neutral-50: #f9fafb;
   --ew-neutral-100: #f3f4f6;
@@ -122,6 +123,7 @@
   --ew-muted: #9ca3af;
   --ew-danger: #f87171;
   --ew-on-danger: #190404;
+  --ew-accent: #fbbf24;
 
   /* Shadow color — brighter in dark mode so shadows remain visible */
   --ew-shadow-color: 0 0 0;
@@ -145,6 +147,7 @@
     --ew-muted: #9ca3af;
     --ew-danger: #f87171;
     --ew-on-danger: #190404;
+    --ew-accent: #fbbf24;
 
     /* Shadow color — brighter in dark mode so shadows remain visible */
     --ew-shadow-color: 0 0 0;

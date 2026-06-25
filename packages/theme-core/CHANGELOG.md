@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.0] — 2026-06-25
+
+### Added
+- `--ew-accent` semantic color token (default: amber `#f59e0b`, dark: `#fbbf24`). CMS-customizable per instance via `theme.json`.
+
 ## [0.4.0] — 2026-06-24
 
 ### Added

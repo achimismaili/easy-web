@@ -1,6 +1,6 @@
 {
   "name": "@itci/easy-web-theme-core",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
   "exports": {

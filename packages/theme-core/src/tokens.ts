@@ -9,6 +9,7 @@ export const tokens = {
     muted: 'var(--ew-muted)',
     danger: 'var(--ew-danger)',
     onDanger: 'var(--ew-on-danger)',
+    accent: 'var(--ew-accent)',
     neutral: {
       50: 'var(--ew-neutral-50)',
       100: 'var(--ew-neutral-100)',
