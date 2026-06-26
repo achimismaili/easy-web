@@ -8,6 +8,9 @@ dist/
 coverage/
 .cache/
 
+# Astro generated artifacts (content collections cache, type definitions)
+.astro/
+
 # Per-package .npmrc files may contain auth tokens - root .npmrc handles auth
 packages/**/.npmrc
 

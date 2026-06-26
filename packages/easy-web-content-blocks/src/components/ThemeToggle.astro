@@ -67,7 +67,7 @@ const { label = 'Toggle color theme (Darkmode)' } = Astro.props;
 </style>
 
 <script>
-  import { applyTheme, getPreferredTheme } from '@itci/easy-web-theme-core';
+  import { applyTheme, getPreferredTheme } from '@achimismaili/easy-web-theme-core';
 
   const btn = document.querySelector('.ew-theme-toggle') as HTMLButtonElement | null;
   btn?.addEventListener('click', () => {
