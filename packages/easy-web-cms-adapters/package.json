@@ -1,5 +1,5 @@
 {
-  "name": "@itci/easy-web-cms-adapters",
+  "name": "@achimismaili/easy-web-cms-adapters",
   "version": "0.2.0",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
@@ -27,6 +27,9 @@
   "devDependencies": {
     "astro": "^6.4.0",
     "typescript": "^5.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "repository": {
     "type": "git",

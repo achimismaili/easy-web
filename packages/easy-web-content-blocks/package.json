@@ -1,5 +1,5 @@
 {
-  "name": "@itci/easy-web-content-blocks",
+  "name": "@achimismaili/easy-web-content-blocks",
   "version": "0.6.0",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
@@ -25,7 +25,7 @@
     "zod": "^4.0.0"
   },
   "publishConfig": {
-    "registry": "https://pkgs.dev.azure.com/IT-CI/WebSites/_packaging/websites/npm/registry/"
+    "access": "public"
   },
   "repository": {
     "type": "git",

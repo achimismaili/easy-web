@@ -1,5 +1,5 @@
 {
-  "name": "@itci/easy-web-auth",
+  "name": "@achimismaili/easy-web-auth",
   "version": "0.1.1",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
@@ -47,7 +47,7 @@
     "typescript": "^5.5.0"
   },
   "publishConfig": {
-    "registry": "https://pkgs.dev.azure.com/IT-CI/WebSites/_packaging/websites/npm/registry/"
+    "access": "public"
   },
   "repository": {
     "type": "git",

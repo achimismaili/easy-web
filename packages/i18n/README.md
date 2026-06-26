@@ -1,13 +1,13 @@
-# @itci/easy-web-i18n
+# @achimismaili/easy-web-i18n
 
 Bilingual i18n utilities for IT-CI web projects. Built for static-prerender sites on Azure Static Web Apps using Astro and Paraglide-JS.
 
 ## Installation
 
-Add the package and its peer dependencies. Ensure your `.npmrc` is configured for the `@itci` feed.
+Add the package and its peer dependencies. Install from npm.
 
 ```bash
-pnpm add @itci/easy-web-i18n @inlang/paraglide-js astro
+pnpm add @achimismaili/easy-web-i18n @inlang/paraglide-js astro
 ```
 
 ## Quick start
@@ -15,7 +15,7 @@ pnpm add @itci/easy-web-i18n @inlang/paraglide-js astro
 Create a central i18n instance using the factory. This ensures consistency across your routing, SEO, and formatting.
 
 ```ts
-import { createI18n } from '@itci/easy-web-i18n';
+import { createI18n } from '@achimismaili/easy-web-i18n';
 
 export const i18n = createI18n({
   locales: ['de', 'en'] as const,
@@ -96,4 +96,4 @@ Note: The `SupportedLocale` type is removed. Use the generic `L` inferred from t
 
 ## SSR caveat
 
-`@itci/easy-web-i18n` does not support SSR features like `Accept-Language` header detection or middleware. It is designed for static-prerender deployments on Azure Static Web Apps.
+`@achimismaili/easy-web-i18n` does not support SSR features like `Accept-Language` header detection or middleware. It is designed for static-prerender deployments on Azure Static Web Apps.

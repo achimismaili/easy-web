@@ -1,9 +1,12 @@
 {
-  "name": "@itci/create-easy-web",
+  "name": "@achimismaili/create-easy-web",
   "version": "0.0.0",
   "packageManager": "pnpm@9.15.4",
   "private": false,
   "description": "Placeholder package for the future easy-web project generator.",
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "UNLICENSED",
   "repository": {
     "type": "git",

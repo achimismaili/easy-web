@@ -1,5 +1,5 @@
 {
-  "name": "@itci/easy-web-root",
+  "name": "easy-web-root",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,9 +12,11 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test -- --passWithNoTests",
     "build": "turbo run build",
+    "docs:build": "turbo run docs:build",
     "publish-packages": "turbo run publish-packages"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@eslint/js": "^9.0.0",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.0.0",

@@ -1,13 +1,13 @@
 # AGENTS.md — easy-web
 
 > **For AI agents working in this repo.**
-> Baseline `@itci/easy-web-*` package monorepo. Publishes the shared library every site instance consumes.
+> Baseline `@achimismaili/easy-web-*` package monorepo. Publishes the shared library every site instance consumes.
 
 ## Project identity
 
 - **Purpose**: Shared package family for the ismaili.de web ecosystem — theme tokens, i18n primitives, content blocks, CMS adapters, MSAL auth components, and the scaffold CLI for new instances.
 - **Type**: pnpm + Turborepo monorepo. Node 22.12.0 via Volta, pnpm 9.15.4.
-- **Publishes to**: `websites` Azure Artifacts feed (project-scoped, `IT-CI/WebSites`). Packages namespaced `@itci/easy-web-*`.
+- **Publishes to**: npm public registry. Packages namespaced `@achimismaili/easy-web-*`.
 - **Consumed by**: every instance repo (`dev.ismaili.de`, `harleyrentflorida.de`, future sites).
 
 ## Ecosystem context
@@ -41,13 +41,13 @@ When changing anything in `packages/auth/`:
 
 | Path | Purpose | Status |
 | :--- | :--- | :--- |
-| `packages/theme-core/` | `@itci/easy-web-theme-core` — CSS design tokens, light/dark theme, no-flash script | Real (consumed at ^0.3.x by instances) |
-| `packages/i18n/` | `@itci/easy-web-i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers | Real (consumed at ^0.3.x by instances) |
-| `packages/easy-web-content-blocks/` | `@itci/easy-web-content-blocks` — Hero, Section, CardGrid, Card, and other reusable page blocks | Real (consumed at ^0.2.x by instances) |
-| `packages/auth/` | `@itci/easy-web-auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). | Real at v0.1.1 — fully wired (AuthProvider, useAuth, LoginButton, ProtectedContent, UserAvatar, Graph client, SharePoint hooks and UI components). Published to Azure Artifacts feed (tag `v0.1.1`); consumed by `dev.ismaili.de` at `^0.1.1`. |
-| `packages/easy-web-cms-adapters/` | `@itci/easy-web-cms-adapters` — CMS adapter contract per ADR 0006 | Stub |
-| `packages/easy-web-azure-functions-utils/` | `@itci/easy-web-azure-functions-utils` — server-side helpers for Azure Functions | Stub |
-| `packages/create-easy-web/` | `@itci/create-easy-web` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline | Stub |
+| `packages/theme-core/` | `@achimismaili/easy-web-theme-core` — CSS design tokens, light/dark theme, no-flash script | Real (consumed at ^0.3.x by instances) |
+| `packages/i18n/` | `@achimismaili/easy-web-i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers | Real (consumed at ^0.3.x by instances) |
+| `packages/easy-web-content-blocks/` | `@achimismaili/easy-web-content-blocks` — Hero, Section, CardGrid, Card, and other reusable page blocks | Real (consumed at ^0.2.x by instances) |
+| `packages/auth/` | `@achimismaili/easy-web-auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). | Real at v0.1.1 — fully wired (AuthProvider, useAuth, LoginButton, ProtectedContent, UserAvatar, Graph client, SharePoint hooks and UI components). Published to npm (tag `v0.1.1`); consumed by `dev.ismaili.de` at `^0.1.1`. |
+| `packages/easy-web-cms-adapters/` | `@achimismaili/easy-web-cms-adapters` — CMS adapter contract per ADR 0006 | Stub |
+| `packages/easy-web-azure-functions-utils/` | `@achimismaili/easy-web-azure-functions-utils` — server-side helpers for Azure Functions | Stub |
+| `packages/create-easy-web/` | `@achimismaili/create-easy-web` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline | Stub |
 | `examples/` | Reference instances consuming the packages locally for development | Empty (placeholder) |
 | `scripts/` | Workspace-level tooling (release, validation) | — |
 | `docs/` | Repo-local notes; canonical docs live in `websites/docs/` | — |
@@ -60,60 +60,49 @@ Every change to a real package follows the same path:
 
 1. Implement / fix in this repo (the package).
 2. Validate by consuming the change in [`dev.ismaili.de`](../dev.ismaili.de/) (the pilot — battle-tests new packages first).
-3. Publish via the existing release flow (`turbo run publish-packages`, gated on `chore(release):` commits or `v*` tags per `azure-pipelines.yml`).
+3. Publish via the existing release flow (Changesets + GitHub Actions, gated on merged changesets).
 4. Once validated, customer instances ([`harleyrentflorida.de`](../harleyrentflorida.de/)) pick up the new version via Renovate-driven dependency bump PRs (future) or manual bump (current).
 
 **Do not skip the pilot.** The pilot exists to catch integration issues before customer sites are touched. Always test against `dev.ismaili.de` before publishing.
 
 ## Publishing packages
 
-> **Agents: never run `pnpm publish` directly.** Publishing requires a PAT (`ADO_NPM_TOKEN`) that is only available in CI. Use the pipeline instead.
+> **Agents: never run `pnpm publish` directly.** Publishing is automated via GitHub Actions and Changesets. Use the changeset workflow instead.
 
-### How the pipeline works
+### How the release workflow works
 
-`azure-pipelines.yml` has two stages:
-1. **Build** — runs on every push to `main`: lint, typecheck, test, build, uploads `packages-dist` artifact.
-2. **Publish** — runs only when triggered (see below): authenticates via `npmAuthenticate@0` (no manual PAT needed) and publishes all packages via `pnpm -r publish`.
+GitHub Actions workflows handle the full release pipeline:
+1. **CI** (`.github/workflows/ci.yml`) — runs on every push to `main`: lint, typecheck, test, build.
+2. **Release** (`.github/workflows/release.yml`) — Changesets action creates version PRs and publishes to npm when merged. Uses OIDC for npm authentication (no manual token needed).
 
-### Two ways to trigger a publish
+### Publishing via Changesets
 
-**Option A — Version tag** (preferred for releases):
-```pwsh
-# 1. Bump the version in the relevant package.json
-#    (edit packages/<name>/package.json "version" field)
-# 2. Commit the bump
-git add packages/<name>/package.json
-git commit -m "chore(release): bump @itci/<package-name> to <version>"
-# 3. Tag the repo root (not the package subfolder)
-git tag v<version> -m "release: @itci/<package-name> v<version>"
-git push origin main --tags
-```
-The pipeline triggers on any tag matching `v*` and publishes **all** packages that have a new version.
-
-**Option B — Commit message trigger**:
-```pwsh
-# A commit whose message contains "chore(release):" triggers the Publish stage
-git commit -m "chore(release): @itci/<package-name> v<version>"
-git push origin main
-```
+**Workflow**:
+1. Make your changes to packages.
+2. Run `pnpm changeset` to create a changeset file describing the change (version bump + changelog entry).
+3. Commit the changeset file.
+4. Push to `main`.
+5. Changesets action creates a "Version Packages" PR that bumps versions and updates CHANGELOGs.
+6. Merge the PR.
+7. GitHub Actions publishes all changed packages to npm automatically.
 
 ### Version bump checklist (for agents)
-1. Edit `packages/<name>/package.json` — increment `"version"` (follow semver: patch for fixes, minor for features, major for breaking).
-2. Update `CHANGELOG.md` if it exists in the package.
-3. Commit with `chore(release): bump @itci/<name> to <version>`.
-4. Push tag (Option A) or rely on commit message (Option B).
-5. **Do not** run `pnpm publish`, `npm publish`, or set `ADO_NPM_TOKEN` — the pipeline handles all of that.
+1. Make your code changes in `packages/<name>/src/`.
+2. Run `pnpm changeset` and follow the prompts (select packages, choose semver bump type, write changelog entry).
+3. Commit the generated `.changeset/*.md` file.
+4. Push to `main`.
+5. **Do not** manually edit `package.json` versions — Changesets handles that.
+6. **Do not** run `pnpm publish` or set npm tokens — GitHub Actions handles all of that via OIDC.
 
-### Feed coordinates
-- Registry: `https://pkgs.dev.azure.com/IT-CI/WebSites/_packaging/websites/npm/registry/`
-- Feed name: `websites` (visible at Azure DevOps → Artifacts → select feed "websites")
-- All packages are namespaced `@itci/easy-web-*`
+### Publishing coordinates
+- Registry: npm public registry (`https://registry.npmjs.org/`)
+- All packages are namespaced `@achimismaili/easy-web-*`
 
 ## What to change here
 
 ✅ **In scope**:
 - New shared components that more than one instance would benefit from.
-- Bug fixes to existing `@itci/easy-web-*` packages.
+- Bug fixes to existing `@achimismaili/easy-web-*` packages.
 - Theme-token additions, new locales, new content blocks, new auth components.
 - New packages, when a clear cross-instance need exists.
 - Tests, types, lint configuration, build pipeline.
@@ -134,8 +123,8 @@ pnpm lint                          # turbo run lint across all packages
 pnpm typecheck                     # turbo run typecheck across all packages
 pnpm test                          # turbo run test --passWithNoTests across all packages
 pnpm build                         # turbo run build across all packages
-pnpm --filter @itci/easy-web-auth test    # target a single package
-pnpm publish-packages              # release flow (gated in CI)
+pnpm --filter @achimismaili/easy-web-auth test    # target a single package
+pnpm changeset                     # create a changeset for release
 ```
 
 ## Related docs
