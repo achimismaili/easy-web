@@ -16,6 +16,10 @@
     "publish-packages": {
       "dependsOn": ["build", "test", "lint", "typecheck"],
       "cache": false
+    },
+    "docs:build": {
+      "outputs": ["dist/**"],
+      "cache": true
     }
   }
 }
