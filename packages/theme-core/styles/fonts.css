@@ -1,12 +1,12 @@
 /**
- * @itci/easy-web-theme-core — Opt-in self-hosted fonts
+ * @achimismaili/easy-web-theme-core — Opt-in self-hosted fonts
  *
  * Import AFTER tokens.css to activate Inter and JetBrains Mono.
  * Instances must also provide font files at the paths below.
  *
  * Usage (in your layout):
- *   import '@itci/easy-web-theme-core/tokens.css';
- *   import '@itci/easy-web-theme-core/fonts.css';
+ *   import '@achimismaili/easy-web-theme-core/tokens.css';
+ *   import '@achimismaili/easy-web-theme-core/fonts.css';
  *
  * Place these files in your site's public/fonts/ directory:
  *   public/fonts/Inter-Variable.woff2

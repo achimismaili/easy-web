@@ -16,7 +16,7 @@
  * ```ts
  * import { defineCollection } from 'astro:content';
  * import { glob } from 'astro/loaders';
- * import { gallerySchema } from '@itci/easy-web-content-blocks/schemas/galleries';
+ * import { gallerySchema } from '@achimismaili/easy-web-content-blocks/schemas/galleries';
  *
  * const galleries = defineCollection({
  *   loader: glob({ pattern: '**\/*.{yml,yaml}', base: './src/content/galleries' }),

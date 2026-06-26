@@ -1,7 +1,7 @@
-# Decap CMS config.yml — template for @itci/easy-web instances
+# Decap CMS config.yml — template for @achimismaili/easy-web instances
 #
 # Tokens wrapped in {{...}} are replaced at generation time.
-# Use generateDecapConfig() from @itci/easy-web-cms-adapters instead of
+# Use generateDecapConfig() from @achimismaili/easy-web-cms-adapters instead of
 # editing this file manually.
 
 backend:
