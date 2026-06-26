@@ -1,4 +1,4 @@
-// @itci/easy-web-auth — public API barrel
+// @achimismaili/easy-web-auth — public API barrel
 
 // Core
 export { AuthProvider } from "./components/AuthProvider";

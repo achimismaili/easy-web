@@ -5,7 +5,7 @@
  * CSS custom properties cannot be used in @media queries directly.
  *
  * Usage:
- *   import { breakpoints } from '@itci/easy-web-theme-core';
+ *   import { breakpoints } from '@achimismaili/easy-web-theme-core';
  *   const isMobile = window.matchMedia(`(max-width: ${breakpoints.md}px)`).matches;
  */
 export const breakpoints = {
