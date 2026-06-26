@@ -1,0 +1,152 @@
+---
+title: easy-web-theme-core
+description: CSS design tokens, light/dark theme switching, and no-flash SSR script for the easy-web ecosystem.
+---
+
+## Installation
+
+```bash
+pnpm add @achimismaili/easy-web-theme-core
+```
+
+## Overview
+
+`@achimismaili/easy-web-theme-core` ships the `--ew-*` CSS custom properties that all other easy-web packages rely on for colour, typography, spacing, and motion. It also provides TypeScript helpers for reading and writing the active theme, a breakpoint map for use in JavaScript, and a compact inline script (`noFlashScript`) that must be injected into `<head>` to prevent the flash-of-wrong-theme on first load.
+
+Import the token stylesheet once in your base layout, then call `noFlashScript` as an inline `<script is:inline>` so it runs before the browser paints.
+
+## CSS tokens
+
+```astro
+---
+// src/layouts/Base.astro
+import '@achimismaili/easy-web-theme-core/tokens.css';
+---
+```
+
+The stylesheet defines CSS custom properties under `:root` for the default (light) theme and re-declares them inside `[data-theme="dark"]` for dark mode. All `--ew-*` variables are available globally once this sheet is loaded.
+
+## API
+
+### `noFlashScript`
+
+A pre-built inline script string that reads `localStorage` on load and sets `data-theme` on `<html>` before the first paint, eliminating the flash-of-wrong-theme.
+
+**Signature:** `const noFlashScript: string`
+
+```astro
+---
+import { noFlashScript } from '@achimismaili/easy-web-theme-core';
+---
+<html>
+  <head>
+    <script is:inline set:html={noFlashScript}></script>
+  </head>
+  <!-- ... -->
+</html>
+```
+
+### `applyTheme`
+
+Sets the active theme by writing `data-theme` on `<html>` and persisting to `localStorage`. Passing `'system'` removes the override and reverts to the OS preference.
+
+**Signature:** `function applyTheme(theme: Theme): void`
+
+```typescript
+import { applyTheme } from '@achimismaili/easy-web-theme-core';
+
+applyTheme('dark');   // force dark
+applyTheme('light');  // force light
+applyTheme('system'); // follow OS preference, clear localStorage
+```
+
+### `getPreferredTheme`
+
+Reads the persisted theme from `localStorage`. Returns `'light'` or `'dark'` if the user has set a preference, otherwise `'system'`.
+
+**Signature:** `function getPreferredTheme(): Theme`
+
+```typescript
+import { getPreferredTheme } from '@achimismaili/easy-web-theme-core';
+
+const current = getPreferredTheme(); // 'light' | 'dark' | 'system'
+```
+
+### `subscribeToSystem`
+
+Subscribes to the OS `prefers-color-scheme` media query and fires the callback whenever the preference changes. Returns an unsubscribe function.
+
+**Signature:** `function subscribeToSystem(cb: (isDark: boolean) => void): () => void`
+
+```typescript
+import { subscribeToSystem } from '@achimismaili/easy-web-theme-core';
+
+const unsubscribe = subscribeToSystem((isDark) => {
+  console.log('OS prefers dark:', isDark);
+});
+
+// Later, when the component unmounts:
+unsubscribe();
+```
+
+### `Theme`
+
+Union type for valid theme values.
+
+**Signature:** `type Theme = 'light' | 'dark' | 'system'`
+
+### `tokens`
+
+A deeply-nested constant object that maps every design-token category to its corresponding CSS custom-property string. Useful when you need token values in TypeScript (e.g. in `canvas` drawing code or inline styles that cannot use CSS variables directly).
+
+**Signature:** `const tokens: Tokens`
+
+Categories: `color`, `font`, `text`, `leading`, `space`, `radius`, `shadow`, `motion`, `zIndex`.
+
+```typescript
+import { tokens } from '@achimismaili/easy-web-theme-core';
+
+// Use in a canvas context or anywhere CSS vars aren't available
+const primaryColor = tokens.color.primary; // 'var(--ew-primary)'
+const gapMd = tokens.space[4];             // 'var(--ew-space-4)'
+const fontSans = tokens.font.sans;         // 'var(--ew-font-sans)'
+```
+
+### `Tokens`
+
+TypeScript type derived from the `tokens` constant via `typeof tokens`.
+
+**Signature:** `type Tokens = typeof tokens`
+
+### `breakpoints`
+
+Raw pixel breakpoint values (not CSS custom properties — media queries cannot use `var()`). Values match Tailwind's default scale.
+
+**Signature:** `const breakpoints: { sm: 640; md: 768; lg: 1024; xl: 1280; '2xl': 1536 }`
+
+```typescript
+import { breakpoints } from '@achimismaili/easy-web-theme-core';
+
+const isMobile = window.matchMedia(`(max-width: ${breakpoints.md}px)`).matches;
+```
+
+### `Breakpoint`
+
+Type of the keys of `breakpoints`.
+
+**Signature:** `type Breakpoint = 'sm' | 'md' | 'lg' | 'xl' | '2xl'`
+
+## Token reference
+
+| Category | Example variable | Description |
+| :--- | :--- | :--- |
+| Color | `--ew-primary`, `--ew-surface`, `--ew-border` | Semantic colours |
+| Color ramps | `--ew-neutral-50` … `--ew-neutral-950` | 11-step neutral and primary ramps |
+| Typography | `--ew-font-sans`, `--ew-text-base` | Font families and modular type scale |
+| Spacing | `--ew-space-0` … `--ew-space-12` | Spacing scale |
+| Radius | `--ew-radius-sm` … `--ew-radius-full` | Border radius |
+| Shadow | `--ew-shadow-xs` … `--ew-shadow-2xl` | Box shadows |
+| Motion | `--ew-duration-fast`, `--ew-ease-spring` | Durations and easing functions |
+| Z-index | `--ew-z-modal`, `--ew-z-toast` | Layering scale |
+
+To re-skin a site, override any `--ew-*` property on `:root` (or a scoped ancestor element). Do not edit the token stylesheet itself — it is owned by this package.

@@ -1,0 +1,263 @@
+---
+title: easy-web-auth
+description: MSAL.js authentication, Microsoft Graph integration, and SharePoint components for React islands in Astro sites.
+---
+
+## Installation
+
+```bash
+pnpm add @achimismaili/easy-web-auth
+```
+
+## Overview
+
+`@achimismaili/easy-web-auth` wraps MSAL.js (Microsoft Authentication Library) to provide Entra ID / Azure AD authentication in the easy-web ecosystem. It exports an `AuthProvider` React context root, hooks for reading auth state and calling Microsoft Graph, pre-built UI components (login button, user avatar, protected content wrapper), and SharePoint-specific components and utilities.
+
+:::caution[Single-island constraint]
+All auth-dependent React components on a given page **must live inside a single React island**. React Context does not cross Astro island boundaries — two `client:*` directives create two independent `MsalProvider` instances which will corrupt the `sessionStorage` token cache. See [ADR 0010](https://github.com/achimismaili/websites/blob/main/docs/decisions/0010-react-auth-single-island.md) for full rationale.
+
+Use one top-level `<AuthProvider client:only="react">` and render all auth-dependent children inside it.
+:::
+
+## Configuration
+
+### `AuthConfig`
+
+Per-instance authentication configuration. Consumed by `buildMsalConfig`.
+
+```typescript
+interface AuthConfig {
+  /** Entra app registration client ID for this site instance */
+  clientId: string;
+  /** IT-CI tenant ID */
+  tenantId: string;
+  /** Redirect URI after login. Defaults to window.location.origin at runtime. */
+  redirectUri?: string;
+  /** Override default scopes for token acquisition. */
+  scopes?: string[];
+}
+```
+
+### `buildMsalConfig`
+
+Converts an `AuthConfig` into a fully-formed MSAL `Configuration` object ready to pass to `AuthProvider`.
+
+**Signature:** `function buildMsalConfig(config: AuthConfig): Configuration`
+
+```typescript
+import { buildMsalConfig } from '@achimismaili/easy-web-auth';
+
+const msalConfig = buildMsalConfig({
+  clientId: import.meta.env.PUBLIC_ENTRA_CLIENT_ID,
+  tenantId: import.meta.env.PUBLIC_ENTRA_TENANT_ID,
+});
+```
+
+## Core components
+
+### `AuthProvider`
+
+The root React component that sets up MSAL context. Every auth-dependent component must be a descendant of this element. Mount it as a single `client:only="react"` island in your Astro layout.
+
+**Signature:** `function AuthProvider({ config, children }: { config: Configuration; children: ReactNode }): JSX.Element`
+
+```astro
+---
+// src/layouts/Base.astro
+import { buildMsalConfig } from '@achimismaili/easy-web-auth';
+import AuthShell from '../islands/AuthShell';
+
+const msalConfig = buildMsalConfig({
+  clientId: import.meta.env.PUBLIC_ENTRA_CLIENT_ID,
+  tenantId: import.meta.env.PUBLIC_ENTRA_TENANT_ID,
+});
+---
+
+<!-- Single island — all auth UI lives inside this one boundary -->
+<AuthShell client:only="react" msalConfig={msalConfig} />
+```
+
+```tsx
+// src/islands/AuthShell.tsx
+import { AuthProvider, LoginButton, UserAvatar, ProtectedContent } from '@achimismaili/easy-web-auth';
+import type { Configuration } from '@azure/msal-browser';
+
+export default function AuthShell({ msalConfig }: { msalConfig: Configuration }) {
+  return (
+    <AuthProvider config={msalConfig}>
+      <LoginButton />
+      <ProtectedContent>
+        <UserAvatar />
+        {/* Additional protected components here */}
+      </ProtectedContent>
+    </AuthProvider>
+  );
+}
+```
+
+## Auth hooks
+
+All hooks must be called from inside an `AuthProvider` subtree.
+
+### `useAuth`
+
+Returns the current authentication state and login/logout actions.
+
+**Signature:** `function useAuth(): UseAuthReturn`
+
+```typescript
+interface UseAuthReturn {
+  isAuthenticated: boolean;
+  user: AuthUser | null;
+  login: () => Promise<void>;
+  logout: () => void;
+}
+
+interface AuthUser {
+  name?: string;
+  email?: string;
+  // ...MSAL account claims
+}
+```
+
+```tsx
+import { useAuth } from '@achimismaili/easy-web-auth';
+
+function NavActions() {
+  const { isAuthenticated, user, login, logout } = useAuth();
+
+  if (!isAuthenticated) {
+    return <button onClick={login}>Anmelden</button>;
+  }
+  return (
+    <div>
+      <span>{user?.name}</span>
+      <button onClick={logout}>Abmelden</button>
+    </div>
+  );
+}
+```
+
+## Graph hooks
+
+### `useGraphClient`
+
+Returns a pre-authenticated Microsoft Graph client instance.
+
+**Signature:** `function useGraphClient(): UseGraphClientReturn`
+
+```tsx
+import { useGraphClient } from '@achimismaili/easy-web-auth';
+
+function MyComponent() {
+  const { client, isLoading } = useGraphClient();
+
+  // Use client.api('/me').get() etc.
+}
+```
+
+### `useSharePointList`
+
+Fetches items from a SharePoint list via Microsoft Graph.
+
+**Signature:** `function useSharePointList(listId: string): UseSharePointListReturn`
+
+### `useSharePointFiles`
+
+Fetches files from a SharePoint document library via Microsoft Graph.
+
+**Signature:** `function useSharePointFiles(driveId: string): UseSharePointFilesReturn`
+
+## UI components
+
+All UI components must be rendered inside an `AuthProvider` subtree.
+
+### `LoginButton`
+
+A pre-wired login/logout toggle button. Shows a login button when unauthenticated; shows logout when authenticated.
+
+**Import:** `import { LoginButton } from '@achimismaili/easy-web-auth'`
+
+No required props.
+
+### `UserAvatar`
+
+Displays the authenticated user's name and initials avatar. Renders nothing when unauthenticated.
+
+**Import:** `import { UserAvatar } from '@achimismaili/easy-web-auth'`
+
+### `ProtectedContent`
+
+Renders its children only when the user is authenticated. Renders nothing (or an optional fallback) when unauthenticated.
+
+**Import:** `import { ProtectedContent } from '@achimismaili/easy-web-auth'`
+
+```tsx
+import { ProtectedContent } from '@achimismaili/easy-web-auth';
+
+<ProtectedContent>
+  <MembersOnlyDashboard />
+</ProtectedContent>
+```
+
+### `SharePointGallery`
+
+Renders a photo gallery from a SharePoint document library.
+
+**Import:** `import { SharePointGallery } from '@achimismaili/easy-web-auth'`
+
+### `SharePointFileList`
+
+Renders a file list from a SharePoint document library.
+
+**Import:** `import { SharePointFileList } from '@achimismaili/easy-web-auth'`
+
+### `SharePointListView`
+
+Renders items from a SharePoint list.
+
+**Import:** `import { SharePointListView } from '@achimismaili/easy-web-auth'`
+
+## Graph utilities
+
+Low-level Graph API functions. These are used internally by the hooks but are also exported for custom use cases.
+
+### `createGraphClient`
+
+**Signature:** `function createGraphClient(msalInstance: IPublicClientApplication): GraphClient`
+
+### SharePoint Graph functions
+
+| Function | Description |
+| :--- | :--- |
+| `getSite(client, siteId)` | Fetch a SharePoint site |
+| `getListItems(client, siteId, listId)` | Fetch list items |
+| `getDocumentLibraryFiles(client, siteId, driveId)` | Fetch files from a drive |
+| `getFileContent(client, siteId, driveId, itemId)` | Fetch a single file's content |
+| `getImageThumbnails(client, siteId, driveId, itemId)` | Fetch image thumbnails |
+
+```typescript
+import { createGraphClient, getSite, getListItems } from '@achimismaili/easy-web-auth';
+
+const client = createGraphClient(msalInstance);
+const site = await getSite(client, 'your-site-id');
+const items = await getListItems(client, 'your-site-id', 'your-list-id');
+```
+
+## Graph types
+
+| Type | Description |
+| :--- | :--- |
+| `SpSite` | SharePoint site metadata |
+| `SpListItem` | SharePoint list item |
+| `SpDriveItem` | SharePoint drive item (file/folder) |
+| `SpThumbnail` | Image thumbnail metadata |
+
+## Scope constants
+
+```typescript
+import { DEFAULT_SCOPES, LOGIN_SCOPES } from '@achimismaili/easy-web-auth';
+import type { DefaultScope, LoginScope } from '@achimismaili/easy-web-auth';
+```
+
+`DEFAULT_SCOPES` contains the Graph scopes requested on each token acquisition. `LOGIN_SCOPES` contains the scopes requested during the interactive login prompt.

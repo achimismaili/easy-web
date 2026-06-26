@@ -1,0 +1,237 @@
+---
+title: easy-web-i18n
+description: Bilingual routing helpers, SEO alternate-link utilities, and locale-aware formatters for Astro sites.
+---
+
+## Installation
+
+```bash
+pnpm add @achimismaili/easy-web-i18n
+```
+
+## Overview
+
+`@achimismaili/easy-web-i18n` provides everything a bilingual (de/en) Astro site needs: path localisation helpers (`localizedHref`, `getLocaleFromPath`), SEO utilities for alternate links and canonical URLs, and locale-aware `Intl` formatters for dates, numbers, currency, and lists. All helpers use the `Intl` APIs built into modern runtimes — no external translation library is required.
+
+The recommended entry point is the `createI18n` factory, which binds your site's locale config once and returns a typed helper bundle.
+
+## API
+
+### `createI18n`
+
+Factory function. Pass your site's locale configuration and receive a pre-bound helper bundle. This is the recommended way to use the package.
+
+**Signature:** `function createI18n<L extends string>(cfg: I18nConfig<L>): I18nBundle<L>`
+
+```typescript
+// src/i18n.ts
+import { createI18n } from '@achimismaili/easy-web-i18n';
+
+export const i18n = createI18n({
+  locales: ['de', 'en'] as const,
+  defaultLocale: 'de',
+  baseUrl: 'https://example.com',
+});
+
+// In an Astro page:
+const href = i18n.localizedHref('/about', 'en'); // '/en/about'
+const locale = i18n.getLocaleFromPath('/en/contact'); // 'en'
+const links = i18n.getAlternateLinks('/about');
+// [{ hreflang: 'de', href: 'https://example.com/about' },
+//  { hreflang: 'en', href: 'https://example.com/en/about' },
+//  { hreflang: 'x-default', href: 'https://example.com/about' }]
+```
+
+The returned bundle also exposes a `format` namespace with all formatters pre-bound to accept a locale as the first argument:
+
+```typescript
+i18n.format.date('de', new Date());       // '26.6.2026'
+i18n.format.currency('de', 9.99, 'EUR'); // '9,99 €'
+i18n.format.list('en', ['a', 'b', 'c']); // 'a, b, and c'
+```
+
+### `I18nConfig`
+
+Configuration interface for `createI18n`.
+
+**Signature:**
+```typescript
+interface I18nConfig<L extends string> {
+  locales: readonly L[];
+  defaultLocale: L;
+  baseUrl: string;
+}
+```
+
+### `localizedHref`
+
+Returns a localised path. De-localises `path` before re-prefixing so the function is idempotent — calling it on an already-prefixed path never produces a double-prefix such as `/en/en/foo`. Query strings and hash fragments are preserved.
+
+The default locale produces no prefix (e.g. `de` → `/about`); non-default locales are prefixed (e.g. `en` → `/en/about`).
+
+**Signature:**
+```typescript
+function localizedHref(opts: {
+  path: string;
+  locale: string;
+  defaultLocale: string;
+}): string
+```
+
+```typescript
+import { localizedHref } from '@achimismaili/easy-web-i18n';
+
+localizedHref({ path: '/about', locale: 'de', defaultLocale: 'de' }); // '/about'
+localizedHref({ path: '/about', locale: 'en', defaultLocale: 'de' }); // '/en/about'
+
+// Idempotent — safe on already-prefixed paths:
+localizedHref({ path: '/en/about', locale: 'en', defaultLocale: 'de' }); // '/en/about'
+
+// Query strings and hashes are preserved:
+localizedHref({ path: '/about?ref=home#section', locale: 'en', defaultLocale: 'de' });
+// '/en/about?ref=home#section'
+```
+
+### `getLocaleFromPath`
+
+Extracts the active locale from a URL pathname by inspecting the first path segment.
+
+**Signature:**
+```typescript
+function getLocaleFromPath(opts: {
+  pathname: string;
+  locales: readonly string[];
+  defaultLocale: string;
+}): string
+```
+
+```typescript
+import { getLocaleFromPath } from '@achimismaili/easy-web-i18n';
+
+getLocaleFromPath({ pathname: '/en/about', locales: ['de', 'en'], defaultLocale: 'de' }); // 'en'
+getLocaleFromPath({ pathname: '/about',    locales: ['de', 'en'], defaultLocale: 'de' }); // 'de'
+getLocaleFromPath({ pathname: '/',         locales: ['de', 'en'], defaultLocale: 'de' }); // 'de'
+```
+
+### `getAlternateLinks`
+
+Generates `<link rel="alternate">` data for every locale plus an `x-default` entry. Use in your `<head>` for SEO.
+
+**Signature:**
+```typescript
+function getAlternateLinks(opts: {
+  path: string;
+  locales: readonly string[];
+  defaultLocale: string;
+  baseUrl: string;
+}): AlternateLink[]
+```
+
+```astro
+---
+import { getAlternateLinks } from '@achimismaili/easy-web-i18n';
+
+const links = getAlternateLinks({
+  path: Astro.url.pathname,
+  locales: ['de', 'en'],
+  defaultLocale: 'de',
+  baseUrl: 'https://example.com',
+});
+---
+<head>
+  {links.map(({ hreflang, href }) => (
+    <link rel="alternate" hreflang={hreflang} href={href} />
+  ))}
+</head>
+```
+
+### `AlternateLink`
+
+Shape of each item returned by `getAlternateLinks`.
+
+**Signature:** `type AlternateLink = { hreflang: string; href: string }`
+
+### `getCanonicalUrl`
+
+Returns the canonical URL for the current locale, stripping the locale prefix for the default locale.
+
+**Signature:**
+```typescript
+function getCanonicalUrl(opts: {
+  path: string;
+  locale: string;
+  defaultLocale: string;
+  baseUrl: string;
+}): string
+```
+
+```typescript
+import { getCanonicalUrl } from '@achimismaili/easy-web-i18n';
+
+getCanonicalUrl({ path: '/about', locale: 'de', defaultLocale: 'de', baseUrl: 'https://example.com' });
+// 'https://example.com/about'
+
+getCanonicalUrl({ path: '/about', locale: 'en', defaultLocale: 'de', baseUrl: 'https://example.com' });
+// 'https://example.com/en/about'
+```
+
+## Formatters
+
+All formatters cache their `Intl` instances internally — safe to call in hot render paths.
+
+### `formatDate`
+
+**Signature:** `function formatDate(locale: string, date: Date | number, opts?: Intl.DateTimeFormatOptions): string`
+
+```typescript
+import { formatDate } from '@achimismaili/easy-web-i18n';
+
+formatDate('de', new Date('2026-06-26')); // '26.6.2026'
+formatDate('en', new Date('2026-06-26')); // '6/26/2026'
+formatDate('de', new Date(), { dateStyle: 'long' }); // '26. Juni 2026'
+```
+
+### `formatNumber`
+
+**Signature:** `function formatNumber(locale: string, value: number, opts?: Intl.NumberFormatOptions): string`
+
+```typescript
+import { formatNumber } from '@achimismaili/easy-web-i18n';
+
+formatNumber('de', 1234567.89); // '1.234.567,89'
+formatNumber('en', 1234567.89); // '1,234,567.89'
+```
+
+### `formatCurrency`
+
+**Signature:** `function formatCurrency(locale: string, value: number, currency: string, opts?: Omit<Intl.NumberFormatOptions, 'style' | 'currency'>): string`
+
+```typescript
+import { formatCurrency } from '@achimismaili/easy-web-i18n';
+
+formatCurrency('de', 9.99, 'EUR'); // '9,99 €'
+formatCurrency('en', 9.99, 'USD'); // '$9.99'
+```
+
+### `formatRelativeTime`
+
+**Signature:** `function formatRelativeTime(locale: string, value: number, unit: Intl.RelativeTimeFormatUnit, opts?: Intl.RelativeTimeFormatOptions): string`
+
+```typescript
+import { formatRelativeTime } from '@achimismaili/easy-web-i18n';
+
+formatRelativeTime('de', -3, 'day');  // 'vor 3 Tagen'
+formatRelativeTime('en', -3, 'day');  // '3 days ago'
+formatRelativeTime('en', 1, 'month'); // 'in 1 month'
+```
+
+### `formatList`
+
+**Signature:** `function formatList(locale: string, items: string[], opts?: Intl.ListFormatOptions): string`
+
+```typescript
+import { formatList } from '@achimismaili/easy-web-i18n';
+
+formatList('en', ['apples', 'oranges', 'bananas']); // 'apples, oranges, and bananas'
+formatList('de', ['Äpfel', 'Orangen', 'Bananen']);  // 'Äpfel, Orangen und Bananen'
+```

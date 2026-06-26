@@ -26,3 +26,19 @@ The easy-web library consists of several focused packages:
 | `@achimismaili/easy-web-auth` | MSAL.js authentication, Microsoft Graph integration |
 | `@achimismaili/easy-web-cms-adapters` | Decap CMS integration for content management |
 | `@achimismaili/create-easy-web` | Scaffold CLI for creating new site instances |
+
+## Why easy-web?
+
+The ismaili.de web ecosystem runs multiple site instances for different organisations. Instead of copy-pasting components between sites, easy-web packages them once — so a bug fix or new feature lands in **every instance simultaneously** via a version bump.
+
+## Quick Start
+
+```bash
+# Install the theme and core UI components
+pnpm add @achimismaili/easy-web-theme-core @achimismaili/easy-web-content-blocks
+
+# Import the theme in your Astro layout
+# import '@achimismaili/easy-web-theme-core/theme.css';
+```
+
+See [Installation →](/easy-web/getting-started/installation/) for the complete setup guide.

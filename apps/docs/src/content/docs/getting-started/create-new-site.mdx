@@ -1,12 +1,109 @@
 ---
 title: Create a New Site
-description: How to scaffold a new site instance
+description: Scaffold a new site instance with the easy-web CLI
 ---
 
-Use the scaffold CLI to create a new site instance:
+## Using the Scaffold CLI
+
+The `@achimismaili/create-easy-web` CLI scaffolds a new Astro site pre-configured with all easy-web packages:
 
 ```bash
 pnpm create @achimismaili/easy-web my-site
+cd my-site
+pnpm install
+pnpm dev
 ```
 
-This will scaffold a new Astro project pre-configured to use the easy-web package family.
+:::note[In development]
+The scaffold CLI is in active development. Check the [GitHub repo](https://github.com/achimismaili/easy-web) for the latest status.
+:::
+
+## Manual Setup
+
+Bootstrap a new site instance manually:
+
+### 1. Create an Astro project
+
+```bash
+pnpm create astro@latest my-site
+cd my-site
+```
+
+### 2. Install easy-web packages
+
+```bash
+pnpm add @achimismaili/easy-web-theme-core \
+         @achimismaili/easy-web-i18n \
+         @achimismaili/easy-web-content-blocks
+```
+
+### 3. Add the theme to your base layout
+
+```astro
+---
+// src/layouts/Base.astro
+import '@achimismaili/easy-web-theme-core/theme.css';
+import { ThemeToggle, Header, Footer } from '@achimismaili/easy-web-content-blocks';
+---
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+  </head>
+  <body>
+    <Header>
+      <ThemeToggle slot="end" />
+    </Header>
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+```
+
+### 4. Configure i18n (optional)
+
+```typescript
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+
+export default defineConfig({
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'de'],
+  },
+});
+```
+
+### 5. Add i18n helpers
+
+```typescript
+// Use localizedHref for locale-aware links
+import { localizedHref } from '@achimismaili/easy-web-i18n';
+
+const link = localizedHref('/about', 'de'); // → '/de/about'
+const defaultLink = localizedHref('/about', 'en'); // → '/about'
+```
+
+## Project Structure
+
+```
+my-site/
+├── src/
+│   ├── components/        # Site-specific components
+│   ├── layouts/
+│   │   └── Base.astro     # Uses easy-web-theme-core + content-blocks
+│   ├── pages/
+│   │   ├── index.astro
+│   │   └── [lang]/        # i18n routes
+│   └── content/           # Astro content collections
+├── public/
+├── astro.config.mjs
+└── package.json
+```
+
+## Related
+
+- [Installation →](/easy-web/getting-started/installation/)
+- [Architecture overview →](/easy-web/architecture/)

@@ -1,6 +1,172 @@
 ---
-title: Playground
-description: Interactive examples and demos
+title: Component Playground
+description: Visual examples of easy-web UI components
 ---
 
-Playground examples will be populated here.
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Browse the easy-web UI component examples below. Each example shows the component's visual output alongside the source code.
+
+## Available Components
+
+<CardGrid>
+  <Card title="Hero" icon="rocket">
+    Full-width hero section with headline, subtitle, and call-to-action buttons.
+  </Card>
+  <Card title="ThemeToggle" icon="moon">
+    Light/dark mode toggle button using CSS custom properties.
+  </Card>
+  <Card title="CardGrid" icon="list-format">
+    Responsive grid layout for displaying card collections.
+  </Card>
+  <Card title="Header" icon="bars">
+    Site header with navigation and theme toggle integration.
+  </Card>
+</CardGrid>
+
+## Hero Component
+
+The `Hero` component renders a full-width introductory section.
+
+### Usage
+
+```astro
+---
+import { Hero } from '@achimismaili/easy-web-content-blocks';
+---
+<Hero
+  title="Welcome to My Site"
+  subtitle="Built on the easy-web platform"
+  cta={{ label: 'Get Started', href: '/docs' }}
+/>
+```
+
+### Visual Preview
+
+<div style="background: var(--sl-color-bg-nav); border: 1px solid var(--sl-color-gray-5); border-radius: 8px; padding: 2rem; margin: 1rem 0; text-align: center;">
+  <h2 style="margin: 0 0 0.5rem; font-size: 2rem;">Welcome to My Site</h2>
+  <p style="margin: 0 0 1.5rem; color: var(--sl-color-gray-2);">Built on the easy-web platform</p>
+  <a href="#" style="display: inline-block; background: var(--sl-color-accent); color: white; padding: 0.5rem 1.5rem; border-radius: 4px; text-decoration: none; font-weight: 600;">Get Started</a>
+</div>
+
+## ThemeToggle Component
+
+The `ThemeToggle` component switches between light and dark themes using CSS custom properties from `@achimismaili/easy-web-theme-core`.
+
+### Usage
+
+```astro
+---
+import { ThemeToggle } from '@achimismaili/easy-web-content-blocks';
+---
+<!-- Place in your site Header -->
+<ThemeToggle />
+```
+
+### How It Works
+
+The toggle switches the `data-theme` attribute on `<html>` between `light` and `dark`. The theme CSS from `@achimismaili/easy-web-theme-core` uses this attribute to apply the correct CSS custom property values.
+
+```css
+/* theme-core applies tokens like this: */
+[data-theme="dark"] {
+  --ew-color-bg: #1a1a2e;
+  --ew-color-surface: #16213e;
+  /* ... */
+}
+```
+
+## CardGrid Component
+
+The `CardGrid` component renders a responsive grid of cards.
+
+### Usage
+
+```astro
+---
+import { CardGrid, Card } from '@achimismaili/easy-web-content-blocks';
+---
+<CardGrid>
+  <Card
+    title="Feature One"
+    description="Description of this feature"
+    href="/docs/feature-one"
+  />
+  <Card
+    title="Feature Two"
+    description="Another great feature"
+    href="/docs/feature-two"
+  />
+</CardGrid>
+```
+
+### Visual Preview
+
+<CardGrid>
+  <Card title="Feature One" icon="star">
+    Description of this feature — click to learn more.
+  </Card>
+  <Card title="Feature Two" icon="rocket">
+    Another great feature with detailed documentation.
+  </Card>
+  <Card title="Feature Three" icon="puzzle">
+    Integrates seamlessly with your Astro project.
+  </Card>
+</CardGrid>
+
+## Section Component
+
+The `Section` component wraps content in a semantically correct `<section>` element with consistent spacing.
+
+### Usage
+
+```astro
+---
+import { Section } from '@achimismaili/easy-web-content-blocks';
+---
+<Section title="About Us" id="about">
+  <p>Content goes here...</p>
+</Section>
+```
+
+## Using Components Together
+
+Here is a typical page structure using multiple easy-web components:
+
+```astro
+---
+import {
+  Hero,
+  Section,
+  CardGrid,
+  Card,
+  Header,
+  Footer,
+  ThemeToggle
+} from '@achimismaili/easy-web-content-blocks';
+import '@achimismaili/easy-web-theme-core/theme.css';
+---
+<html>
+  <body>
+    <Header>
+      <ThemeToggle slot="end" />
+    </Header>
+
+    <Hero
+      title="My Site"
+      subtitle="Powered by easy-web"
+      cta={{ label: 'Get Started', href: '/docs' }}
+    />
+
+    <Section title="Features">
+      <CardGrid>
+        <Card title="Fast" description="Optimised for performance" />
+        <Card title="Accessible" description="WCAG 2.1 compliant" />
+        <Card title="Themeable" description="Light and dark mode built-in" />
+      </CardGrid>
+    </Section>
+
+    <Footer />
+  </body>
+</html>
+```

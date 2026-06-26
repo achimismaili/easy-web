@@ -1,0 +1,334 @@
+---
+title: easy-web-content-blocks
+description: Twenty-two pure-Astro components for page chrome, hero sections, cards, galleries, blog, and legal layouts.
+---
+
+## Installation
+
+```bash
+pnpm add @achimismaili/easy-web-content-blocks
+```
+
+## Overview
+
+`@achimismaili/easy-web-content-blocks` ships twenty-two pure-Astro components covering every standard page section: four header variants with responsive mobile menus, a footer, a theme toggle, a language switcher, hero/CTA/contact sections, structural helpers (Section, CardGrid, Card), a CMS-driven gallery system with six rendering variants, blog post cards, legal prose layouts, and notice banners. All components use the `--ew-*` design tokens from `@achimismaili/easy-web-theme-core` and carry no styling system of their own.
+
+**Components are not exported from a JavaScript barrel.** Import each one from its component path using the `./components/*` exports map:
+
+```astro
+---
+import Header from '@achimismaili/easy-web-content-blocks/components/Header';
+import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
+---
+```
+
+## Peer dependencies
+
+- `astro >= 6.0.0`
+- `@achimismaili/easy-web-theme-core` — provides the `--ew-*` token CSS
+
+## Quick start
+
+```astro
+---
+// src/layouts/Base.astro
+import '@achimismaili/easy-web-theme-core/tokens.css';
+import { noFlashScript } from '@achimismaili/easy-web-theme-core';
+import Header from '@achimismaili/easy-web-content-blocks/components/Header';
+import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
+---
+<html lang="de">
+  <head>
+    <script is:inline set:html={noFlashScript}></script>
+  </head>
+  <body>
+    <Header siteName="My Site" navItems={navItems} currentLang="de" pathname={pathname} />
+    <slot />
+    <Footer siteName="My Site" legalLinks={legalLinks} />
+  </body>
+</html>
+```
+
+## Site chrome
+
+### `Header`
+
+Sticky responsive header with an `actions` slot. Mobile hamburger menu via scoped vanilla JS. Default slot fallback renders `ThemeToggle` + `LanguageSwitch` automatically.
+
+**Import:** `import Header from '@achimismaili/easy-web-content-blocks/components/Header'`
+
+| Prop | Type | Required | Default |
+| :--- | :--- | :---: | :--- |
+| `siteName` | `string` | ✓ | — |
+| `navItems` | `NavItem[]` | ✓ | — |
+| `currentLang` | `string` | ✓ | — |
+| `pathname` | `string` | ✓ | — |
+| `alternateHref` | `string` | | — |
+| `menuLabel` | `string` | | — |
+
+**Variants:** `HeaderCentered`, `HeaderHideOnScroll`, `HeaderFlyout` — same props, different layout behaviours. `HeaderFlyout` additionally supports `children[]` on nav items for dropdown panels.
+
+```astro
+---
+import Header from '@achimismaili/easy-web-content-blocks/components/Header';
+import HeaderFlyout from '@achimismaili/easy-web-content-blocks/components/HeaderFlyout';
+---
+
+<!-- Standard header -->
+<Header siteName="My Site" navItems={navItems} currentLang="de" pathname={pathname} />
+
+<!-- Header with custom actions slot (replaces ThemeToggle + LanguageSwitch) -->
+<Header siteName="My Site" navItems={navItems} currentLang="de" pathname={pathname}>
+  <fragment slot="actions">
+    <MyLoginButton />
+  </fragment>
+</Header>
+
+<!-- Flyout header with nested nav items -->
+<HeaderFlyout siteName="My Site" navItems={navItemsWithChildren} currentLang="de" pathname={pathname} />
+```
+
+### `Footer`
+
+Simple copyright footer with legal-link navigation.
+
+**Import:** `import Footer from '@achimismaili/easy-web-content-blocks/components/Footer'`
+
+| Prop | Type | Required |
+| :--- | :--- | :---: |
+| `siteName` | `string` | ✓ |
+| `legalLinks` | `Array<{ label: string; href: string }>` | ✓ |
+
+### `ThemeToggle`
+
+Light / dark / system three-way toggle button. Reads and writes theme state via `@achimismaili/easy-web-theme-core`.
+
+**Import:** `import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle'`
+
+No props. Renders a trio of buttons; the active state is reflected via `data-theme` on `<html>`.
+
+### `LanguageSwitch`
+
+DE ↔ EN switcher. If `alternateHref` is provided, links there directly; otherwise infers the alternate path from `pathname`.
+
+**Import:** `import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch'`
+
+| Prop | Type | Required |
+| :--- | :--- | :---: |
+| `currentLang` | `string` | ✓ |
+| `pathname` | `string` | ✓ |
+| `alternateHref` | `string` | |
+
+## Hero / CTA / Contact
+
+### `Hero`
+
+Full-width page banner with optional CTA button.
+
+**Import:** `import Hero from '@achimismaili/easy-web-content-blocks/components/Hero'`
+
+| Prop | Type | Required | Notes |
+| :--- | :--- | :---: | :--- |
+| `title` | `string` | ✓ | — |
+| `subtitle` | `string` | | — |
+| `ctaLabel` | `string` | | Both `ctaLabel` and `ctaHref` must be present for the button to render |
+| `ctaHref` | `string` | | — |
+| `variant` | `'centered' \| 'left-aligned'` | | — |
+
+```astro
+---
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+---
+<Hero
+  title="Willkommen"
+  subtitle="Der beste Ort für Harley-Davidson Vermietung in Florida"
+  ctaLabel="Jetzt buchen"
+  ctaHref="#booking"
+  variant="centered"
+/>
+```
+
+### `CtaSection`
+
+Standalone call-to-action banner with optional body text.
+
+**Import:** `import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection'`
+
+| Prop | Type | Required | Notes |
+| :--- | :--- | :---: | :--- |
+| `heading` | `string` | ✓ | — |
+| `buttonLabel` | `string` | ✓ | — |
+| `buttonHref` | `string` | ✓ | — |
+| `body` | `string` | | — |
+| `variant` | `'default' \| 'muted' \| 'primary'` | | `primary` inverts to brand colour |
+
+### `ContactSection`
+
+Centered mailto-based contact CTA. Button href is `mailto:${email}`.
+
+**Import:** `import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection'`
+
+| Prop | Type | Required |
+| :--- | :--- | :---: |
+| `heading` | `string` | ✓ |
+| `email` | `string` | ✓ |
+| `buttonLabel` | `string` | ✓ |
+| `body` | `string` | |
+
+## Structural
+
+### `Section`
+
+Generic slot-based content wrapper. `id` enables anchor-link targets.
+
+**Import:** `import Section from '@achimismaili/easy-web-content-blocks/components/Section'`
+
+### `CardGrid`
+
+Responsive CSS grid (3 → 2 → 1 columns by breakpoint). Slot in `Card` children.
+
+**Import:** `import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid'`
+
+### `Card`
+
+Content card. Renders as `<a>` when `href` is provided, plain `<div>` otherwise. Image is `loading="lazy"`.
+
+**Import:** `import Card from '@achimismaili/easy-web-content-blocks/components/Card'`
+
+| Prop | Type | Required |
+| :--- | :--- | :---: |
+| `title` | `string` | ✓ |
+| `description` | `string` | |
+| `href` | `string` | |
+| `image` | `string` | |
+| `imageAlt` | `string` | |
+
+```astro
+---
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+---
+<Section id="services">
+  <h2>Unsere Leistungen</h2>
+  <CardGrid>
+    <Card title="Tagestouren" description="Entdecken Sie Florida auf zwei Rädern." href="/touren" />
+    <Card title="Wochenend-Pakete" description="Drei Tage, ein Abenteuer." href="/pakete" />
+    <Card title="Gruppen-Buchungen" description="Für Gruppen ab 4 Personen." href="/gruppen" />
+  </CardGrid>
+</Section>
+```
+
+## Gallery system
+
+The gallery system is CMS-driven. Content authors create gallery entries in `src/content/galleries/`; pages load the entry and pass it to `GallerySection`, which dispatches to the correct variant based on `entry.data.kind`.
+
+### Setting up the content collection
+
+```typescript
+// src/content.config.ts
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { gallerySchema } from '@achimismaili/easy-web-content-blocks/schemas/galleries';
+
+const galleries = defineCollection({
+  loader: glob({ pattern: '**/*.{yml,yaml}', base: './src/content/galleries' }),
+  schema: gallerySchema,
+});
+
+export const collections = { galleries };
+```
+
+### `GallerySection`
+
+Dispatcher component. Renders the correct variant based on `entry.data.kind`. Renders nothing when `entry` is null or undefined.
+
+**Import:** `import GallerySection from '@achimismaili/easy-web-content-blocks/components/GallerySection'`
+
+```astro
+---
+import GallerySection from '@achimismaili/easy-web-content-blocks/components/GallerySection';
+import { getEntry } from 'astro:content';
+
+const heroEntry = await getEntry('galleries', 'home-hero-de');
+---
+<GallerySection entry={heroEntry} />
+```
+
+### Gallery `kind` values
+
+| `kind` | Component | Use case |
+| :--- | :--- | :--- |
+| `image-grid` | `GalleryImageGrid` | Static N-column uniform grid |
+| `hero-slider` | `GalleryHeroSlider` | Full-bleed editorial carousel |
+| `carousel` | `GalleryCarousel` | Constrained-width image slider |
+| `masonry-grid` | `GalleryMasonryGrid` | Pinterest-style variable-height grid |
+| `feature-highlight` | `GalleryFeatureHighlight` | Alternating image+text rows |
+| `lightbox-grid` | `GalleryLightboxGrid` | Grid with click-to-expand modal |
+
+All gallery components are also importable directly if you want to bypass the CMS entry abstraction.
+
+## Blog
+
+### `BlogPostCard`
+
+Linked card for blog index pages. Date is formatted with `Intl.DateTimeFormat` using the provided `locale`.
+
+**Import:** `import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard'`
+
+| Prop | Type | Required |
+| :--- | :--- | :---: |
+| `title` | `string` | ✓ |
+| `description` | `string` | ✓ |
+| `href` | `string` | ✓ |
+| `pubDate` | `Date` | ✓ |
+| `heroImage` | `string` | |
+| `heroImageAlt` | `string` | |
+| `locale` | `string` | |
+
+## Legal & long-form
+
+### `LegalLayout`
+
+Narrow content wrapper for impressum / datenschutz / AGB pages. Constrains line-length for legal prose.
+
+**Import:** `import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout'`
+
+Slot-based — place your Markdown content or `<Prose>` inside.
+
+### `Prose`
+
+Styled wrapper that applies `--ew-*` typography tokens to raw HTML elements (`<h1>`–`<h6>`, `<p>`, `<ul>`, `<a>`, `<blockquote>`, `<code>`, etc.).
+
+**Import:** `import Prose from '@achimismaili/easy-web-content-blocks/components/Prose'`
+
+```astro
+---
+import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
+import { Content } from '../content/impressum.md';
+---
+<LegalLayout>
+  <Prose>
+    <Content />
+  </Prose>
+</LegalLayout>
+```
+
+## Banners / notices
+
+### `DraftBanner`
+
+Banner notice for draft content. Slot-based; pass a short status message.
+
+**Import:** `import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner'`
+
+### `LanguageNotice`
+
+Banner notice shown when a page is displayed in the non-current locale or has a partial translation.
+
+**Import:** `import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice'`
+
+## Styling
+
+All components reference `@achimismaili/easy-web-theme-core` CSS custom properties exclusively. To re-skin, override `--ew-*` variables on `:root` (or a scoped ancestor) — do not edit the component files. Class names follow BEM with an `ew-` prefix (e.g. `.ew-hero`, `.ew-hero__title`, `.ew-hero--centered`).

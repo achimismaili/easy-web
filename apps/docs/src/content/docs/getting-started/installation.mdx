@@ -1,17 +1,72 @@
 ---
 title: Installation
-description: How to install easy-web packages
+description: Install easy-web packages in your Astro project
 ---
 
 ## Prerequisites
 
-- Node.js 22 or later
-- pnpm 9 or later
+- **Node.js 22** or later (pin with [Volta](https://volta.sh): `volta install node@22`)
+- **pnpm 9** or later
+- An **Astro 5** project
 
-## Install a package
+## Install Individual Packages
+
+Each package is independently installable. Add only what you need:
+
+### Theme Core — CSS tokens + light/dark theme
 
 ```bash
 pnpm add @achimismaili/easy-web-theme-core
 ```
 
-See individual package pages for full installation and usage instructions.
+Import the theme stylesheet in your Astro layout:
+
+```astro
+---
+import '@achimismaili/easy-web-theme-core/theme.css';
+---
+```
+
+### i18n Helpers
+
+```bash
+pnpm add @achimismaili/easy-web-i18n
+```
+
+### Content Blocks — Astro UI Components
+
+```bash
+pnpm add @achimismaili/easy-web-content-blocks
+```
+
+### Authentication — MSAL.js wrapper
+
+```bash
+pnpm add @achimismaili/easy-web-auth
+```
+
+:::note
+Auth components require a single React island per page. See the [auth package docs](/easy-web/packages/auth/) for details.
+:::
+
+### CMS Adapters — Decap CMS integration
+
+```bash
+pnpm add @achimismaili/easy-web-cms-adapters
+```
+
+## Install All Packages at Once
+
+```bash
+pnpm add @achimismaili/easy-web-theme-core \
+         @achimismaili/easy-web-i18n \
+         @achimismaili/easy-web-content-blocks \
+         @achimismaili/easy-web-auth \
+         @achimismaili/easy-web-cms-adapters
+```
+
+## Next Steps
+
+- [Create a new site instance →](/easy-web/getting-started/create-new-site/)
+- [Browse package API reference →](/easy-web/packages/theme-core/)
+- [Architecture overview →](/easy-web/architecture/)

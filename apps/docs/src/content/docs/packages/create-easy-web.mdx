@@ -1,0 +1,41 @@
+---
+title: create-easy-web
+description: Scaffold CLI for new easy-web site instances — currently in development.
+---
+
+## Usage
+
+```bash
+pnpm create @achimismaili/easy-web
+```
+
+## Status
+
+**In development.** `@achimismaili/create-easy-web` is currently a stub. The interactive scaffold CLI is not yet published.
+
+When complete, running `pnpm create @achimismaili/easy-web` will interactively scaffold a new site instance from the `dev.ismaili.de` pilot template. The planned flow:
+
+1. **Prompt for instance details** — site name, domain, Entra tenant ID, Azure subscription, Azure DevOps project
+2. **Clone the pilot template** — seeds the new repo from `dev.ismaili.de`'s scaffold
+3. **Wire package dependencies** — updates `package.json` to consume the latest `@achimismaili/easy-web-*` packages from npm
+4. **Generate environment files** — creates `.env.example` pre-filled with all required variable names
+5. **Optionally generate Decap CMS config** — calls `@achimismaili/easy-web-cms-adapters`'s `generateDecapConfig` with the provided tenant details
+6. **Print next steps** — Azure DevOps pipeline registration, SWA deployment, Entra app registration
+
+## Instance lifecycle
+
+The scaffold automates the manual steps currently documented in [`websites/docs/architecture/instance-lifecycle.md`](https://github.com/achimismaili/websites/blob/main/docs/architecture/instance-lifecycle.md). Each scaffolded instance:
+
+- Consumes `@achimismaili/easy-web-*` packages via npm (no source copies)
+- Gets its own Azure Static Web Apps deployment via the shared pipeline templates in `websites/pipelines/`
+- Uses the `websites/scripts/new-site.ps1` bootstrap until the CLI is ready
+
+## Roadmap
+
+The CLI will be released after the `dev.ismaili.de` scaffold stabilises at v1.0. Follow the [easy-web changelog](https://github.com/achimismaili/easy-web/blob/main/CHANGELOG.md) for release announcements.
+
+## Related
+
+- [Instance lifecycle docs](https://github.com/achimismaili/websites/blob/main/docs/architecture/instance-lifecycle.md) — manual steps the CLI will automate
+- [`dev.ismaili.de`](https://github.com/achimismaili/dev.ismaili.de) — the pilot instance used as the scaffold template
+- [`websites/scripts/new-site.ps1`](https://github.com/achimismaili/websites/blob/main/scripts/new-site.ps1) — current PowerShell bootstrap automation
