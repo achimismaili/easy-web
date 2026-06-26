@@ -35,4 +35,3 @@ Packages are published automatically by CI via GitHub Actions and Changesets. Se
 - **GitHub**: [`github.com/achimismaili/easy-web`](https://github.com/achimismaili/easy-web)
 - **Index repo**: [`WebSites`](https://github.com/achimismaili/websites) — architecture, ADRs, topology
 - **First instance**: [`dev.ismaili.de`](https://github.com/achimismaili/dev.ismaili.de) — pilot deployment
-- **Customer instance**: [`harleyrentflorida.de`](https://github.com/achimismaili/harleyrentflorida.de) — Harley-Davidson rental site
