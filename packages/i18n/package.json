@@ -37,7 +37,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://IT-CI@dev.azure.com/IT-CI/WebSites/_git/easy-web"
+    "url": "https://github.com/achimismaili/easy-web.git",
+    "directory": "packages/i18n"
   },
   "license": "UNLICENSED"
 }
