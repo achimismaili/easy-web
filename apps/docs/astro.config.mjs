@@ -8,9 +8,13 @@ export default defineConfig({
     starlight({
       title: 'easy-web',
       description: 'Baseline @achimismaili/easy-web-* package family — shared library for the ismaili.de web ecosystem',
-      social: {
-        github: 'https://github.com/achimismaili/easy-web',
-      },
+      social: [
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/achimismaili/easy-web',
+        },
+      ],
       sidebar: [
         {
           label: 'Getting Started',
@@ -22,15 +26,15 @@ export default defineConfig({
         },
         {
           label: 'Packages',
-          autogenerate: { directory: 'packages' },
+          items: [{ autogenerate: { directory: 'packages' } }],
         },
         {
           label: 'Architecture',
-          autogenerate: { directory: 'architecture' },
+          items: [{ autogenerate: { directory: 'architecture' } }],
         },
         {
           label: 'Playground',
-          autogenerate: { directory: 'playground' },
+          items: [{ autogenerate: { directory: 'playground' } }],
         },
       ],
     }),
