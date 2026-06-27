@@ -1,0 +1,23 @@
+{
+  "name": "showcase",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@achimismaili/easy-web-content-blocks": "workspace:*",
+    "@achimismaili/easy-web-i18n": "workspace:*",
+    "@achimismaili/easy-web-theme-core": "workspace:*",
+    "astro": "^6.4.8"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.0",
+    "@inlang/paraglide-js": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}
