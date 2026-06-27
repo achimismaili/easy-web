@@ -1,0 +1,15 @@
+:root {
+  --ew-primary: #1a5276;
+  --ew-primary-container: #d6eaf8;
+  --ew-on-primary: #ffffff;
+  --ew-on-primary-container: #154360;
+  --ew-surface: #f0f8ff;
+  --ew-on-surface: #1a252f;
+}
+[data-theme="dark"] {
+  --ew-primary: #5dade2;
+  --ew-primary-container: #154360;
+  --ew-on-primary: #0a1628;
+  --ew-surface: #0a1628;
+  --ew-on-surface: #d6eaf8;
+}
