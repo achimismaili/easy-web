@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "nav_home": "Home",
+  "nav_themes": "Themes",
+  "nav_components": "Components",
+  "nav_guide": "Getting Started",
+  "nav_docs": "API Docs",
+  "hero_title": "Build beautiful multilingual websites",
+  "hero_subtitle": "easy-web is a package ecosystem for building fast, accessible Astro sites with built-in i18n, theming, and reusable components.",
+  "hero_cta": "Get Started",
+  "theme_toggle_label": "Toggle dark mode",
+  "lang_switch_label": "Switch language",
+  "footer_tagline": "Built with easy-web",
+  "guide_title": "Getting Started",
+  "themes_title": "Theme Gallery",
+  "components_title": "Component Gallery"
+}

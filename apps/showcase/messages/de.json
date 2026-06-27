@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "nav_home": "Startseite",
+  "nav_themes": "Designs",
+  "nav_components": "Komponenten",
+  "nav_guide": "Erste Schritte",
+  "nav_docs": "API-Dokumentation",
+  "hero_title": "Schöne mehrsprachige Websites erstellen",
+  "hero_subtitle": "easy-web ist ein Paket-Ökosystem für schnelle, barrierefreie Astro-Websites mit integrierter i18n, Theming und wiederverwendbaren Komponenten.",
+  "hero_cta": "Jetzt starten",
+  "theme_toggle_label": "Dunkelmodus umschalten",
+  "lang_switch_label": "Sprache wechseln",
+  "footer_tagline": "Erstellt mit easy-web",
+  "guide_title": "Erste Schritte",
+  "themes_title": "Design-Galerie",
+  "components_title": "Komponenten-Galerie"
+}

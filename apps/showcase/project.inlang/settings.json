@@ -1,0 +1,12 @@
+{
+  "$schema": "https://inlang.com/schema/project-settings",
+  "baseLocale": "en",
+  "locales": ["en", "de"],
+  "modules": [
+    "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format/dist/index.js",
+    "https://cdn.jsdelivr.net/npm/@inlang/paraglide-js/dist/compiler/index.js"
+  ],
+  "plugin.inlang.messageFormat": {
+    "pathPattern": "./messages/{locale}.json"
+  }
+}
