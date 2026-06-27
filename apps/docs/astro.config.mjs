@@ -3,7 +3,7 @@ import starlight from '@astrojs/starlight';
 
 export default defineConfig({
   site: 'https://achimismaili.github.io',
-  base: '/easy-web',
+  base: '/easy-web/docs',
   integrations: [
     starlight({
       title: 'easy-web',
