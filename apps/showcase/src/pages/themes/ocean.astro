@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import '../../styles/themes/ocean.css';
+
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+---
+
+<Base title="Ocean Theme - easy-web" lang="en">
+  <Hero 
+    title="Set Sail with easy-web" 
+    subtitle="Navigate the digital waters with our maritime-inspired cool blues theme." 
+    ctaLabel="Get Started" 
+    ctaHref="/easy-web/guide/" 
+  />
+
+  <Section title="Explore the Depths">
+    <CardGrid>
+      <Card 
+        title="Maritime Aesthetics" 
+        description="Cool, deep blues that evoke the tranquility of the ocean." 
+        image="https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1200&q=80" 
+        imageAlt="Ocean waves"
+      />
+      <Card 
+        title="Fluid Typography" 
+        description="Clean, highly readable fonts that flow perfectly." 
+      />
+      <Card 
+        title="Deep Dive" 
+        description="Built to explore the capabilities of easy-web design tokens." 
+        href="/easy-web/themes/"
+      />
+    </CardGrid>
+  </Section>
+
+  <CtaSection 
+    heading="Back to Gallery" 
+    body="See more color themes created with the exact same components." 
+    buttonLabel="View Theme Gallery" 
+    buttonHref="/easy-web/themes/" 
+    variant="muted"
+  />
+</Base>

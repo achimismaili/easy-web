@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import '../../styles/themes/earth.css';
+
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+---
+
+<Base title="Earth Theme - easy-web" lang="en">
+  <Hero 
+    title="Grow Your Web Presence" 
+    subtitle="Rooted in nature with warm, organic earth tones." 
+    ctaLabel="Get Started" 
+    ctaHref="/easy-web/guide/" 
+  />
+
+  <Section title="Grounded Design">
+    <CardGrid>
+      <Card 
+        title="Natural Aesthetics" 
+        description="Warm, comforting greens and earthy tones." 
+        image="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80" 
+        imageAlt="Forest landscape"
+      />
+      <Card 
+        title="Organic Typography" 
+        description="Clean, highly readable fonts that feel natural." 
+      />
+      <Card 
+        title="Solid Foundation" 
+        description="Built on the robust capabilities of easy-web design tokens." 
+        href="/easy-web/themes/"
+      />
+    </CardGrid>
+  </Section>
+
+  <CtaSection 
+    heading="Back to Gallery" 
+    body="See more color themes created with the exact same components." 
+    buttonLabel="View Theme Gallery" 
+    buttonHref="/easy-web/themes/" 
+    variant="muted"
+  />
+</Base>

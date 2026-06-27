@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import '../../styles/themes/forest.css';
+
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+---
+
+<Base title="Forest Theme - easy-web" lang="en">
+  <Hero 
+    title="Build Deep Roots Online" 
+    subtitle="A rich, deep green theme for an immersive experience." 
+    ctaLabel="Get Started" 
+    ctaHref="/easy-web/guide/" 
+  />
+
+  <Section title="Immersive Nature">
+    <CardGrid>
+      <Card 
+        title="Deep Aesthetics" 
+        description="Lush, dark greens that create a profound atmosphere." 
+        image="https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&q=80" 
+        imageAlt="Deep forest canopy"
+      />
+      <Card 
+        title="Stable Typography" 
+        description="Solid and clear readability on any surface." 
+      />
+      <Card 
+        title="Rooted Foundation" 
+        description="Anchored in the power of easy-web design tokens." 
+        href="/easy-web/themes/"
+      />
+    </CardGrid>
+  </Section>
+
+  <CtaSection 
+    heading="Back to Gallery" 
+    body="See more color themes created with the exact same components." 
+    buttonLabel="View Theme Gallery" 
+    buttonHref="/easy-web/themes/" 
+    variant="muted"
+  />
+</Base>

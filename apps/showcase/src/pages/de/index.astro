@@ -1,15 +1,69 @@
 ---
-const title = 'easy-web Showcase';
+import Base from '../../layouts/Base.astro';
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
 ---
-<!DOCTYPE html>
-<html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-  </head>
-  <body>
-    <h1>{title}</h1>
-    <p>Showcase demnächst verfügbar. Zur <a href="/easy-web/docs/">Dokumentation</a>.</p>
-  </body>
-</html>
+<Base title="easy-web — Schöne mehrsprachige Websites erstellen" lang="de">
+  <Hero
+    title="Schöne mehrsprachige Websites erstellen"
+    subtitle="easy-web ist ein Paket-Ökosystem für Astro. Design-Token, zweisprachige i18n und über 16 wiederverwendbare Komponenten."
+    ctaLabel="Jetzt starten"
+    ctaHref="/easy-web/guide/"
+  />
+
+  <Section title="Was ist easy-web?">
+    <CardGrid>
+      <Card
+        title="Design-Token"
+        description="Konsistente Farben, Typografie und Abstände über CSS Custom Properties. Light/Dark Mode integriert."
+      />
+      <Card
+        title="Zweisprachige i18n"
+        description="EN/DE out of the box über Paraglide.js. Locale-aware Routing, Alternate Links und Formatters."
+      />
+      <Card
+        title="16+ Komponenten"
+        description="Hero, Header, Footer, Card, Gallery und mehr — kombinierbare Astro-Komponenten."
+      />
+    </CardGrid>
+  </Section>
+
+  <Section title="Entdecken">
+    <CardGrid>
+      <Card
+        title="Themes"
+        href="/easy-web/themes/"
+        image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
+        imageAlt="Abstract tech themes"
+      />
+      <Card
+        title="Komponenten"
+        href="/easy-web/components/"
+        image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
+        imageAlt="Komponenten"
+      />
+      <Card
+        title="Guide"
+        href="/easy-web/guide/"
+        image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
+        imageAlt="Guide"
+      />
+      <Card
+        title="Docs"
+        href="/easy-web/docs/"
+        image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
+        imageAlt="Docs"
+      />
+    </CardGrid>
+  </Section>
+
+  <CtaSection
+    heading="Heute noch starten"
+    buttonLabel="Beginne noch heute mit easy-web"
+    buttonHref="/easy-web/guide/"
+    variant="primary"
+  />
+</Base>

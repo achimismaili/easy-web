@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import '../../styles/themes/sunset.css';
+
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+---
+
+<Base title="Sunset Theme - easy-web" lang="en">
+  <Hero 
+    title="Launch Something Beautiful" 
+    subtitle="Energetic and vibrant oranges and reds for high impact." 
+    ctaLabel="Get Started" 
+    ctaHref="/easy-web/guide/" 
+  />
+
+  <Section title="Vibrant Energy">
+    <CardGrid>
+      <Card 
+        title="Warm Aesthetics" 
+        description="Fiery sunset tones to captivate your audience." 
+        image="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=80" 
+        imageAlt="Sunset landscape"
+      />
+      <Card 
+        title="Bold Typography" 
+        description="Clean fonts that stand out in warm contrast." 
+      />
+      <Card 
+        title="Radiant Foundation" 
+        description="Showcasing the flexibility of easy-web design tokens." 
+        href="/easy-web/themes/"
+      />
+    </CardGrid>
+  </Section>
+
+  <CtaSection 
+    heading="Back to Gallery" 
+    body="See more color themes created with the exact same components." 
+    buttonLabel="View Theme Gallery" 
+    buttonHref="/easy-web/themes/" 
+    variant="muted"
+  />
+</Base>

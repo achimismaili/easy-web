@@ -1,0 +1,258 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch';
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard';
+import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
+import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection';
+import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
+import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
+import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+---
+
+<Base title="Komponenten-Galerie — easy-web" lang="de">
+  <div class="gallery-wrapper">
+    <h1>Komponenten-Galerie</h1>
+    <p>Live-Vorschauen aller 16+ easy-web Inhaltsblöcke.</p>
+
+    <section class="component-group">
+      <h2>Navigation</h2>
+      
+      <div class="component-demo">
+        <h3>ThemeToggle</h3>
+        <p>Wechselt zwischen hellem und dunklem Design (theme-core).</p>
+        <div class="preview-box">
+          <ThemeToggle label="Design umschalten (Darkmode)" />
+        </div>
+        <pre><code>import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+
+&lt;ThemeToggle label="Design umschalten (Darkmode)" /&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>LanguageSwitch</h3>
+        <p>Verlinkt auf die alternative Sprachversion der aktuellen Seite.</p>
+        <div class="preview-box">
+          <LanguageSwitch currentLang="de" pathname="/de/components/" ariaLabel="Zu Englisch wechseln" />
+        </div>
+        <pre><code>import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch';
+
+&lt;LanguageSwitch currentLang="de" pathname="/de/components/" ariaLabel="Zu Englisch wechseln" /&gt;</code></pre>
+      </div>
+      
+      <div class="component-demo">
+        <h3>Header &amp; Footer</h3>
+        <p>Bereits im Base-Layout enthalten. (Nur Code)</p>
+        <pre><code>import Header from '@achimismaili/easy-web-content-blocks/components/Header';
+import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
+
+&lt;Header siteTitle="easy-web" navigation="none" /&gt;
+&lt;Footer siteTitle="easy-web" /&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="component-group">
+      <h2>Layout</h2>
+      
+      <div class="component-demo">
+        <h3>Hero</h3>
+        <p>Prominenter Hero-Bereich mit optionalem Call-to-Action.</p>
+        <div class="preview-box">
+          <Hero 
+            title="Präsentiere deine Arbeit" 
+            subtitle="Baue schnelle, mehrsprachige und barrierefreie Webseiten." 
+            ctaLabel="Hier klicken" 
+            ctaHref="#" 
+          />
+        </div>
+        <pre><code>import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+
+&lt;Hero 
+  title="Präsentiere deine Arbeit" 
+  subtitle="Baue schnelle, mehrsprachige und barrierefreie Webseiten." 
+  ctaLabel="Hier klicken" 
+  ctaHref="#" 
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>Section</h3>
+        <p>Semantischer Wrapper mit optionaler Überschrift und begrenzter Breite.</p>
+        <div class="preview-box">
+          <Section title="Mein Bereichstitel">
+            <p>Dies ist der Inhalt innerhalb des Bereichs. Er nutzt automatisch die Abstände des Designsystems.</p>
+          </Section>
+        </div>
+        <pre><code>import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+
+&lt;Section title="Mein Bereichstitel"&gt;
+  &lt;p&gt;Dies ist der Inhalt innerhalb des Bereichs. Er nutzt automatisch die Abstände des Designsystems.&lt;/p&gt;
+&lt;/Section&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="component-group">
+      <h2>Inhalt (Content)</h2>
+      
+      <div class="component-demo">
+        <h3>Card &amp; CardGrid</h3>
+        <p>Flexibles Raster-Layout zur Darstellung mehrerer Karten.</p>
+        <div class="preview-box">
+          <CardGrid>
+            <Card title="Funktion Eins" description="Dies ist eine großartige Funktion." href="#" />
+            <Card title="Funktion Zwei" description="Dies ist eine weitere Funktion." href="#" />
+          </CardGrid>
+        </div>
+        <pre><code>import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+
+&lt;CardGrid&gt;
+  &lt;Card title="Funktion Eins" description="Dies ist eine großartige Funktion." href="#" /&gt;
+  &lt;Card title="Funktion Zwei" description="Dies ist eine weitere Funktion." href="#" /&gt;
+&lt;/CardGrid&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>BlogPostCard</h3>
+        <p>Klickbare Karte, die auf einen Blog-Artikel verlinkt, inkl. Datumsformatierung.</p>
+        <div class="preview-box">
+          <div style="max-width: 400px;">
+            <BlogPostCard 
+              title="Aufbau der Komponenten-Galerie" 
+              description="Wie wir die easy-web Komponenten-Vorschau gebaut haben." 
+              href="#" 
+              pubDate={new Date('2026-06-27')} 
+              locale="de" 
+            />
+          </div>
+        </div>
+        <pre><code>import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard';
+
+&lt;BlogPostCard 
+  title="Aufbau der Komponenten-Galerie" 
+  description="Wie wir die easy-web Komponenten-Vorschau gebaut haben." 
+  href="#" 
+  pubDate=&#123;new Date('2026-06-27')&#125; 
+  locale="de" 
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>Prose</h3>
+        <p>Wrapper für Fließtext/Markdown mit typografischem Styling.</p>
+        <div class="preview-box">
+          <Prose>
+            <h2>Typografisches Styling</h2>
+            <p>Wendet automatisch korrekte Abstände und Formatierungen auf reine HTML-Tags wie <code>p</code>, <code>ul</code> und Überschriften an.</p>
+          </Prose>
+        </div>
+        <pre><code>import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
+
+&lt;Prose&gt;
+  &lt;h2&gt;Typografisches Styling&lt;/h2&gt;
+  &lt;p&gt;Wendet automatisch korrekte Abstände und Formatierungen auf reine HTML-Tags wie &lt;code&gt;p&lt;/code&gt;, &lt;code&gt;ul&lt;/code&gt; und Überschriften an.&lt;/p&gt;
+&lt;/Prose&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="component-group">
+      <h2>Interaktiv</h2>
+      
+      <div class="component-demo">
+        <h3>CtaSection</h3>
+        <p>Call-to-Action Banner mit Überschrift, optionalem Text und Button.</p>
+        <div class="preview-box">
+          <CtaSection 
+            heading="Bereit loszulegen?" 
+            body="Tritt noch heute unserem Ökosystem bei." 
+            buttonLabel="Registrieren" 
+            buttonHref="#" 
+            variant="primary" 
+          />
+        </div>
+        <pre><code>import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+
+&lt;CtaSection 
+  heading="Bereit loszulegen?" 
+  body="Tritt noch heute unserem Ökosystem bei." 
+  buttonLabel="Registrieren" 
+  buttonHref="#" 
+  variant="primary" 
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>ContactSection</h3>
+        <p>Zentrierter Call-to-Action ausschließlich für Kontakt-E-Mails.</p>
+        <div class="preview-box">
+          <ContactSection 
+            heading="Individuelle Entwicklung benötigt?" 
+            body="Wir stehen für Freelance-Arbeit zur Verfügung." 
+            email="hallo@example.com" 
+            buttonLabel="Schreib uns" 
+          />
+        </div>
+        <pre><code>import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection';
+
+&lt;ContactSection 
+  heading="Individuelle Entwicklung benötigt?" 
+  body="Wir stehen für Freelance-Arbeit zur Verfügung." 
+  email="hallo@example.com" 
+  buttonLabel="Schreib uns" 
+/&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="component-group">
+      <h2>Dienstprogramm (Utility)</h2>
+      
+      <div class="component-demo">
+        <h3>DraftBanner</h3>
+        <p>Warnbanner für Entwürfe/unfertige Inhalte.</p>
+        <div class="preview-box">
+          <DraftBanner message="Diese Seite ist derzeit ein Entwurf und sollte nicht veröffentlicht werden." />
+        </div>
+        <pre><code>import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
+
+&lt;DraftBanner message="Diese Seite ist derzeit ein Entwurf und sollte nicht veröffentlicht werden." /&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>LanguageNotice</h3>
+        <p>Dezente Infobox für sprachliche/verbindliche Hinweise.</p>
+        <div class="preview-box">
+          <LanguageNotice message="Bitte beachten: Die deutsche Übersetzung dient nur zur Bequemlichkeit. Lediglich das Original ist rechtlich bindend." />
+        </div>
+        <pre><code>import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
+
+&lt;LanguageNotice message="Bitte beachten: Die deutsche Übersetzung dient nur zur Bequemlichkeit. Lediglich das Original ist rechtlich bindend." /&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>LegalLayout</h3>
+        <p>Schmaler Content-Wrapper für Rechtstexte. (Nur Code)</p>
+        <pre><code>import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+
+&lt;LegalLayout title="Datenschutzerklärung" lastUpdated="Juni 2026"&gt;
+  &lt;p&gt;Ihre Privatsphäre ist uns wichtig...&lt;/p&gt;
+&lt;/LegalLayout&gt;</code></pre>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+.gallery-wrapper { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+.component-group { margin-bottom: 3rem; }
+.component-demo { margin: 1.5rem 0; border: 1px solid var(--ew-border); border-radius: 0.5rem; overflow: hidden; }
+.component-demo h3 { padding: 0.75rem 1rem; background: var(--ew-surface-muted); margin: 0; font-size: 1rem; }
+.component-demo p { padding: 0.5rem 1rem; margin: 0; font-size: 0.9rem; color: var(--ew-on-surface); }
+.preview-box { padding: 1.5rem; border-bottom: 1px solid var(--ew-border); }
+pre { margin: 0; padding: 1rem; background: var(--ew-surface-muted); font-size: 0.8rem; overflow-x: auto; }
+</style>
+

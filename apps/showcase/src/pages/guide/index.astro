@@ -1,0 +1,108 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+---
+
+<Base 
+  title="Getting Started — easy-web" 
+  lang="en" 
+  description="Learn how to set up your first easy-web project in 5 minutes."
+>
+  <article class="guide">
+    <header class="guide-header">
+      <h1>Getting Started with easy-web</h1>
+      <p class="lead">Set up your first easy-web project in 5 minutes.</p>
+    </header>
+
+    <Section title="1. Prerequisites" id="prerequisites">
+      <p>Before you begin, make sure you have the following installed on your machine:</p>
+      <ul>
+        <li>Node.js 18 or higher</li>
+        <li>pnpm (recommended package manager)</li>
+        <li>An existing Astro project (or create a new one)</li>
+      </ul>
+      <p>Verify your installation by running these commands in your terminal:</p>
+      <pre><code>node --version
+pnpm --version</code></pre>
+      <p>If you need to start from scratch, run:</p>
+      <pre><code>pnpm create astro@latest my-site</code></pre>
+    </Section>
+
+    <Section title="2. Install Packages" id="install">
+      <p>Install the core easy-web packages to your project. These provide design tokens, i18n helpers, and UI components.</p>
+      <pre><code>pnpm add @achimismaili/easy-web-theme-core
+pnpm add @achimismaili/easy-web-i18n
+pnpm add @achimismaili/easy-web-content-blocks</code></pre>
+      <ul>
+        <li><strong>theme-core</strong>: CSS variables, dark mode logic, and typography.</li>
+        <li><strong>i18n</strong>: Bilingual routing and translation utilities.</li>
+        <li><strong>content-blocks</strong>: Accessible, themed Astro components.</li>
+      </ul>
+    </Section>
+
+    <Section title="3. Add Design Tokens" id="tokens">
+      <p>Import the global design tokens in your main layout file and include the <code>noFlashScript</code> to prevent dark mode flickering during page load.</p>
+      <pre><code>
+// Import tokens
+import '@achimismaili/easy-web-theme-core/tokens.css';
+import &amp;#123; noFlashScript &amp;#125; from '@achimismaili/easy-web-theme-core';
+
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script is:inline set:html=&amp;#123;noFlashScript&amp;#125;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+&lt;/html&gt;</code></pre>
+    </Section>
+
+    <Section title="4. Use Components" id="components">
+      <p>Start building your pages using the provided content blocks. These components automatically use your theme tokens.</p>
+      <pre><code>
+// Use components
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+
+&lt;Hero
+  title="My Site"
+  subtitle="Built with easy-web"
+  ctaLabel="Learn More"
+  ctaHref="/about"
+/&gt;
+&lt;ThemeToggle /&gt;</code></pre>
+    </Section>
+
+    <Section title="5. Next Steps" id="next-steps">
+      <p>Now that you're set up, explore the rest of the ecosystem to build even faster.</p>
+      <CardGrid>
+        <Card 
+          title="Component Gallery" 
+          description="Browse all available UI blocks and their variations." 
+          href="/easy-web/components/" 
+        />
+        <Card 
+          title="Theme Gallery" 
+          description="See how different design systems look on the same components." 
+          href="/easy-web/themes/" 
+        />
+        <Card 
+          title="API Documentation" 
+          description="Deep dive into the props and internals of each package." 
+          href="/easy-web/docs/" 
+        />
+      </CardGrid>
+    </Section>
+  </article>
+</Base>
+
+<style>
+.guide { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+.guide-header { margin-bottom: 3rem; }
+.lead { font-size: 1.25rem; color: var(--ew-on-surface); }
+pre { background: var(--ew-surface-muted); padding: 1rem 1.5rem; border-radius: 0.375rem; overflow-x: auto; margin: 1rem 0; }
+code { font-family: var(--ew-font-mono); font-size: 0.875rem; color: var(--ew-on-surface); }
+ul { margin: 1rem 0; padding-left: 1.5rem; }
+li { margin-bottom: 0.5rem; color: var(--ew-on-surface); }
+p { color: var(--ew-on-surface); line-height: 1.6; }
+strong { color: var(--ew-primary); }
+</style>

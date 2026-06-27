@@ -1,0 +1,258 @@
+---
+import Base from '../../layouts/Base.astro';
+import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch';
+import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard';
+import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
+import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection';
+import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
+import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
+import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+---
+
+<Base title="Component Gallery — easy-web" lang="en">
+  <div class="gallery-wrapper">
+    <h1>Component Gallery</h1>
+    <p>Live previews of all 16+ easy-web content blocks.</p>
+
+    <section class="component-group">
+      <h2>Navigation</h2>
+      
+      <div class="component-demo">
+        <h3>ThemeToggle</h3>
+        <p>Switches between light and dark themes using theme-core.</p>
+        <div class="preview-box">
+          <ThemeToggle />
+        </div>
+        <pre><code>import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+
+&lt;ThemeToggle /&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>LanguageSwitch</h3>
+        <p>Links to the alternate locale version of the current page.</p>
+        <div class="preview-box">
+          <LanguageSwitch currentLang="en" pathname="/components/" />
+        </div>
+        <pre><code>import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch';
+
+&lt;LanguageSwitch currentLang="en" pathname="/components/" /&gt;</code></pre>
+      </div>
+      
+      <div class="component-demo">
+        <h3>Header &amp; Footer</h3>
+        <p>Already included in the Base layout. (Code only)</p>
+        <pre><code>import Header from '@achimismaili/easy-web-content-blocks/components/Header';
+import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
+
+&lt;Header siteTitle="easy-web" navigation="none" /&gt;
+&lt;Footer siteTitle="easy-web" /&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="component-group">
+      <h2>Layout</h2>
+      
+      <div class="component-demo">
+        <h3>Hero</h3>
+        <p>Prominent hero section with optional call to action.</p>
+        <div class="preview-box">
+          <Hero 
+            title="Showcase Your Work" 
+            subtitle="Build fast, multilingual, and accessible websites." 
+            ctaLabel="Click Here" 
+            ctaHref="#" 
+          />
+        </div>
+        <pre><code>import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+
+&lt;Hero 
+  title="Showcase Your Work" 
+  subtitle="Build fast, multilingual, and accessible websites." 
+  ctaLabel="Click Here" 
+  ctaHref="#" 
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>Section</h3>
+        <p>Semantic wrapper with optional heading and constrained width.</p>
+        <div class="preview-box">
+          <Section title="My Section Title">
+            <p>This is the content inside the section. It automatically uses the design system's spacing.</p>
+          </Section>
+        </div>
+        <pre><code>import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+
+&lt;Section title="My Section Title"&gt;
+  &lt;p&gt;This is the content inside the section. It automatically uses the design system's spacing.&lt;/p&gt;
+&lt;/Section&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="component-group">
+      <h2>Content</h2>
+      
+      <div class="component-demo">
+        <h3>Card &amp; CardGrid</h3>
+        <p>Flexible grid layout for displaying multiple cards.</p>
+        <div class="preview-box">
+          <CardGrid>
+            <Card title="Feature One" description="This is a great feature." href="#" />
+            <Card title="Feature Two" description="This is another feature." href="#" />
+          </CardGrid>
+        </div>
+        <pre><code>import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+
+&lt;CardGrid&gt;
+  &lt;Card title="Feature One" description="This is a great feature." href="#" /&gt;
+  &lt;Card title="Feature Two" description="This is another feature." href="#" /&gt;
+&lt;/CardGrid&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>BlogPostCard</h3>
+        <p>Clickable card linking to a blog post, with date formatting.</p>
+        <div class="preview-box">
+          <div style="max-width: 400px;">
+            <BlogPostCard 
+              title="Building the component gallery" 
+              description="How we built the easy-web component showcase." 
+              href="#" 
+                pubDate={new Date('2026-06-27')} 
+              locale="en" 
+            />
+          </div>
+        </div>
+        <pre><code>import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard';
+
+&lt;BlogPostCard 
+  title="Building the component gallery" 
+  description="How we built the easy-web component showcase." 
+  href="#" 
+  pubDate=&#123;new Date('2026-06-27')&#125; 
+  locale="en" 
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>Prose</h3>
+        <p>Wrapper for continuous text/markdown with typographic styling.</p>
+        <div class="preview-box">
+          <Prose>
+            <h2>Typographic styling</h2>
+            <p>Automatically applies correct spacing and styling to bare HTML tags like <code>p</code>, <code>ul</code>, and headings.</p>
+          </Prose>
+        </div>
+        <pre><code>import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
+
+&lt;Prose&gt;
+  &lt;h2&gt;Typographic styling&lt;/h2&gt;
+  &lt;p&gt;Automatically applies correct spacing and styling to bare HTML tags like &lt;code&gt;p&lt;/code&gt;, &lt;code&gt;ul&lt;/code&gt;, and headings.&lt;/p&gt;
+&lt;/Prose&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="component-group">
+      <h2>Interactive</h2>
+      
+      <div class="component-demo">
+        <h3>CtaSection</h3>
+        <p>Call-to-action banner with heading, optional body, and button.</p>
+        <div class="preview-box">
+          <CtaSection 
+            heading="Ready to get started?" 
+            body="Join our ecosystem today." 
+            buttonLabel="Sign Up" 
+            buttonHref="#" 
+            variant="primary" 
+          />
+        </div>
+        <pre><code>import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+
+&lt;CtaSection 
+  heading="Ready to get started?" 
+  body="Join our ecosystem today." 
+  buttonLabel="Sign Up" 
+  buttonHref="#" 
+  variant="primary" 
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>ContactSection</h3>
+        <p>Centered mailto-only contact call to action.</p>
+        <div class="preview-box">
+          <ContactSection 
+            heading="Need custom development?" 
+            body="We are available for freelance work." 
+            email="hello@example.com" 
+            buttonLabel="Email Us" 
+          />
+        </div>
+        <pre><code>import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection';
+
+&lt;ContactSection 
+  heading="Need custom development?" 
+  body="We are available for freelance work." 
+  email="hello@example.com" 
+  buttonLabel="Email Us" 
+/&gt;</code></pre>
+      </div>
+    </section>
+
+    <section class="component-group">
+      <h2>Utility</h2>
+      
+      <div class="component-demo">
+        <h3>DraftBanner</h3>
+        <p>Warning banner for draft/unfinished content.</p>
+        <div class="preview-box">
+          <DraftBanner message="This page is currently a draft and should not be published." />
+        </div>
+        <pre><code>import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
+
+&lt;DraftBanner message="This page is currently a draft and should not be published." /&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>LanguageNotice</h3>
+        <p>Subtle info box for language/binding disclaimers.</p>
+        <div class="preview-box">
+          <LanguageNotice message="Please note: The English translation is provided for convenience. Only the German original is legally binding." />
+        </div>
+        <pre><code>import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
+
+&lt;LanguageNotice message="Please note: The English translation is provided for convenience. Only the German original is legally binding." /&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>LegalLayout</h3>
+        <p>Narrow content wrapper for legal pages. (Code only)</p>
+        <pre><code>import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+
+&lt;LegalLayout title="Privacy Policy" lastUpdated="June 2026"&gt;
+  &lt;p&gt;Your privacy is important to us...&lt;/p&gt;
+&lt;/LegalLayout&gt;</code></pre>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+.gallery-wrapper { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+.component-group { margin-bottom: 3rem; }
+.component-demo { margin: 1.5rem 0; border: 1px solid var(--ew-border); border-radius: 0.5rem; overflow: hidden; }
+.component-demo h3 { padding: 0.75rem 1rem; background: var(--ew-surface-muted); margin: 0; font-size: 1rem; }
+.component-demo p { padding: 0.5rem 1rem; margin: 0; font-size: 0.9rem; color: var(--ew-on-surface); }
+.preview-box { padding: 1.5rem; border-bottom: 1px solid var(--ew-border); }
+pre { margin: 0; padding: 1rem; background: var(--ew-surface-muted); font-size: 0.8rem; overflow-x: auto; }
+</style>
+
