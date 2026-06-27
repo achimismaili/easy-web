@@ -1,0 +1,27 @@
+:root {
+  --ew-primary: #6b46c1;
+  --ew-primary-container: #ede9fe;
+  --ew-on-primary: #ffffff;
+  --ew-on-primary-container: #4c1d95;
+
+  --showcase-max-width: 1200px;
+  --showcase-section-padding: 4rem 1.5rem;
+}
+
+[data-theme="dark"] {
+  --ew-primary: #a78bfa;
+  --ew-primary-container: #4c1d95;
+  --ew-on-primary: #1e1b4b;
+  --ew-on-primary-container: #ede9fe;
+}
+
+body {
+  background-color: var(--ew-surface);
+  color: var(--ew-on-surface);
+  font-family: var(--ew-font-sans);
+  margin: 0;
+}
+
+main {
+  min-height: 60vh;
+}
