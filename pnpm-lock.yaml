@@ -128,6 +128,9 @@ importers:
 
   packages/easy-web-content-blocks:
     devDependencies:
+      '@achimismaili/easy-web-theme-core':
+        specifier: workspace:*
+        version: link:../theme-core
       astro:
         specifier: ^6.4.0
         version: 6.4.2(@types/node@24.13.2)(rollup@4.60.4)(yaml@2.9.0)

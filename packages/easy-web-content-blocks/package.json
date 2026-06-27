@@ -16,10 +16,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@achimismaili/easy-web-theme-core": "workspace:*",
     "astro": ">=6.0.0",
     "zod": ">=4.0.0"
   },
   "devDependencies": {
+    "@achimismaili/easy-web-theme-core": "workspace:*",
     "typescript": "^5.5.0",
     "astro": "^6.4.0",
     "zod": "^4.0.0"

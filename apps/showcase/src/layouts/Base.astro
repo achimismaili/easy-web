@@ -1,11 +1,11 @@
 ---
-import { noFlashScript } from '@achimismaili/easy-web-theme-core';
-import '@achimismaili/easy-web-theme-core/tokens.css';
+import { noFlashScript } from '../../../../packages/theme-core/src/helper';
+import '../../../../packages/theme-core/styles/tokens.css';
 import '../styles/showcase.css';
 
-import Header from '@achimismaili/easy-web-content-blocks/components/Header';
-import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
-import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+import Header from '../../../../packages/easy-web-content-blocks/src/components/Header.astro';
+import Footer from '../../../../packages/easy-web-content-blocks/src/components/Footer.astro';
+import ThemeToggle from '../../../../packages/easy-web-content-blocks/src/components/ThemeToggle.astro';
 
 interface Props {
   title: string;
