@@ -1,25 +1,26 @@
-name: Deploy Docs
+name: Deploy
 
 on:
   push:
     branches: [main]
     paths:
       - 'apps/docs/**'
+      - 'apps/showcase/**'
       - 'packages/**'
   workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
   build:
-    name: Build Docs
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,29 +32,33 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - uses: actions/configure-pages@v5
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build docs
         run: pnpm --filter docs build
 
+      - name: Build showcase
+        run: pnpm --filter showcase build
+
+      - name: Merge artifacts
+        run: |
+          mkdir -p combined
+          cp -r apps/showcase/dist/. combined/
+          cp -r apps/docs/dist/. combined/docs/
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/docs/dist
+          path: combined
 
   deploy:
-    name: Deploy to GitHub Pages
+    name: Deploy
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

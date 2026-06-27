@@ -14,6 +14,11 @@ export default defineConfig({
           label: 'GitHub',
           href: 'https://github.com/achimismaili/easy-web',
         },
+        {
+          icon: 'external',
+          label: 'Showcase',
+          href: '/easy-web/',
+        },
       ],
       sidebar: [
         {
