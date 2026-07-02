@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace packages
+        run: pnpm --filter "@achimismaili/*" build
+
       - name: Build docs
         run: pnpm --filter docs build
 
