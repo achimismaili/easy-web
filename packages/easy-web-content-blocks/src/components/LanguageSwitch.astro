@@ -43,8 +43,11 @@ const resolvedAriaLabel = ariaLabel ?? `Switch to ${alternateLang}`;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
+    /* Same shared header-control height as ThemeToggle for a consistent utility row. */
+    height: 2.25rem;
     min-width: 2.5rem;
-    padding: var(--ew-space-1) var(--ew-space-2);
+    padding: 0 var(--ew-space-2);
     border: 1px solid var(--ew-border);
     border-radius: var(--ew-radius-md);
     color: var(--ew-on-surface);

@@ -38,12 +38,16 @@ const { label = 'Toggle color theme (Darkmode)' } = Astro.props;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
+    /* Shared header-control height. Icon-only → same value for width for a square button. */
+    width: 2.25rem;
+    height: 2.25rem;
     background: transparent;
     border: 1px solid var(--ew-border);
     border-radius: var(--ew-radius-md);
     color: var(--ew-on-surface);
     cursor: pointer;
-    padding: var(--ew-space-2);
+    padding: 0;
   }
   .ew-theme-toggle:hover {
     background: var(--ew-surface-muted);
