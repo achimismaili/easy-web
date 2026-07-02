@@ -16,17 +16,24 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10.34.4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
-          registry-url: https://registry.npmjs.org
+          # Do NOT add `registry-url:` here. setup-node would then write
+          # `_authToken=${NODE_AUTH_TOKEN}` to .npmrc, npm treats that as
+          # pre-configured auth and skips OIDC exchange — publish gets E404.
+
+      - name: Upgrade npm to >= 11.5.1 for Trusted Publishing OIDC support
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -44,4 +51,3 @@ jobs:
           title: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
