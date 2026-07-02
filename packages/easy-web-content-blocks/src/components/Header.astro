@@ -11,6 +11,8 @@ interface Props {
   navItems: Array<{ label: string; href: string }>;
   currentLang: string;
   pathname: string;
+  /** Explicit brand link href. Falls back to `/` (de) or `/${currentLang}/` (other). */
+  brandHref?: string;
   /** Explicit alternate locale URL to pass to LanguageSwitch. */
   alternateHref?: string;
   /** Accessible label for the mobile menu toggle button. */
@@ -19,13 +21,13 @@ interface Props {
   logo?: string;
 }
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo } = Astro.props;
+const { siteName, navItems, currentLang, pathname, brandHref, alternateHref, menuLabel = 'Toggle navigation menu', logo } = Astro.props;
 const navId = `ew-header-nav-${Math.random().toString(36).slice(2, 9)}`;
 ---
 
 <header class="ew-header" data-testid="header-classic">
   <div class="ew-header__inner">
-    <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header__brand">
+    <a href={brandHref ?? (currentLang === 'de' ? '/' : `/${currentLang}/`)} class="ew-header__brand">
       {logo ? <img src={logo} alt={siteName} class="ew-header__logo" /> : siteName}
     </a>
 

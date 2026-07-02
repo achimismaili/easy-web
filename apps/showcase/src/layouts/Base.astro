@@ -5,7 +5,6 @@ import '../styles/showcase.css';
 
 import Header from '../../../../packages/easy-web-content-blocks/src/components/Header.astro';
 import Footer from '../../../../packages/easy-web-content-blocks/src/components/Footer.astro';
-import ThemeToggle from '../../../../packages/easy-web-content-blocks/src/components/ThemeToggle.astro';
 
 interface Props {
   title: string;
@@ -19,18 +18,49 @@ const currentLang = lang;
 const pathname = Astro.url.pathname;
 const isDe = currentLang === 'de';
 
+// Normalize BASE_URL to always end with a single slash (Astro's production build may or may not preserve it).
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
+// Compute path relative to base.
+let barePath = pathname.startsWith(base) ? pathname.slice(base.length) : pathname.replace(/^\//, '');
+
+// Strip current locale prefix so we know the content path.
+let contentPath = barePath;
+if (isDe) {
+  if (contentPath === 'de' || contentPath === 'de/') {
+    contentPath = '';
+  } else if (contentPath.startsWith('de/')) {
+    contentPath = contentPath.slice(3);
+  }
+}
+
+// Compute alternate locale URL (EN <-> DE).
+// DE variants only exist for: home, components/, guide/. For other pages (themes, etc.),
+// fall back to the DE home page so the language switch never lands on a 404.
+const dePages = new Set(['', 'components/', 'guide/']);
+const hasDeVariant = dePages.has(contentPath);
+const alternateHref = isDe
+  ? `${base}${contentPath}`
+  : hasDeVariant
+    ? `${base}de/${contentPath}`
+    : `${base}de/`;
+
+// Compute brand link (home page of current locale)
+const brandHref = isDe ? `${base}de/` : base;
+
+// Nav: only localize pages that actually have DE variants (components, guide).
+// Themes + Docs are EN-only, so always link to EN URL.
 const navItems = [
-  { label: isDe ? 'Startseite' : 'Home', href: `${import.meta.env.BASE_URL}` },
-  { label: 'Themes', href: `${import.meta.env.BASE_URL}themes/` },
-  { label: isDe ? 'Komponenten' : 'Components', href: `${import.meta.env.BASE_URL}components/` },
-  { label: 'Guide', href: `${import.meta.env.BASE_URL}guide/` },
-  { label: 'Docs', href: `${import.meta.env.BASE_URL}docs/` },
+  { label: isDe ? 'Startseite' : 'Home', href: brandHref },
+  { label: 'Themes', href: `${base}themes/` },
+  { label: isDe ? 'Komponenten' : 'Components', href: `${base}${isDe ? 'de/' : ''}components/` },
+  { label: 'Guide', href: `${base}${isDe ? 'de/' : ''}guide/` },
+  { label: 'Docs', href: `${base}docs/` },
 ];
 
-const legalLinks = [
-  { label: isDe ? 'Impressum' : 'Imprint', href: `${import.meta.env.BASE_URL}imprint/` },
-  { label: isDe ? 'Datenschutz' : 'Privacy', href: `${import.meta.env.BASE_URL}privacy/` }
-];
+// Imprint/Privacy pages do not exist yet in the showcase; omit them from the footer.
+const legalLinks: Array<{ label: string; href: string }> = [];
 ---
 <!doctype html>
 <html lang={lang}>
@@ -40,7 +70,7 @@ const legalLinks = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
   </head>
   <body>
     <Header
@@ -48,6 +78,8 @@ const legalLinks = [
       navItems={navItems}
       currentLang={currentLang}
       pathname={pathname}
+      brandHref={brandHref}
+      alternateHref={alternateHref}
     />
     <main>
       <slot />

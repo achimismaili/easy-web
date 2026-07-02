@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   site: 'https://achimismaili.github.io',
-  base: '/easy-web',
+  base: '/easy-web/',
   output: 'static',
   i18n: {
     defaultLocale: 'en',
