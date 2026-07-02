@@ -73,7 +73,26 @@ Every change to a real package follows the same path:
 
 GitHub Actions workflows handle the full release pipeline:
 1. **CI** (`.github/workflows/ci.yml`) — runs on every push to `main`: lint, typecheck, test, build.
-2. **Release** (`.github/workflows/release.yml`) — Changesets action creates version PRs and publishes to npm when merged. Uses OIDC for npm authentication (no manual token needed).
+2. **Release** (`.github/workflows/release.yml`) — Changesets action opens/updates the "Version Packages" PR on `main`, and publishes to npm when that PR is merged. Uses **npm Trusted Publishing via OIDC** — no `NPM_TOKEN` secret is set or read. See *npm Trusted Publisher configuration* and *Required GitHub repo permissions* below.
+
+### npm Trusted Publisher configuration
+
+**Every `@achimismaili/easy-web-*` package already has a Trusted Publisher registered on npm** pointing at this repo's release workflow. This is a one-time, already-done setup. Do not re-register, and do not fall back to `NPM_TOKEN` / `NODE_AUTH_TOKEN` — those are intentionally not set.
+
+TP registration parameters (identical for every package):
+
+| Field | Value |
+| :-- | :-- |
+| Publisher | GitHub Actions |
+| Owner / repository | `achimismaili/easy-web` |
+| Workflow filename | `release.yml` |
+| Environment | *(none — the release job does not declare an `environment:`)* |
+
+If a publish attempt fails with `E404 Not Found - PUT https://registry.npmjs.org/@achimismaili%2f<package>` at the `pnpm changeset publish` step, **do not conclude "TP is missing"** — the TP is registered and persists on npm. Investigate specific mismatches instead: workflow filename drift (must stay `release.yml`), any accidental `environment:` addition to the release job, npm-side transient errors, or npm CLI/pnpm version regressions inside `changesets/action@v1`. Only after all four are ruled out should re-registration be considered.
+
+### Required GitHub repo permissions
+
+- **Settings → Actions → General → Workflow permissions → "Allow GitHub Actions to create and approve pull requests"** must be enabled so `changesets/action@v1` can open the "Version Packages" PR after force-pushing the `changeset-release/main` branch. If this is disabled, the branch is still produced correctly on every push to `main`, but the PR must be opened manually: `gh pr create --repo achimismaili/easy-web --base main --head changeset-release/main --title "chore: version packages"`. The workflow's own `permissions:` block declares `contents: write`, `pull-requests: write`, and `id-token: write`, which is necessary but not sufficient on its own — the repo-level setting is a second gate.
 
 ### Publishing via Changesets
 
@@ -92,7 +111,7 @@ GitHub Actions workflows handle the full release pipeline:
 3. Commit the generated `.changeset/*.md` file.
 4. Push to `main`.
 5. **Do not** manually edit `package.json` versions — Changesets handles that.
-6. **Do not** run `pnpm publish` or set npm tokens — GitHub Actions handles all of that via OIDC.
+6. **Do not** run `pnpm publish`, set `NPM_TOKEN`, or set `NODE_AUTH_TOKEN` — GitHub Actions publishes via the already-configured npm Trusted Publishers (see *npm Trusted Publisher configuration* above).
 
 ### Publishing coordinates
 - Registry: npm public registry (`https://registry.npmjs.org/`)
