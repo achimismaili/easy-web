@@ -1,7 +1,7 @@
 {
   "name": "@achimismaili/easy-web-cms-adapters",
   "version": "0.2.0",
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "pnpm@10.34.4",
   "type": "module",
   "private": false,
   "description": "Decap CMS integration for the easy-web ecosystem — AdminPage component, frontmatter types, and config scaffold.",
