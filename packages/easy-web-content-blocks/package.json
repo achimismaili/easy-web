@@ -1,15 +1,23 @@
 {
   "name": "@achimismaili/easy-web-content-blocks",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "packageManager": "pnpm@9.15.4",
   "type": "module",
   "description": "Reusable Astro content-block components for the easy-web ecosystem.",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
     "./components/*": "./src/components/*.astro",
     "./schemas/*": "./src/schemas/*.ts"
   },
-  "files": ["dist", "src/components", "src/schemas", "README.md"],
+  "files": [
+    "dist",
+    "src/components",
+    "src/schemas",
+    "README.md"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
