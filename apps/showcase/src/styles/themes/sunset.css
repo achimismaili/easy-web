@@ -1,15 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
 :root {
-  --ew-primary: #e65100;
-  --ew-primary-container: #fbe9e7;
-  --ew-on-primary: #ffffff;
-  --ew-on-primary-container: #bf360c;
-  --ew-surface: #fff8f5;
-  --ew-on-surface: #2e1b0a;
+	--ew-font-sans: "Poppins", system-ui, -apple-system, sans-serif;
+	--ew-primary: #e65100;
+	--ew-primary-container: #fbe9e7;
+	--ew-on-primary: #ffffff;
+	--ew-on-primary-container: #bf360c;
+	--ew-surface: #fff8f5;
+	--ew-on-surface: #2e1b0a;
 }
 [data-theme="dark"] {
-  --ew-primary: #ff8a65;
-  --ew-primary-container: #bf360c;
-  --ew-on-primary: #1a0800;
-  --ew-surface: #1a0800;
-  --ew-on-surface: #fbe9e7;
+	--ew-primary: #ff8a65;
+	--ew-primary-container: #bf360c;
+	--ew-on-primary: #1a0800;
+	--ew-surface: #1a0800;
+	--ew-on-surface: #fbe9e7;
 }

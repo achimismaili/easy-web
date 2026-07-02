@@ -13,6 +13,14 @@ import ContactSection from '@achimismaili/easy-web-content-blocks/components/Con
 import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
 import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
 import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+import Header from '@achimismaili/easy-web-content-blocks/components/Header';
+import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
+import GalleryImageGrid from '@achimismaili/easy-web-content-blocks/components/GalleryImageGrid';
+import GalleryHeroSlider from '@achimismaili/easy-web-content-blocks/components/GalleryHeroSlider';
+import GalleryCarousel from '@achimismaili/easy-web-content-blocks/components/GalleryCarousel';
+import GalleryMasonryGrid from '@achimismaili/easy-web-content-blocks/components/GalleryMasonryGrid';
+import GalleryFeatureHighlight from '@achimismaili/easy-web-content-blocks/components/GalleryFeatureHighlight';
+import GalleryLightboxGrid from '@achimismaili/easy-web-content-blocks/components/GalleryLightboxGrid';
 ---
 
 <Base title="Component Gallery — easy-web" lang="en">
@@ -47,12 +55,20 @@ import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalL
       
       <div class="component-demo">
         <h3>Header &amp; Footer</h3>
-        <p>Already included in the Base layout. (Code only)</p>
+        <p>Already included in the Base layout.</p>
+        <div class="preview-box">
+          <div style="overflow:hidden; pointer-events:none; border: 1px solid var(--ew-border); margin-bottom: 1rem;">
+            <Header siteName="easy-web" navItems={[]} currentLang="en" pathname="/components/" />
+          </div>
+          <div style="overflow:hidden; pointer-events:none; border: 1px solid var(--ew-border);">
+            <Footer siteName="easy-web" legalLinks={[{label: "Privacy", href: "#"}, {label: "Terms", href: "#"}]} />
+          </div>
+        </div>
         <pre><code>import Header from '@achimismaili/easy-web-content-blocks/components/Header';
 import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
 
-&lt;Header siteTitle="easy-web" navigation="none" /&gt;
-&lt;Footer siteTitle="easy-web" /&gt;</code></pre>
+&lt;Header siteName="easy-web" navItems=&amp;#123;[]&amp;#125; currentLang="en" pathname="/components/" /&gt;
+&lt;Footer siteName="easy-web" legalLinks=&amp;#123;[&amp;#123;label: "Privacy", href: "#"&amp;#125;]&amp;#125; /&gt;</code></pre>
       </div>
     </section>
 
@@ -235,12 +251,194 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
 
       <div class="component-demo">
         <h3>LegalLayout</h3>
-        <p>Narrow content wrapper for legal pages. (Code only)</p>
+        <p>Narrow content wrapper for legal pages.</p>
+        <div class="preview-box">
+          <div style="border: 1px solid var(--ew-border); padding: 1rem; border-radius: 0.25rem;">
+            <LegalLayout title="Privacy Policy" lastUpdated="June 2026">
+              <p>Your privacy is important to us. This is a sample legal text to demonstrate the layout width and typography constraints applied by LegalLayout.</p>
+            </LegalLayout>
+          </div>
+        </div>
         <pre><code>import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
 
 &lt;LegalLayout title="Privacy Policy" lastUpdated="June 2026"&gt;
-  &lt;p&gt;Your privacy is important to us...&lt;/p&gt;
+  &lt;p&gt;Your privacy is important to us. This is a sample legal text to demonstrate the layout width and typography constraints applied by LegalLayout.&lt;/p&gt;
 &lt;/LegalLayout&gt;</code></pre>
+      </div>
+    <section class="component-group">
+      <h2>Gallery</h2>
+      
+      <div class="component-demo">
+        <h3>GalleryImageGrid</h3>
+        <p>Simple grid of images.</p>
+        <div class="preview-box">
+          <GalleryImageGrid 
+            title="Image Grid"
+            columns={3} 
+            gap="md"
+            aspectRatio="square"
+            items={[
+              { src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70", alt: "Mountain landscape" },
+              { src: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&q=70", alt: "Forest path" },
+              { src: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=70", alt: "Sunlit forest" }
+            ]}
+          />
+        </div>
+        <pre><code>import GalleryImageGrid from '@achimismaili/easy-web-content-blocks/components/GalleryImageGrid';
+
+&lt;GalleryImageGrid 
+  title="Image Grid"
+  columns=&amp;#123;3&amp;#125; 
+  gap="md"
+  aspectRatio="square"
+  items=&amp;#123;[
+    &amp;#123; src: "...", alt: "Mountain landscape" &amp;#125;,
+    &amp;#123; src: "...", alt: "Forest path" &amp;#125;,
+    &amp;#123; src: "...", alt: "Sunlit forest" &amp;#125;
+  ]&amp;#125;
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>GalleryHeroSlider</h3>
+        <p>Full-width hero slider.</p>
+        <div class="preview-box">
+          <GalleryHeroSlider
+            title="Hero Slider"
+            autoplay={false}
+            interval={5000}
+            height="sm"
+            slides={[
+              { src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=70", alt: "Mountains", title: "Reach New Heights", subtitle: "Discover our themed experiences", cta: "Explore", href: "#" },
+              { src: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=70", alt: "Forest", title: "Into the Wild", subtitle: "Natural beauty in every pixel", cta: "Discover", href: "#" }
+            ]}
+          />
+        </div>
+        <pre><code>import GalleryHeroSlider from '@achimismaili/easy-web-content-blocks/components/GalleryHeroSlider';
+
+&lt;GalleryHeroSlider
+  title="Hero Slider"
+  autoplay=&amp;#123;false&amp;#125;
+  height="sm"
+  slides=&amp;#123;[
+    &amp;#123; src: "...", alt: "Mountains", title: "Reach New Heights", subtitle: "Discover our themed experiences", cta: "Explore", href: "#" &amp;#125;,
+    &amp;#123; src: "...", alt: "Forest", title: "Into the Wild", subtitle: "Natural beauty in every pixel", cta: "Discover", href: "#" &amp;#125;
+  ]&amp;#125;
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>GalleryCarousel</h3>
+        <p>Carousel of images.</p>
+        <div class="preview-box">
+          <GalleryCarousel
+            title="Carousel"
+            autoplay={false}
+            interval={4000}
+            showDots={true}
+            showArrows={true}
+            slides={[
+              { src: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=70", alt: "Green hills" },
+              { src: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=70", alt: "Lake and mountains" },
+              { src: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=70", alt: "Ocean waves" }
+            ]}
+          />
+        </div>
+        <pre><code>import GalleryCarousel from '@achimismaili/easy-web-content-blocks/components/GalleryCarousel';
+
+&lt;GalleryCarousel
+  title="Carousel"
+  autoplay=&amp;#123;false&amp;#125;
+  showDots=&amp;#123;true&amp;#125;
+  showArrows=&amp;#123;true&amp;#125;
+  slides=&amp;#123;[
+    &amp;#123; src: "...", alt: "Green hills" &amp;#125;,
+    &amp;#123; src: "...", alt: "Lake and mountains" &amp;#125;,
+    &amp;#123; src: "...", alt: "Ocean waves" &amp;#125;
+  ]&amp;#125;
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>GalleryMasonryGrid</h3>
+        <p>Masonry grid of images.</p>
+        <div class="preview-box">
+          <GalleryMasonryGrid
+            title="Masonry Grid"
+            columns={3}
+            gap="md"
+            items={[
+              { src: "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=400&q=70", alt: "Winter mountains" },
+              { src: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=70", alt: "Forest light" },
+              { src: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&q=70", alt: "Rolling hills" }
+            ]}
+          />
+        </div>
+        <pre><code>import GalleryMasonryGrid from '@achimismaili/easy-web-content-blocks/components/GalleryMasonryGrid';
+
+&lt;GalleryMasonryGrid
+  title="Masonry Grid"
+  columns=&amp;#123;3&amp;#125;
+  gap="md"
+  items=&amp;#123;[
+    &amp;#123; src: "...", alt: "Winter mountains" &amp;#125;,
+    &amp;#123; src: "...", alt: "Forest light" &amp;#125;,
+    &amp;#123; src: "...", alt: "Rolling hills" &amp;#125;
+  ]&amp;#125;
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>GalleryFeatureHighlight</h3>
+        <p>Feature highlight with an image and text.</p>
+        <div class="preview-box">
+          <GalleryFeatureHighlight
+            title="Feature Highlight"
+            gap="md"
+            items={[
+              { src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70", alt: "Mountain", title: "Design Tokens", description: "Override any visual property through CSS custom properties.", imagePosition: "left" }
+            ]}
+          />
+        </div>
+        <pre><code>import GalleryFeatureHighlight from '@achimismaili/easy-web-content-blocks/components/GalleryFeatureHighlight';
+
+&lt;GalleryFeatureHighlight
+  title="Feature Highlight"
+  gap="md"
+  items=&amp;#123;[
+    &amp;#123; src: "...", alt: "Mountain", title: "Design Tokens", description: "Override any visual property through CSS custom properties.", imagePosition: "left" &amp;#125;
+  ]&amp;#125;
+/&gt;</code></pre>
+      </div>
+
+      <div class="component-demo">
+        <h3>GalleryLightboxGrid</h3>
+        <p>Grid of images opening in a lightbox.</p>
+        <div class="preview-box">
+          <GalleryLightboxGrid
+            title="Lightbox Grid"
+            columns={3}
+            gap="md"
+            aspectRatio="square"
+            items={[
+              { src: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=400&q=70", alt: "Ocean", title: "Ocean", description: "Cool blue waters" },
+              { src: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=70", alt: "Forest", title: "Forest", description: "Deep green woods" },
+              { src: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&q=70", alt: "Sunset path", title: "Sunset", description: "Golden hour" }
+            ]}
+          />
+        </div>
+        <pre><code>import GalleryLightboxGrid from '@achimismaili/easy-web-content-blocks/components/GalleryLightboxGrid';
+
+&lt;GalleryLightboxGrid
+  title="Lightbox Grid"
+  columns=&amp;#123;3&amp;#125;
+  gap="md"
+  items=&amp;#123;[
+    &amp;#123; src: "...", alt: "Ocean", title: "Ocean", description: "Cool blue waters" &amp;#125;,
+    &amp;#123; src: "...", alt: "Forest", title: "Forest", description: "Deep green woods" &amp;#125;,
+    &amp;#123; src: "...", alt: "Sunset path", title: "Sunset", description: "Golden hour" &amp;#125;
+  ]&amp;#125;
+/&gt;</code></pre>
       </div>
     </section>
   </div>

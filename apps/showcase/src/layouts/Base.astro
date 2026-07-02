@@ -20,16 +20,16 @@ const pathname = Astro.url.pathname;
 const isDe = currentLang === 'de';
 
 const navItems = [
-  { label: isDe ? 'Startseite' : 'Home', href: '/easy-web/' },
-  { label: 'Themes', href: '/easy-web/themes/' },
-  { label: isDe ? 'Komponenten' : 'Components', href: '/easy-web/components/' },
-  { label: 'Guide', href: '/easy-web/guide/' },
-  { label: 'Docs', href: '/easy-web/docs/' },
+  { label: isDe ? 'Startseite' : 'Home', href: `${import.meta.env.BASE_URL}` },
+  { label: 'Themes', href: `${import.meta.env.BASE_URL}themes/` },
+  { label: isDe ? 'Komponenten' : 'Components', href: `${import.meta.env.BASE_URL}components/` },
+  { label: 'Guide', href: `${import.meta.env.BASE_URL}guide/` },
+  { label: 'Docs', href: `${import.meta.env.BASE_URL}docs/` },
 ];
 
 const legalLinks = [
-  { label: isDe ? 'Impressum' : 'Imprint', href: '/easy-web/imprint/' },
-  { label: isDe ? 'Datenschutz' : 'Privacy', href: '/easy-web/privacy/' }
+  { label: isDe ? 'Impressum' : 'Imprint', href: `${import.meta.env.BASE_URL}imprint/` },
+  { label: isDe ? 'Datenschutz' : 'Privacy', href: `${import.meta.env.BASE_URL}privacy/` }
 ];
 ---
 <!doctype html>
@@ -40,7 +40,7 @@ const legalLinks = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
-    <link rel="icon" type="image/svg+xml" href="/easy-web/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
   </head>
   <body>
     <Header

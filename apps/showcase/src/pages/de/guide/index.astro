@@ -78,17 +78,17 @@ import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeT
         <Card 
           title="Komponentengalerie" 
           description="Durchstöbere alle verfügbaren UI-Blöcke und deren Variationen." 
-          href="/easy-web/components/" 
+          href={`${import.meta.env.BASE_URL}components/`} 
         />
         <Card 
           title="Theme-Galerie" 
           description="Sieh dir an, wie verschiedene Design-Systeme auf denselben Komponenten wirken." 
-          href="/easy-web/themes/" 
+          href={`${import.meta.env.BASE_URL}themes/`} 
         />
         <Card 
           title="API-Dokumentation" 
           description="Tauche tief in die Props und Interna jedes Pakets ein." 
-          href="/easy-web/docs/" 
+          href={`${import.meta.env.BASE_URL}docs/`} 
         />
       </CardGrid>
     </Section>

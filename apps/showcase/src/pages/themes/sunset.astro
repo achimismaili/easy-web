@@ -14,7 +14,7 @@ import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSect
     title="Launch Something Beautiful" 
     subtitle="Energetic and vibrant oranges and reds for high impact." 
     ctaLabel="Get Started" 
-    ctaHref="/easy-web/guide/" 
+    ctaHref={`${import.meta.env.BASE_URL}guide/`} 
   />
 
   <Section title="Vibrant Energy">
@@ -32,7 +32,7 @@ import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSect
       <Card 
         title="Radiant Foundation" 
         description="Showcasing the flexibility of easy-web design tokens." 
-        href="/easy-web/themes/"
+        href={`${import.meta.env.BASE_URL}themes/`}
       />
     </CardGrid>
   </Section>
@@ -41,7 +41,7 @@ import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSect
     heading="Back to Gallery" 
     body="See more color themes created with the exact same components." 
     buttonLabel="View Theme Gallery" 
-    buttonHref="/easy-web/themes/" 
+    buttonHref={`${import.meta.env.BASE_URL}themes/`} 
     variant="muted"
   />
 </Base>

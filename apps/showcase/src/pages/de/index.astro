@@ -11,7 +11,7 @@ import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSect
     title="Schöne mehrsprachige Websites erstellen"
     subtitle="easy-web ist ein Paket-Ökosystem für Astro. Design-Token, zweisprachige i18n und über 16 wiederverwendbare Komponenten."
     ctaLabel="Jetzt starten"
-    ctaHref="/easy-web/guide/"
+    ctaHref={`${import.meta.env.BASE_URL}guide/`}
   />
 
   <Section title="Was ist easy-web?">
@@ -35,25 +35,25 @@ import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSect
     <CardGrid>
       <Card
         title="Themes"
-        href="/easy-web/themes/"
+        href={`${import.meta.env.BASE_URL}themes/`}
         image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
         imageAlt="Abstract tech themes"
       />
       <Card
         title="Komponenten"
-        href="/easy-web/components/"
+        href={`${import.meta.env.BASE_URL}components/`}
         image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
         imageAlt="Komponenten"
       />
       <Card
         title="Guide"
-        href="/easy-web/guide/"
+        href={`${import.meta.env.BASE_URL}guide/`}
         image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
         imageAlt="Guide"
       />
       <Card
         title="Docs"
-        href="/easy-web/docs/"
+        href={`${import.meta.env.BASE_URL}docs/`}
         image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
         imageAlt="Docs"
       />
@@ -63,7 +63,7 @@ import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSect
   <CtaSection
     heading="Heute noch starten"
     buttonLabel="Beginne noch heute mit easy-web"
-    buttonHref="/easy-web/guide/"
+    buttonHref={`${import.meta.env.BASE_URL}guide/`}
     variant="primary"
   />
 </Base>
