@@ -1,12 +1,72 @@
 ---
-// Stub — full implementation in T8
+import { getAlternateLinks } from '@achimismaili/easy-web-i18n';
+
 export interface Props {
   title: string;
   description?: string;
   pathname: string;
   locale: string;
   siteName: string;
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+  themeColor?: string;
+  manifest?: string;
+  noIndex?: boolean;
+  twitterCard?: 'summary' | 'summary_large_image';
+  twitterSite?: string;
 }
-const { title } = Astro.props;
+
+const {
+  title,
+  description,
+  pathname,
+  locale,
+  siteName,
+  ogType = 'website',
+  ogImage,
+  themeColor,
+  manifest,
+  noIndex = false,
+  twitterCard = 'summary',
+  twitterSite,
+} = Astro.props;
+
+const site = Astro.site;
+if (!site) {
+  throw new Error(
+    '@achimismaili/easy-web-seo: <SeoHead> requires astro.config.mjs to set `site` (a full https:// URL).'
+  );
+}
+
+const canonical = new URL(pathname, site).href;
+const alternates = getAlternateLinks(pathname);
+const absoluteOgImage = ogImage ? new URL(ogImage, site).href : undefined;
+// Map locale to OG locale format: 'de' → 'de_DE', 'en' → 'en_US'
+const ogLocale = locale === 'en' ? 'en_US' : locale === 'de' ? 'de_DE' : locale.replace('-', '_');
+const ogLocaleAlternate = locale === 'en' ? 'de_DE' : 'en_US';
 ---
 <title>{title}</title>
+{description && <meta name="description" content={description} />}
+<link rel="canonical" href={canonical} />
+{noIndex && <meta name="robots" content="noindex, nofollow" />}
+{themeColor && <meta name="theme-color" content={themeColor} />}
+{manifest && <link rel="manifest" href={manifest} />}
+<!-- Open Graph -->
+<meta property="og:title" content={title} />
+{description && <meta property="og:description" content={description} />}
+<meta property="og:url" content={canonical} />
+<meta property="og:type" content={ogType} />
+<meta property="og:locale" content={ogLocale} />
+<meta property="og:locale:alternate" content={ogLocaleAlternate} />
+<meta property="og:site_name" content={siteName} />
+{absoluteOgImage && <meta property="og:image" content={absoluteOgImage} />}
+<!-- Twitter Cards -->
+<meta name="twitter:card" content={twitterCard} />
+<meta name="twitter:title" content={title} />
+{description && <meta name="twitter:description" content={description} />}
+{absoluteOgImage && <meta name="twitter:image" content={absoluteOgImage} />}
+{twitterSite && <meta name="twitter:site" content={twitterSite} />}
+<!-- hreflang alternates -->
+{alternates.map((link) => (
+  <link rel="alternate" hreflang={link.hreflang} href={link.href} />
+))}
