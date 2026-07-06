@@ -1,0 +1,12 @@
+---
+// Stub — full implementation in T8
+export interface Props {
+  title: string;
+  description?: string;
+  pathname: string;
+  locale: string;
+  siteName: string;
+}
+const { title } = Astro.props;
+---
+<title>{title}</title>
