@@ -1,9 +1,18 @@
 {
   "name": "@achimismaili/easy-web-seo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Shared SEO primitives for @achimismaili/easy-web-* consumer instances — Astro integration wrapping @astrojs/sitemap with i18n hreflang, dynamic robots.txt route with noIndex mode, and <SeoHead> component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest).",
-  "keywords": ["astro-integration", "astro-component", "seo", "sitemap", "robots.txt", "opengraph", "hreflang", "canonical"],
+  "keywords": [
+    "astro-integration",
+    "astro-component",
+    "seo",
+    "sitemap",
+    "robots.txt",
+    "opengraph",
+    "hreflang",
+    "canonical"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -11,7 +20,12 @@
     },
     "./components/*": "./src/components/*.astro"
   },
-  "files": ["dist", "src/components", "src/routes", "README.md"],
+  "files": [
+    "dist",
+    "src/components",
+    "src/routes",
+    "README.md"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
