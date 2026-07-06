@@ -1,4 +1,4 @@
-import type { AstroIntegration, AstroConfig } from 'astro';
+import type { AstroIntegration } from 'astro';
 import sitemap from '@astrojs/sitemap';
 
 export type Options = {
