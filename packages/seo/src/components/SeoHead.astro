@@ -1,5 +1,8 @@
 ---
-import { getAlternateLinks } from '@achimismaili/easy-web-i18n';
+export interface AlternateLink {
+  hreflang: string;
+  href: string;
+}
 
 export interface Props {
   title: string;
@@ -14,6 +17,7 @@ export interface Props {
   noIndex?: boolean;
   twitterCard?: 'summary' | 'summary_large_image';
   twitterSite?: string;
+  alternates?: AlternateLink[];
 }
 
 const {
@@ -29,6 +33,7 @@ const {
   noIndex = false,
   twitterCard = 'summary',
   twitterSite,
+  alternates = [],
 } = Astro.props;
 
 const site = Astro.site;
@@ -39,7 +44,6 @@ if (!site) {
 }
 
 const canonical = new URL(pathname, site).href;
-const alternates = getAlternateLinks(pathname);
 const absoluteOgImage = ogImage ? new URL(ogImage, site).href : undefined;
 // Map locale to OG locale format: 'de' → 'de_DE', 'en' → 'en_US'
 const ogLocale = locale === 'en' ? 'en_US' : locale === 'de' ? 'de_DE' : locale.replace('-', '_');
