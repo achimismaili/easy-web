@@ -1,0 +1,46 @@
+{
+  "name": "@achimismaili/easy-web-brand",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cli": {
+      "import": "./dist/cli.js"
+    }
+  },
+  "bin": {
+    "easy-web-brand": "./dist/cli.js"
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "sharp": "^0.34.5",
+    "png-to-ico": "^3.0.2",
+    "mri": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "eslint": "^9.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  },
+  "publishConfig": { "access": "public" },
+  "packageManager": "pnpm@10.34.4",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/achimismaili/easy-web.git",
+    "directory": "packages/easy-web-brand"
+  },
+  "license": "MIT"
+}
