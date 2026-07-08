@@ -201,16 +201,16 @@ importers:
         version: link:../i18n
       '@vitest/coverage-v8':
         specifier: ^3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.13)(@types/node@24.13.2)(jsdom@29.1.1)(yaml@2.9.0))
+        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.13)(@types/node@25.9.4)(jsdom@29.1.1)(yaml@2.9.0))
       astro:
         specifier: ^6.4.0
-        version: 6.4.8(@types/node@24.13.2)(rollup@4.60.4)(yaml@2.9.0)
+        version: 6.4.8(@types/node@25.9.4)(rollup@4.60.4)(yaml@2.9.0)
       typescript:
         specifier: ^5.5.0
         version: 5.9.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.13)(@types/node@24.13.2)(jsdom@29.1.1)(yaml@2.9.0)
+        version: 3.2.4(@types/debug@4.1.13)(@types/node@25.9.4)(jsdom@29.1.1)(yaml@2.9.0)
 
   packages/theme-core:
     devDependencies:
