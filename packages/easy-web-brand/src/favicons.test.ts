@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { copyFile, mkdir, rm, readFile } from 'node:fs/promises';
+import { mkdir, rm, readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
@@ -9,14 +9,12 @@ import { generateFavicons } from './favicons.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = join(__dirname, '..', 'test', 'fixtures');
+// Fixture is committed into the repo — no runtime copy needed.
 const TRANSPARENT_FIXTURE = join(fixturesDir, 'logo-dev.png');
-const SOURCE_TRANSPARENT = 'E:/code/it-ci/dev.ismaili.de/src/assets/logos/logo-dev.png';
 
 let tmpOut: string;
 
 beforeAll(async () => {
-  await mkdir(fixturesDir, { recursive: true });
-  await copyFile(SOURCE_TRANSPARENT, TRANSPARENT_FIXTURE);
   tmpOut = join(tmpdir(), `easy-web-brand-test-${Date.now()}`);
   await mkdir(tmpOut, { recursive: true });
 });

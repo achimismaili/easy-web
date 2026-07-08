@@ -10,19 +10,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..'); // packages/easy-web-brand/
 const CLI = join(ROOT, 'dist', 'cli.js');
 
-const SOURCE_TRANSPARENT = 'E:/code/it-ci/dev.ismaili.de/src/assets/logos/logo-dev.png';
+// Fixture is committed into the repo — copy from there into the unique tmp dir.
+const COMMITTED_FIXTURE = join(ROOT, 'test', 'fixtures', 'logo-dev.png');
 
 let tmpLogoDir: string;
 let tmpOutDir: string;
 
 beforeAll(async () => {
-  // Use unique temp dirs (timestamp-suffixed) so this file does not race
-  // against src/favicons.test.ts, which also seeds test/fixtures/logo-dev.png
-  // in its own beforeAll. Vitest runs test files in parallel by default.
   tmpLogoDir = join(tmpdir(), `ew-brand-cli-logos-${Date.now()}`);
   tmpOutDir = join(tmpdir(), `ew-brand-cli-out-${Date.now()}`);
   await mkdir(tmpLogoDir, { recursive: true });
-  await copyFile(SOURCE_TRANSPARENT, join(tmpLogoDir, 'logo-dev.png'));
+  await copyFile(COMMITTED_FIXTURE, join(tmpLogoDir, 'logo-dev.png'));
 });
 
 afterAll(async () => {

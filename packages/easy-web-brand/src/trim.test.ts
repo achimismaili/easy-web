@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { copyFile, mkdir } from 'node:fs/promises';
+import { describe, it, expect } from 'vitest';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -8,18 +7,10 @@ import { trimLogos } from './trim.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = join(__dirname, '..', 'test', 'fixtures');
 
+// Fixtures are committed into the repo — no runtime copy needed.
+// logo-dev.png = transparent background; logo-dev-white.png = white background.
 const TRANSPARENT_FIXTURE = join(fixturesDir, 'logo-dev.png');
 const WHITE_FIXTURE = join(fixturesDir, 'logo-dev-white.png');
-
-// Source files from dev.ismaili.de (post-T6 rename: logo-dev.png = transparent, logo-dev-white.png = white)
-const SOURCE_TRANSPARENT = 'E:/code/it-ci/dev.ismaili.de/src/assets/logos/logo-dev.png';
-const SOURCE_WHITE = 'E:/code/it-ci/dev.ismaili.de/src/assets/logos/logo-dev-white.png';
-
-beforeAll(async () => {
-  await mkdir(fixturesDir, { recursive: true });
-  await copyFile(SOURCE_TRANSPARENT, TRANSPARENT_FIXTURE);
-  await copyFile(SOURCE_WHITE, WHITE_FIXTURE);
-});
 
 describe('trimLogos', () => {
   it('trims transparent-background logo: output smaller than 1024, top-left pixel transparent', async () => {
