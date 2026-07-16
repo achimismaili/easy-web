@@ -259,6 +259,52 @@ const previewEntry = await getEntry('galleries', 'about-component-preview-de');
 | `DraftBanner` | — | (slot-based, expects a short message) | Banner notice for draft content. |
 | `LanguageNotice` | — | (slot-based, expects a translation-status message) | Banner notice when a page is shown in the non-current locale or has a partial translation. |
 
+## <UniversalMedia>
+
+A universal image dispatcher component that renders images from any source type consistently.
+
+### Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `src` | `ImageMetadata \| string` | ✓ | Image source: resolved metadata or a URL/path string |
+| `alt` | `string` | ✓ | Alt text |
+| `images` | `Record<string, () => Promise<{ default: ImageMetadata }>>` | ✓ | Consumer-supplied glob result (pass `import.meta.glob(...)` from the calling component) |
+| `fallbackSrc` | `string` | — | Fallback image path when `/src/assets/` glob lookup fails |
+| `fallbackAlt` | `string` | — | Fallback alt text (defaults to `alt`) |
+| `width` | `number` | — | Image width in px (default: 800) |
+| `height` | `number` | — | Image height in px (default: 600) |
+| `class` | `string` | — | CSS class name |
+| `decoding` | `'async' \| 'auto' \| 'sync'` | — | Image decoding hint (default: `'async'`) |
+
+### Dispatch logic
+
+1. **`ImageMetadata` object** → `<Image>` (Astro-optimised, generates srcset)
+2. **`/src/assets/...` string** → glob lookup via `images` prop → `<Image>` (or fallback/plain `<img>` on miss)
+3. **`http://...` / `https://...` string** → `<Image inferSize>` (reads dimensions from remote)
+4. **Everything else** (e.g., `/public/...` paths) → plain `<img>`
+
+> **Unsupported formats**: HEIC and JXL. Reject these at the CMS upload level (e.g., Decap CMS widget `hint`).
+
+### Usage
+
+```astro
+---
+import type { ImageMetadata } from 'astro';
+import UniversalMedia from '@achimismaili/easy-web-content-blocks/components/UniversalMedia';
+
+const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/**', { import: 'default' });
+---
+
+<UniversalMedia
+  src={entry.data.photo}
+  alt={entry.data.photoAlt}
+  {images}
+  fallbackSrc="/src/assets/images/default.png"
+  fallbackAlt="Default image"
+/>
+```
+
 ## Styling
 
 All components reference the `@achimismaili/easy-web-theme-core` CSS custom properties:
