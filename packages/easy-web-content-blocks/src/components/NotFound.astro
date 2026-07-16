@@ -1,0 +1,124 @@
+---
+/**
+ * NotFound – shared brand-conform 404 content block.
+ *
+ * Slotted body component (no `<html>`/`<head>`/`<body>`): consumers wrap it in
+ * their own layout. Public by design (never auth-gated per ADR 0010), so no
+ * `client:*` directives, `<script>` tags, or auth imports.
+ *
+ * `heading` / `message` are CMS overrides; when absent, the inline LABELS
+ * dictionary supplies DE/EN fallback copy (`easy-web-i18n` intentionally does
+ * not ship a UI-string dictionary — inline LABELS is the source of truth for
+ * uncustomised sites).
+ */
+
+interface Props {
+  /** Current page locale (e.g. `"de"`, `"en"`). */
+  currentLang: string;
+  /** Site default locale — used for `rootHref` auto-compute and LABELS fallback. */
+  defaultLocale: string;
+  /** Explicit back-home link. Auto-computed from `currentLang` vs `defaultLocale` when omitted. */
+  rootHref?: string;
+  /** Alternate locale URL. When present, renders a language switcher link. */
+  alternateHref?: string;
+  /** CMS override for the `<h1>` heading (falls back to LABELS). */
+  heading?: string;
+  /** CMS override for the paragraph message (falls back to LABELS). */
+  message?: string;
+  /** Optional illustration URL. When present, renders `<img>` above the heading. */
+  image?: string;
+}
+
+const LABELS: Record<
+  string,
+  { backHome: string; notFoundHeading: string; notFoundMessage: string; switchLanguage: string }
+> = {
+  de: {
+    backHome: 'Zur Startseite',
+    notFoundHeading: 'Seite nicht gefunden',
+    notFoundMessage: 'Die aufgerufene Seite existiert nicht.',
+    switchLanguage: 'English',
+  },
+  en: {
+    backHome: 'Home',
+    notFoundHeading: 'Page not found',
+    notFoundMessage: 'The requested page does not exist.',
+    switchLanguage: 'Deutsch',
+  },
+};
+
+const { currentLang, defaultLocale, rootHref, alternateHref, heading, message, image } = Astro.props;
+
+const t = LABELS[currentLang] ?? LABELS[defaultLocale] ?? LABELS.en;
+const resolvedRootHref = rootHref ?? (currentLang === defaultLocale ? '/' : `/${currentLang}/`);
+const resolvedHeading = heading ?? t.notFoundHeading;
+const resolvedMessage = message ?? t.notFoundMessage;
+---
+
+<section class="ew-not-found" data-testid="not-found">
+  {image ? <img src={image} alt="" class="ew-not-found__image" loading="lazy" /> : null}
+  <h1 class="ew-not-found__heading">{resolvedHeading}</h1>
+  <p class="ew-not-found__message">{resolvedMessage}</p>
+  <p class="ew-not-found__actions">
+    <a href={resolvedRootHref} class="ew-not-found__link">{t.backHome}</a>
+  </p>
+  {alternateHref ? (
+    <p class="ew-not-found__alt">
+      <a href={alternateHref} class="ew-not-found__alt-link">{t.switchLanguage}</a>
+    </p>
+  ) : null}
+</section>
+
+<style>
+  .ew-not-found {
+    max-width: 40rem;
+    margin: var(--ew-space-12) auto;
+    padding: 0 var(--ew-space-5);
+    text-align: center;
+    color: var(--ew-on-surface);
+  }
+  .ew-not-found__image {
+    display: block;
+    max-width: 12rem;
+    height: auto;
+    margin: 0 auto var(--ew-space-5);
+  }
+  .ew-not-found__heading {
+    font-family: var(--ew-font-sans);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-3);
+    letter-spacing: -0.01em;
+  }
+  .ew-not-found__message {
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-5);
+  }
+  .ew-not-found__actions {
+    margin: 0 0 var(--ew-space-3);
+  }
+  .ew-not-found__link {
+    display: inline-block;
+    padding: var(--ew-space-2) var(--ew-space-5);
+    background: var(--ew-primary);
+    color: var(--ew-on-primary);
+    border-radius: var(--ew-radius-md);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .ew-not-found__link:hover {
+    filter: brightness(0.95);
+  }
+  .ew-not-found__link:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+  .ew-not-found__alt {
+    margin: 0;
+  }
+  .ew-not-found__alt-link {
+    color: var(--ew-primary);
+    text-decoration: underline;
+    font-size: var(--ew-text-sm);
+  }
+</style>
