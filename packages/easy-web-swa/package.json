@@ -1,6 +1,6 @@
 {
   "name": "@achimismaili/easy-web-swa",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "packageManager": "pnpm@10.34.4",
   "description": "AstroIntegration that merges a sentinel-marked staticwebapp.config.json slice for shared 404 handling on Azure Static Web Apps.",

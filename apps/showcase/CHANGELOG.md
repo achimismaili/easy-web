@@ -1,5 +1,12 @@
 # showcase
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [17632de]
+  - @achimismaili/easy-web-content-blocks@1.1.0
+
 ## 0.0.4
 
 ### Patch Changes
