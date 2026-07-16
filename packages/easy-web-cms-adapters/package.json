@@ -1,6 +1,6 @@
 {
   "name": "@achimismaili/easy-web-cms-adapters",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "packageManager": "pnpm@10.34.4",
   "type": "module",
   "private": false,
@@ -13,7 +13,11 @@
     "./components/*": "./src/components/*.astro",
     "./src/components/*.astro": "./src/components/*.astro"
   },
-  "files": ["dist", "src/components", "README.md"],
+  "files": [
+    "dist",
+    "src/components",
+    "README.md"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
