@@ -1,6 +1,6 @@
 {
   "name": "@achimismaili/easy-web-content-blocks",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "packageManager": "pnpm@10.34.4",
   "type": "module",
   "description": "Reusable Astro content-block components for the easy-web ecosystem.",
@@ -25,8 +25,8 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@achimismaili/easy-web-i18n": "workspace:*",
-    "@achimismaili/easy-web-theme-core": "workspace:*",
+    "@achimismaili/easy-web-i18n": ">=1.0.0",
+    "@achimismaili/easy-web-theme-core": ">=1.0.0",
     "astro": ">=6.0.0 <8.0.0",
     "zod": ">=4.0.0"
   },
