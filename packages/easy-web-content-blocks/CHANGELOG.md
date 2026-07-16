@@ -1,5 +1,11 @@
 # @itci/easy-web-content-blocks
 
+## 1.1.0
+
+### Minor Changes
+
+- 17632de: Add NotFound component + notFoundSchema for shared brand-conform 404 pages.
+
 ## 1.0.0
 
 ### Major Changes
