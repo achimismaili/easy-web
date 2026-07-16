@@ -1,6 +1,6 @@
 {
   "name": "@achimismaili/easy-web-seo",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Shared SEO primitives for @achimismaili/easy-web-* consumer instances — Astro integration wrapping @astrojs/sitemap with i18n hreflang, dynamic robots.txt route with noIndex mode, and <SeoHead> component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest).",
   "keywords": [
@@ -35,7 +35,7 @@
   },
   "peerDependencies": {
     "astro": ">=6.0.0 <8.0.0",
-    "@achimismaili/easy-web-i18n": ">=0.4.0"
+    "@achimismaili/easy-web-i18n": ">=1.0.0"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3"

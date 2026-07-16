@@ -1,5 +1,19 @@
 # @itci/easy-web-content-blocks
 
+## 1.0.0
+
+### Major Changes
+
+- 82a0036: Declare astro peer range as >=6.0.0 <8.0.0 to match easy-web-i18n precedent.
+
+### Minor Changes
+
+- 0e16226: Add UniversalMedia dispatch tests and README documentation.
+
+### Patch Changes
+
+- @achimismaili/easy-web-theme-core@1.0.0
+
 ## 0.6.1
 
 ### Patch Changes

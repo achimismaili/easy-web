@@ -1,5 +1,7 @@
 # @itci/easy-web-auth
 
+## 1.0.0
+
 ## 0.1.1
 
 ### Fixes

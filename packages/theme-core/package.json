@@ -1,6 +1,6 @@
 {
   "name": "@achimismaili/easy-web-theme-core",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "packageManager": "pnpm@10.34.4",
   "type": "module",
   "exports": {
@@ -11,8 +11,14 @@
     "./tokens.css": "./styles/tokens.css",
     "./fonts.css": "./styles/fonts.css"
   },
-  "files": ["dist", "styles", "README.md"],
-  "sideEffects": ["*.css"],
+  "files": [
+    "dist",
+    "styles",
+    "README.md"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
