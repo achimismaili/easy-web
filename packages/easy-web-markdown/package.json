@@ -11,7 +11,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
@@ -28,6 +31,7 @@
   "devDependencies": {
     "@types/mdast": "^4",
     "typescript": "^5.5.0",
+    "vfile": "^6.0.3",
     "vitest": "^3.2.4"
   },
   "publishConfig": {
