@@ -1,0 +1,49 @@
+{
+  "name": "@achimismaili/easy-web-swa",
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.34.4",
+  "description": "AstroIntegration that merges a sentinel-marked staticwebapp.config.json slice for shared 404 handling on Azure Static Web Apps.",
+  "keywords": [
+    "astro-integration",
+    "azure-static-web-apps",
+    "swa",
+    "staticwebapp",
+    "404",
+    "not-found"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "astro": ">=6.0.0 <8.0.0",
+    "@achimismaili/easy-web-i18n": "workspace:*"
+  },
+  "devDependencies": {
+    "astro": "^6.4.0",
+    "@achimismaili/easy-web-i18n": "workspace:*",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.2.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "license": "MIT"
+}
