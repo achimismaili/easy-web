@@ -7,7 +7,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/achimismaili/easy-web.git",

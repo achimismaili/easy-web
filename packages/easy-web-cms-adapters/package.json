@@ -20,7 +20,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "peerDependencies": {
     "astro": ">=6.0.0"
   },

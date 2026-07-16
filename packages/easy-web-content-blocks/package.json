@@ -43,5 +43,5 @@
     "url": "https://github.com/achimismaili/easy-web.git",
     "directory": "packages/easy-web-content-blocks"
   },
-  "license": "UNLICENSED"
+  "license": "MIT"
 }

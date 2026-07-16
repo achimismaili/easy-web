@@ -47,5 +47,5 @@
     "url": "https://github.com/achimismaili/easy-web.git",
     "directory": "packages/i18n"
   },
-  "license": "UNLICENSED"
+  "license": "MIT"
 }
