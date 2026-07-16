@@ -2,10 +2,13 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [["@achimismaili/easy-web-auth", "@achimismaili/easy-web-brand", "@achimismaili/easy-web-cms-adapters", "@achimismaili/easy-web-content-blocks", "@achimismaili/easy-web-i18n", "@achimismaili/easy-web-markdown", "@achimismaili/easy-web-seo", "@achimismaili/easy-web-theme-core"]],
+  "fixed": [],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": [],
+  "___experimentalUnsafeOptions_WillChangeInVersion2": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true
+  }
 }

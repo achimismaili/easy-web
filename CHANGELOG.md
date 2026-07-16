@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] — shared NotFound + SWA 404 integration
+
+This release introduces a shared 404 primitive across the easy-web ecosystem. All site instances using Azure Static Web Apps can now delegate their 404 handling to a single, well-tested set of building blocks rather than duplicating config and components per instance.
+
+See [ADR 0013 — Shared NotFound Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md) for the full design rationale.
+
+### @achimismaili/easy-web-content-blocks (1.0.0 → 1.1.0)
+
+- New export: `<NotFound>` — an Astro component rendering a localised 404 page (heading, body copy, back-home CTA). Accepts `lang`, `title`, `body`, and `homePath` props; falls back to sensible English defaults.
+- New export: `notFoundSchema` — a Zod schema and TypeScript type for the 404 content collection entry. Instances declare a `notFound` collection and let Decap CMS edit the copy at runtime.
+- Both exports are additive and backward compatible; no existing imports break.
+
+### @achimismaili/easy-web-swa (new package, 0.1.0)
+
+- New package: `@achimismaili/easy-web-swa` — an Astro integration that generates a sentinel-safe `staticwebapp.config.json` at build time.
+- The integration rewrites the SWA navigation fallback to point at the site's own 404 route instead of serving a bare Azure SWA error page.
+- Sentinel-safe: if a `staticwebapp.config.json` already exists in `public/`, the integration merges only the `navigationFallback` block instead of overwriting the entire file.
+- Usage: add `easywWebSwa()` to `astro.config.ts` integrations array; no further config needed for the standard case.
+
+---
+
 ## [0.6.0] — 2026-06-22
 
 ### @itci/easy-web-content-blocks
