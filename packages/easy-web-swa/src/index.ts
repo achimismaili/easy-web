@@ -4,91 +4,68 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Options for {@link easyWebNotFound}.
+ * Options retained for compatibility with the 0.1.x API.
  *
- * These override values derived from `config.i18n`. Pass them when the site
- * has no Astro i18n config, or when the integration must diverge from it
- * (e.g. partial locale rollout).
+ * Azure Static Web Apps supports one global 404 response override, so locale
+ * settings no longer affect the emitted configuration.
  */
 export type Options = {
-  /**
-   * Default locale — the locale served at the root path (`/`). Its 404 page
-   * is emitted only as `responseOverrides.404 → /404.html`; no per-locale
-   * `routes[]` entry is written for it.
-   *
-   * Fallback order: `options.defaultLocale` → `config.i18n.defaultLocale` → `'de'`.
-   */
-  defaultLocale?: string;
-  /**
-   * Full locale list. Every locale that is NOT `defaultLocale` gets a
-   * `routes[]` entry rewriting `/{locale}/*` → `/{locale}/404/index.html`.
-   *
-   * Fallback order: `options.locales` → `config.i18n.locales` → `[defaultLocale]`.
-   */
-  locales?: string[];
+  readonly defaultLocale?: string;
+  readonly locales?: readonly string[];
 };
 
-const SENTINEL_VERSION = '0.1.0';
+const SENTINEL_VERSION = '0.2.0';
 const SENTINEL_DOCS =
   'https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md';
 const KEY_RESPONSE_OVERRIDES_404 = 'responseOverrides.404';
-const KEY_ROUTES = 'routes[]';
+const SIDECAR_SUFFIX = '.easy-web-managed.json';
+const SCHEMA_LEGAL_ROOT_KEYS = new Set([
+  '$schema',
+  'routes',
+  'navigationFallback',
+  'responseOverrides',
+  'mimeTypes',
+  'globalHeaders',
+  'auth',
+  'networking',
+  'forwardingGateway',
+  'platform',
+  'trailingSlash',
+]);
 
-type ManagedRoute = { route: string; rewrite: string; statusCode: 404 };
-type ResponseOverride404 = { rewrite: string; statusCode: 404 };
+type JsonObject = Record<string, unknown>;
 
 type ManagedSentinel = {
-  keys: string[];
-  routeIndices: number[];
-  version: string;
-  docs: string;
+  readonly keys: readonly string[];
+  readonly version: string;
+  readonly docs: string;
 };
 
-type SwaConfig = {
-  responseOverrides?: Record<string, unknown>;
-  routes?: unknown[];
-  $easyWebManaged?: ManagedSentinel;
-  [key: string]: unknown;
-};
+const MANAGED_RESPONSE_OVERRIDE = {
+  rewrite: '/404.html',
+  statusCode: 404,
+} as const;
 
 /**
- * AstroIntegration that merges a sentinel-marked slice into an instance's
- * `staticwebapp.config.json` so shared 404 handling works consistently on
- * Azure Static Web Apps.
+ * Astro integration that adds shared Azure Static Web Apps 404 handling.
  *
- * The integration owns only the top-level keys listed in
- * `$easyWebManaged.keys` and the specific `routes[]` entries listed in
- * `$easyWebManaged.routeIndices`. Everything else (`auth`, `globalHeaders`,
- * `navigationFallback`, user-authored routes) is preserved verbatim across
- * builds — see ADR 0013 (shared-not-found-primitives) for the full contract.
- *
- * Emitted per build:
- * - `responseOverrides.404 = { rewrite: '/404.html', statusCode: 404 }`
- * - one `routes[]` entry per non-default locale:
- *   `{ route: '/{locale}/*', rewrite: '/{locale}/404/index.html', statusCode: 404 }`
+ * The main config contains only schema-legal keys. Ownership metadata lives in
+ * a sibling sidecar, and the integration updates `responseOverrides.404` only
+ * when that sidecar says the key is managed. User routes and every other SWA
+ * setting are preserved; no locale-wide rewrite routes are emitted.
  */
-export function easyWebNotFound(options: Options = {}): AstroIntegration {
-  let defaultLocale = options.defaultLocale ?? 'de';
-  let locales: string[] = options.locales ?? [defaultLocale];
-
+export function easyWebNotFound(_options: Options = {}): AstroIntegration {
   return {
     name: '@achimismaili/easy-web-swa',
     hooks: {
       'astro:config:setup': ({ config }) => {
-        if (config.i18n) {
-          defaultLocale = options.defaultLocale ?? config.i18n.defaultLocale;
-          const configLocales = config.i18n.locales.map((locale) =>
-            typeof locale === 'string' ? locale : locale.path,
-          );
-          locales = options.locales ?? configLocales;
-        } else {
+        if (!config.i18n) {
           console.info(
-            '[easy-web-swa] no i18n config found — single-locale mode, emitting only root 404 slice',
+            '[easy-web-swa] no i18n config found — single-locale mode, emitting the global 404 override',
           );
         }
 
-        const output = config.output as string;
-        if (output === 'server' || output === 'hybrid') {
+        if (config.output === 'server') {
           console.warn(
             '[easy-web-swa] non-static output detected; integration will write staticwebapp.config.json directly to dist/ instead of relying on public/ passthrough',
           );
@@ -97,26 +74,17 @@ export function easyWebNotFound(options: Options = {}): AstroIntegration {
       'astro:build:done': ({ dir }) => {
         const distDir = fileURLToPath(dir);
         const configPath = path.join(distDir, 'staticwebapp.config.json');
-
-        const nonDefaultLocales = locales.filter((locale) => locale !== defaultLocale);
-        const managedRoutes: ManagedRoute[] = nonDefaultLocales.map((locale) => ({
-          route: `/${locale}/*`,
-          rewrite: `/${locale}/404/index.html`,
-          statusCode: 404,
-        }));
-        const managedResponseOverride: ResponseOverride404 = {
-          rewrite: '/404.html',
-          statusCode: 404,
-        };
-
-        const existing = readExisting(configPath);
-        const merged = mergeConfig(existing, managedResponseOverride, managedRoutes);
-
-        fs.writeFileSync(
+        const sidecarPath = `${configPath}${SIDECAR_SUFFIX}`;
+        const existing = readConfig(configPath);
+        const previousSentinel = readSidecar(sidecarPath);
+        const { config, sentinel } = mergeConfig(
+          existing,
+          previousSentinel,
           configPath,
-          JSON.stringify(merged, null, 2) + '\n',
-          'utf-8',
         );
+
+        writeJson(configPath, config);
+        writeJson(sidecarPath, sentinel);
       },
     },
   };
@@ -124,131 +92,124 @@ export function easyWebNotFound(options: Options = {}): AstroIntegration {
 
 export default easyWebNotFound;
 
-function readExisting(configPath: string): SwaConfig | null {
+function readConfig(configPath: string): JsonObject | null {
   if (!fs.existsSync(configPath)) return null;
-  const raw = fs.readFileSync(configPath, 'utf-8');
-  return JSON.parse(raw) as SwaConfig;
+  return parseObjectFile(configPath);
+}
+
+function readSidecar(sidecarPath: string): ManagedSentinel | null {
+  if (!fs.existsSync(sidecarPath)) return null;
+  const value = parseObjectFile(sidecarPath);
+  const keys = value['keys'];
+  const version = value['version'];
+  const docs = value['docs'];
+
+  if (
+    !Array.isArray(keys) ||
+    !keys.every((key) => typeof key === 'string') ||
+    typeof version !== 'string' ||
+    typeof docs !== 'string'
+  ) {
+    throw new TypeError(
+      `[easy-web-swa] invalid managed metadata in ${sidecarPath}`,
+    );
+  }
+
+  return { keys, version, docs };
+}
+
+function parseObjectFile(filePath: string): JsonObject {
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new SyntaxError(
+        `[easy-web-swa] failed to parse JSON in ${filePath}: ${error.message}`,
+      );
+    }
+    throw error;
+  }
+
+  if (!isJsonObject(value)) {
+    throw new TypeError(`[easy-web-swa] expected a JSON object in ${filePath}`);
+  }
+  return value;
 }
 
 function mergeConfig(
-  existing: SwaConfig | null,
-  managedResponseOverride: ResponseOverride404,
-  managedRoutes: ManagedRoute[],
-): SwaConfig {
-  if (existing === null) {
-    return createFresh(managedResponseOverride, managedRoutes);
-  }
-  if (existing.$easyWebManaged) {
-    return replaceManaged(existing, managedResponseOverride, managedRoutes);
-  }
-  return additive(existing, managedResponseOverride, managedRoutes);
-}
+  existing: JsonObject | null,
+  previousSentinel: ManagedSentinel | null,
+  configPath: string,
+): { readonly config: JsonObject; readonly sentinel: ManagedSentinel } {
+  const config = schemaLegalConfig(existing);
+  const responseOverrides = readResponseOverrides(config, configPath);
+  const integrationOwns404 =
+    previousSentinel?.keys.includes(KEY_RESPONSE_OVERRIDES_404) ?? false;
+  const userOwns404 = '404' in responseOverrides && !integrationOwns404;
 
-function createFresh(
-  managedResponseOverride: ResponseOverride404,
-  managedRoutes: ManagedRoute[],
-): SwaConfig {
-  const routeIndices = managedRoutes.map((_route, idx) => idx);
-  return {
-    responseOverrides: { '404': managedResponseOverride },
-    routes: [...managedRoutes],
-    $easyWebManaged: makeSentinel(
-      [KEY_RESPONSE_OVERRIDES_404, KEY_ROUTES],
-      routeIndices,
-    ),
-  };
-}
-
-function replaceManaged(
-  existing: SwaConfig,
-  managedResponseOverride: ResponseOverride404,
-  managedRoutes: ManagedRoute[],
-): SwaConfig {
-  const oldSentinel = existing.$easyWebManaged;
-  const oldIndices = new Set(oldSentinel ? oldSentinel.routeIndices : []);
-
-  const oldRoutes = Array.isArray(existing.routes) ? existing.routes : [];
-  const remainingRoutes = oldRoutes.filter((_route, idx) => !oldIndices.has(idx));
-  const newRoutes = [...remainingRoutes, ...managedRoutes];
-  const newRouteIndices: number[] = [];
-  for (let i = remainingRoutes.length; i < newRoutes.length; i++) {
-    newRouteIndices.push(i);
-  }
-
-  const newResponseOverrides: Record<string, unknown> = {
-    ...(existing.responseOverrides ?? {}),
-    '404': managedResponseOverride,
-  };
-
-  return {
-    ...existing,
-    responseOverrides: newResponseOverrides,
-    routes: newRoutes,
-    $easyWebManaged: makeSentinel(
-      [KEY_RESPONSE_OVERRIDES_404, KEY_ROUTES],
-      newRouteIndices,
-    ),
-  };
-}
-
-function additive(
-  existing: SwaConfig,
-  managedResponseOverride: ResponseOverride404,
-  managedRoutes: ManagedRoute[],
-): SwaConfig {
-  const managedKeys: string[] = [];
-  const existingRoutes: unknown[] = Array.isArray(existing.routes)
-    ? [...existing.routes]
-    : [];
-  const newRouteIndices: number[] = [];
-
-  for (const managedRoute of managedRoutes) {
-    const duplicate = existingRoutes.some(
-      (entry) =>
-        typeof entry === 'object' &&
-        entry !== null &&
-        (entry as { route?: unknown }).route === managedRoute.route,
-    );
-    if (duplicate) {
-      console.warn(
-        `[easy-web-swa] route pattern "${managedRoute.route}" already defined in staticwebapp.config.json; user route wins; integration will not append duplicate`,
-      );
-      continue;
-    }
-    const newIndex = existingRoutes.length;
-    existingRoutes.push(managedRoute);
-    newRouteIndices.push(newIndex);
-  }
-  if (newRouteIndices.length > 0) {
-    managedKeys.push(KEY_ROUTES);
-  }
-
-  const newResponseOverrides: Record<string, unknown> = {
-    ...((existing.responseOverrides ?? {}) as Record<string, unknown>),
-  };
-  const userHas404 = '404' in newResponseOverrides;
-  if (userHas404) {
+  if (userOwns404) {
     console.warn(
       '[easy-web-swa] user has defined responseOverrides.404; user override wins; integration will not manage it',
     );
-  } else {
-    newResponseOverrides['404'] = managedResponseOverride;
-    managedKeys.push(KEY_RESPONSE_OVERRIDES_404);
+    return { config, sentinel: makeSentinel([]) };
   }
 
   return {
-    ...existing,
-    responseOverrides: newResponseOverrides,
-    routes: existingRoutes,
-    $easyWebManaged: makeSentinel(managedKeys, newRouteIndices),
+    config: {
+      ...config,
+      responseOverrides: {
+        ...responseOverrides,
+        '404': MANAGED_RESPONSE_OVERRIDE,
+      },
+    },
+    sentinel: makeSentinel([KEY_RESPONSE_OVERRIDES_404]),
   };
 }
 
-function makeSentinel(keys: string[], routeIndices: number[]): ManagedSentinel {
+function schemaLegalConfig(existing: JsonObject | null): JsonObject {
+  if (existing === null) return {};
+
+  const config: JsonObject = {};
+  for (const [key, value] of Object.entries(existing)) {
+    if (SCHEMA_LEGAL_ROOT_KEYS.has(key)) {
+      config[key] = value;
+    } else {
+      console.warn(
+        `[easy-web-swa] omitting non-schema-legal root key "${key}" from staticwebapp.config.json`,
+      );
+    }
+  }
+  return config;
+}
+
+function readResponseOverrides(
+  config: JsonObject,
+  configPath: string,
+): JsonObject {
+  const value = config['responseOverrides'];
+  if (value === undefined) return {};
+  if (!isJsonObject(value)) {
+    throw new TypeError(
+      `[easy-web-swa] expected responseOverrides to be an object in ${configPath}`,
+    );
+  }
+  return value;
+}
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function makeSentinel(keys: readonly string[]): ManagedSentinel {
   return {
     keys,
-    routeIndices,
     version: SENTINEL_VERSION,
     docs: SENTINEL_DOCS,
   };
+}
+
+function writeJson(filePath: string, value: unknown): void {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
 }

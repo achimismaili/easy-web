@@ -1,75 +1,114 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'node:fs';
-import * as path from 'node:path';
 import * as os from 'node:os';
+import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import easyWebNotFound from '../index.js';
 
-/**
- * Unit tests for the sentinel-marked staticwebapp.config.json merge algorithm.
- *
- * These tests exercise the actual exported `easyWebNotFound` integration by
- * invoking its `astro:config:setup` and `astro:build:done` hooks against a
- * real temp directory (no mocked fs, no mocked merge). The 7 core scenarios
- * are the enterprise-grade behaviors documented in ADR 0013.
- */
-
 type EmittedConfig = {
-  responseOverrides?: Record<string, unknown>;
-  routes?: unknown[];
-  $easyWebManaged?: {
-    keys: string[];
-    routeIndices: number[];
-    version: string;
-    docs: string;
-  };
-  [k: string]: unknown;
+  readonly responseOverrides?: Record<string, unknown>;
+  readonly routes?: readonly unknown[];
+  readonly [key: string]: unknown;
+};
+
+type ManagedSidecar = {
+  readonly keys: readonly string[];
+  readonly version: string;
+  readonly docs: string;
 };
 
 type RunOpts = {
-  existingConfig?: unknown;
-  i18n?: { defaultLocale: string; locales: (string | { path: string })[] };
-  output?: string;
-  integrationOptions?: { defaultLocale?: string; locales?: string[] };
+  readonly existingConfig?: unknown;
+  readonly existingSidecar?: unknown;
+  readonly i18n?: {
+    readonly defaultLocale: string;
+    readonly locales: readonly (string | { readonly path: string })[];
+  };
+  readonly output?: string;
+  readonly integrationOptions?: {
+    readonly defaultLocale?: string;
+    readonly locales?: readonly string[];
+  };
 };
 
-const _tmpDirs: string[] = [];
+const tempDirectories: string[] = [];
+const MANAGED_404 = { rewrite: '/404.html', statusCode: 404 };
+const DOCS_URL =
+  'https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md';
+const LEGAL_ROOT_KEYS: readonly string[] = [
+  '$schema',
+  'routes',
+  'navigationFallback',
+  'responseOverrides',
+  'mimeTypes',
+  'globalHeaders',
+  'auth',
+  'networking',
+  'forwardingGateway',
+  'platform',
+  'trailingSlash',
+];
+const INVALID_SIDECARS: ReadonlyArray<{
+  readonly label: string;
+  readonly value: unknown;
+}> = [
+  {
+    label: 'keys is not an array',
+    value: { keys: 'responseOverrides.404', version: '0.2.0', docs: DOCS_URL },
+  },
+  {
+    label: 'keys holds a non-string entry',
+    value: {
+      keys: ['responseOverrides.404', 404],
+      version: '0.2.0',
+      docs: DOCS_URL,
+    },
+  },
+  {
+    label: 'version is missing',
+    value: { keys: ['responseOverrides.404'], docs: DOCS_URL },
+  },
+  {
+    label: 'version is not a string',
+    value: { keys: ['responseOverrides.404'], version: 2, docs: DOCS_URL },
+  },
+  {
+    label: 'docs is missing',
+    value: { keys: ['responseOverrides.404'], version: '0.2.0' },
+  },
+];
 
 afterEach(() => {
-  while (_tmpDirs.length > 0) {
-    const d = _tmpDirs.pop();
-    if (d && fs.existsSync(d)) {
-      try {
-        fs.rmSync(d, { recursive: true, force: true });
-      } catch {
-        /* best-effort cleanup */
-      }
+  while (tempDirectories.length > 0) {
+    const directory = tempDirectories.pop();
+    if (directory && fs.existsSync(directory)) {
+      fs.rmSync(directory, { recursive: true, force: true });
     }
   }
   vi.restoreAllMocks();
 });
 
-async function runIntegration(opts: RunOpts): Promise<{
-  tmpDir: string;
-  configPath: string;
-  emittedRaw: string;
-  emitted: EmittedConfig;
-}> {
+type TempPaths = {
+  readonly tmpDir: string;
+  readonly configPath: string;
+  readonly sidecarPath: string;
+};
+
+function createTempConfigDir(): TempPaths {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'easy-web-swa-test-'));
-  _tmpDirs.push(tmpDir);
+  tempDirectories.push(tmpDir);
   const configPath = path.join(tmpDir, 'staticwebapp.config.json');
-  if (opts.existingConfig !== undefined) {
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(opts.existingConfig, null, 2) + '\n',
-      'utf-8',
-    );
-  }
+  return { tmpDir, configPath, sidecarPath: `${configPath}.easy-web-managed.json` };
+}
+
+// Split out of runIntegration so failure-path cases can assert the rejection
+// without the helper first reading files the failed build never wrote.
+async function invokeHooks(tmpDir: string, opts: RunOpts = {}): Promise<void> {
   const integration = easyWebNotFound(opts.integrationOptions ?? {});
-  const hooks = integration.hooks as Record<
-    string,
-    (arg: unknown) => unknown | Promise<unknown>
-  >;
+  const hooks: unknown = integration.hooks;
+  if (!isRecord(hooks)) {
+    throw new TypeError('Expected Astro integration hooks');
+  }
   const setupHook = hooks['astro:config:setup'];
   if (typeof setupHook === 'function') {
     await setupHook({
@@ -78,73 +117,109 @@ async function runIntegration(opts: RunOpts): Promise<{
   }
   const doneHook = hooks['astro:build:done'];
   if (typeof doneHook === 'function') {
-    await doneHook({ dir: pathToFileURL(tmpDir + path.sep) });
+    await doneHook({ dir: pathToFileURL(`${tmpDir}${path.sep}`) });
   }
+}
+
+async function runIntegration(opts: RunOpts): Promise<{
+  readonly tmpDir: string;
+  readonly configPath: string;
+  readonly sidecarPath: string;
+  readonly emittedRaw: string;
+  readonly emitted: EmittedConfig;
+  readonly sidecarRaw: string;
+  readonly sidecar: ManagedSidecar;
+}> {
+  const { tmpDir, configPath, sidecarPath } = createTempConfigDir();
+
+  if (opts.existingConfig !== undefined) {
+    writeJson(configPath, opts.existingConfig);
+  }
+  if (opts.existingSidecar !== undefined) {
+    writeJson(sidecarPath, opts.existingSidecar);
+  }
+
+  await invokeHooks(tmpDir, opts);
+
   const emittedRaw = fs.readFileSync(configPath, 'utf-8');
+  const sidecarRaw = fs.readFileSync(sidecarPath, 'utf-8');
   return {
     tmpDir,
     configPath,
+    sidecarPath,
     emittedRaw,
-    emitted: JSON.parse(emittedRaw) as EmittedConfig,
+    emitted: JSON.parse(emittedRaw),
+    sidecarRaw,
+    sidecar: JSON.parse(sidecarRaw),
   };
 }
 
-const MANAGED_404 = { rewrite: '/404.html', statusCode: 404 };
-const DOCS_URL =
-  'https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md';
+function writeJson(filePath: string, value: unknown): void {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
+}
+
+// Drops the wrapper's outer braces so the remainder is the exact nested-at-
+// depth-1 text the writer produces, enabling raw-string byte-identity asserts.
+function rawRootKeySlice(key: string, value: unknown): string {
+  const wrapped = JSON.stringify({ [key]: value }, null, 2);
+  return wrapped.slice(wrapped.indexOf('\n') + 1, wrapped.lastIndexOf('\n'));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+async function captureError(promise: Promise<unknown>): Promise<unknown> {
+  try {
+    await promise;
+  } catch (error) {
+    return error;
+  }
+  throw new Error('Expected the integration to throw, but it resolved');
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 describe('easyWebNotFound merge algorithm', () => {
-  it('case 1: no existing file → sentinel + responseOverrides.404 + /en/* route', async () => {
-    const { emitted } = await runIntegration({
+  it('case 1: no existing file emits a global 404 override and sidecar only', async () => {
+    const result = await runIntegration({
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
     });
-    expect(emitted.$easyWebManaged).toBeDefined();
-    expect(emitted.$easyWebManaged?.version).toBe('0.1.0');
-    expect(emitted.$easyWebManaged?.docs).toBe(DOCS_URL);
-    expect(emitted.$easyWebManaged?.keys).toEqual([
-      'responseOverrides.404',
-      'routes[]',
-    ]);
-    expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
-    expect(emitted.routes).toEqual([
-      { route: '/en/*', rewrite: '/en/404/index.html', statusCode: 404 },
-    ]);
-    expect(emitted.$easyWebManaged?.routeIndices).toEqual([0]);
+
+    expect(result.emitted).toEqual({
+      responseOverrides: { '404': MANAGED_404 },
+    });
+    expect(result.emitted.routes).toBeUndefined();
+    expect(result.sidecar).toEqual({
+      keys: ['responseOverrides.404'],
+      version: '0.2.0',
+      docs: DOCS_URL,
+    });
   });
 
-  it('case 2: existing user routes, no sentinel → user routes preserved + shared slice added', async () => {
+  it('case 2: existing user routes are unchanged and no locale route is added', async () => {
     const userRoutes = [
       { route: '/api/*', allowedRoles: ['authenticated'] },
       { route: '/admin/*', allowedRoles: ['admin'] },
     ];
-    const { emitted } = await runIntegration({
+    const { emitted, sidecar } = await runIntegration({
       existingConfig: { routes: userRoutes },
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
     });
-    // User routes preserved byte-identical at [0..1]
-    expect(emitted.routes?.[0]).toEqual(userRoutes[0]);
-    expect(emitted.routes?.[1]).toEqual(userRoutes[1]);
-    // Managed route appended at [2]
-    expect(emitted.routes?.[2]).toEqual({
-      route: '/en/*',
-      rewrite: '/en/404/index.html',
-      statusCode: 404,
-    });
-    // Sentinel manages both keys, indices point only to appended entry
-    expect(emitted.$easyWebManaged?.keys).toEqual(
-      expect.arrayContaining(['responseOverrides.404', 'routes[]']),
-    );
-    expect(emitted.$easyWebManaged?.routeIndices).toEqual([2]);
+
+    expect(emitted.routes).toEqual(userRoutes);
     expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
+    expect(sidecar.keys).toEqual(['responseOverrides.404']);
   });
 
-  it('case 3: existing sentinel → replaces managed keys; auth/globalHeaders/navigationFallback byte-identical', async () => {
+  it('case 3: claimed 404 is refreshed while unrelated config is preserved', async () => {
     const userAuth = {
       identityProviders: {
         azureActiveDirectory: {
           registration: {
-            openIdIssuer:
-              'https://login.microsoftonline.com/tenant-id/v2.0',
+            openIdIssuer: 'https://login.microsoftonline.com/tenant-id/v2.0',
           },
         },
       },
@@ -157,185 +232,446 @@ describe('easyWebNotFound merge algorithm', () => {
       rewrite: '/index.html',
       exclude: ['/images/*.{png,jpg,gif}', '/api/*'],
     };
-    const existingConfig = {
-      auth: userAuth,
-      globalHeaders: userGlobalHeaders,
-      navigationFallback: userNavigationFallback,
-      responseOverrides: {
-        '404': { rewrite: '/404.html', statusCode: 404 },
-        '500': { rewrite: '/500.html', statusCode: 500 },
+    const userRoutes = [{ route: '/api/*', allowedRoles: ['authenticated'] }];
+    const { emitted, sidecar } = await runIntegration({
+      existingConfig: {
+        auth: userAuth,
+        globalHeaders: userGlobalHeaders,
+        navigationFallback: userNavigationFallback,
+        responseOverrides: {
+          '404': { rewrite: '/stale-managed-404.html', statusCode: 404 },
+          '500': { rewrite: '/500.html', statusCode: 500 },
+        },
+        routes: userRoutes,
       },
-      routes: [
-        { route: '/api/*', allowedRoles: ['authenticated'] },
-        // Previously managed route at index 1 — should be dropped on rebuild
-        { route: '/en/*', rewrite: '/en/404/index.html', statusCode: 404 },
-      ],
-      $easyWebManaged: {
-        keys: ['responseOverrides.404', 'routes[]'],
-        routeIndices: [1],
+      existingSidecar: {
+        keys: ['responseOverrides.404'],
         version: '0.1.0',
         docs: DOCS_URL,
       },
-    };
-    const { emitted } = await runIntegration({
-      existingConfig,
       i18n: { defaultLocale: 'de', locales: ['de', 'en', 'fr'] },
     });
-    // Byte-identical preservation of non-managed keys
+
     expect(emitted.auth).toEqual(userAuth);
     expect(emitted.globalHeaders).toEqual(userGlobalHeaders);
     expect(emitted.navigationFallback).toEqual(userNavigationFallback);
-    // Non-404 responseOverride preserved
+    expect(emitted.routes).toEqual(userRoutes);
     expect(emitted.responseOverrides?.['500']).toEqual({
       rewrite: '/500.html',
       statusCode: 500,
     });
-    // Managed 404 refreshed
     expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
-    // Old managed /en/* dropped; user /api/* preserved; new /en/* + /fr/* appended
-    expect(emitted.routes).toHaveLength(3);
-    expect(emitted.routes?.[0]).toEqual({
-      route: '/api/*',
-      allowedRoles: ['authenticated'],
-    });
-    expect(emitted.routes?.[1]).toEqual({
-      route: '/en/*',
-      rewrite: '/en/404/index.html',
-      statusCode: 404,
-    });
-    expect(emitted.routes?.[2]).toEqual({
-      route: '/fr/*',
-      rewrite: '/fr/404/index.html',
-      statusCode: 404,
-    });
-    expect(emitted.$easyWebManaged?.routeIndices).toEqual([1, 2]);
-    expect(emitted.$easyWebManaged?.keys).toEqual([
-      'responseOverrides.404',
-      'routes[]',
-    ]);
+    expect(sidecar.keys).toEqual(['responseOverrides.404']);
   });
 
-  it('case 4: user 404 override, no sentinel → warns, user override wins, keys omits responseOverrides.404', async () => {
+  it('case 4: unclaimed user 404 wins and remains unclaimed', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const userOverride = { rewrite: '/custom-404.html', statusCode: 404 };
-    const { emitted } = await runIntegration({
+    const { emitted, sidecar } = await runIntegration({
       existingConfig: { responseOverrides: { '404': userOverride } },
+      existingSidecar: { keys: [], version: '0.2.0', docs: DOCS_URL },
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
     });
-    const warnMessages = warnSpy.mock.calls.map((c) => c.join(' '));
-    expect(
-      warnMessages.some((m) => m.includes('user override wins')),
-    ).toBe(true);
-    expect(emitted.responseOverrides?.['404']).toEqual(userOverride);
-    expect(emitted.$easyWebManaged?.keys).not.toContain(
-      'responseOverrides.404',
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('user override wins'),
     );
-    expect(emitted.$easyWebManaged?.keys).toContain('routes[]');
+    expect(emitted.responseOverrides?.['404']).toEqual(userOverride);
+    expect(sidecar.keys).toEqual([]);
   });
 
-  it('case 5: no i18n config → single-locale mode, no route entries, console.info', async () => {
+  it('case 5: no i18n config uses the same global-only model', async () => {
     const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
-    const { emitted } = await runIntegration({});
-    const infoMessages = infoSpy.mock.calls.map((c) => c.join(' '));
-    expect(
-      infoMessages.some((m) => m.includes('single-locale mode')),
-    ).toBe(true);
+    const { emitted, sidecar } = await runIntegration({});
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('single-locale mode'),
+    );
     expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
-    expect(emitted.routes).toEqual([]);
-    expect(emitted.$easyWebManaged?.routeIndices).toEqual([]);
-    expect(emitted.$easyWebManaged?.keys).toContain('responseOverrides.404');
+    expect(emitted.routes).toBeUndefined();
+    expect(sidecar.keys).toEqual(['responseOverrides.404']);
   });
 
-  it('case 6: output encoding — 2-space indent + trailing newline (byte-match fixture)', async () => {
-    const { emittedRaw } = await runIntegration({
+  it('case 6: config and sidecar use two-space JSON with one trailing newline', async () => {
+    const { emittedRaw, sidecarRaw } = await runIntegration({
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
     });
-    const expected =
+    const expectedConfig =
       '{\n' +
       '  "responseOverrides": {\n' +
       '    "404": {\n' +
       '      "rewrite": "/404.html",\n' +
       '      "statusCode": 404\n' +
       '    }\n' +
-      '  },\n' +
-      '  "routes": [\n' +
-      '    {\n' +
-      '      "route": "/en/*",\n' +
-      '      "rewrite": "/en/404/index.html",\n' +
-      '      "statusCode": 404\n' +
-      '    }\n' +
-      '  ],\n' +
-      '  "$easyWebManaged": {\n' +
-      '    "keys": [\n' +
-      '      "responseOverrides.404",\n' +
-      '      "routes[]"\n' +
-      '    ],\n' +
-      '    "routeIndices": [\n' +
-      '      0\n' +
-      '    ],\n' +
-      '    "version": "0.1.0",\n' +
-      `    "docs": "${DOCS_URL}"\n` +
       '  }\n' +
       '}\n';
-    expect(emittedRaw).toBe(expected);
-    expect(emittedRaw.endsWith('\n')).toBe(true);
+    const expectedSidecar =
+      '{\n' +
+      '  "keys": [\n' +
+      '    "responseOverrides.404"\n' +
+      '  ],\n' +
+      '  "version": "0.2.0",\n' +
+      `  "docs": "${DOCS_URL}"\n` +
+      '}\n';
+
+    expect(emittedRaw).toBe(expectedConfig);
+    expect(sidecarRaw).toBe(expectedSidecar);
     expect(emittedRaw.endsWith('\n\n')).toBe(false);
-    expect(emittedRaw).toMatch(/^\{\n {2}"/);
+    expect(sidecarRaw.endsWith('\n\n')).toBe(false);
   });
 
-  it('case 7: route conflict (/en/* exists) → warn + skip duplicate', async () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('case 7: a user locale route remains untouched without conflict handling', async () => {
     const userRoute = {
       route: '/en/*',
       rewrite: '/legacy-en/404.html',
       statusCode: 404,
     };
-    const { emitted } = await runIntegration({
+    const { emitted, sidecar } = await runIntegration({
       existingConfig: { routes: [userRoute] },
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
     });
-    const warnMessages = warnSpy.mock.calls.map((c) => c.join(' '));
-    expect(
-      warnMessages.some(
-        (m) => m.includes('/en/*') && m.includes('will not append duplicate'),
-      ),
-    ).toBe(true);
-    // Only one /en/* route: the user's — unchanged
-    const enRoutes = (emitted.routes ?? []).filter(
-      (r) =>
-        typeof r === 'object' &&
-        r !== null &&
-        (r as { route?: unknown }).route === '/en/*',
-    );
-    expect(enRoutes).toHaveLength(1);
-    expect(enRoutes[0]).toEqual(userRoute);
-    // All managed routes were skipped → routes[] NOT in managedKeys; indices empty
-    expect(emitted.$easyWebManaged?.routeIndices).toEqual([]);
-    expect(emitted.$easyWebManaged?.keys).not.toContain('routes[]');
-    // responseOverrides.404 was still managed (user hadn't defined one)
-    expect(emitted.$easyWebManaged?.keys).toContain('responseOverrides.404');
+
+    expect(emitted.routes).toEqual([userRoute]);
+    expect(sidecar.keys).toEqual(['responseOverrides.404']);
   });
 
-  it('case 8 (bonus): locale-list-swap → old managed routes replaced on rebuild', async () => {
-    // Build 1: default=de, locales=[de,en] → managed /en/*
+  it('case 8: changing locales is a no-op for the locale-agnostic managed slice', async () => {
     const build1 = await runIntegration({
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
     });
-    expect(build1.emitted.routes).toEqual([
-      { route: '/en/*', rewrite: '/en/404/index.html', statusCode: 404 },
-    ]);
-    // Build 2: swap default to en → managed /de/* (old /en/* dropped via sentinel indices)
     const build2 = await runIntegration({
       existingConfig: build1.emitted,
-      i18n: { defaultLocale: 'en', locales: ['de', 'en'] },
+      existingSidecar: build1.sidecar,
+      i18n: { defaultLocale: 'en', locales: ['de', 'en', 'fr'] },
     });
-    expect(build2.emitted.routes).toEqual([
-      { route: '/de/*', rewrite: '/de/404/index.html', statusCode: 404 },
-    ]);
-    expect(build2.emitted.$easyWebManaged?.routeIndices).toEqual([0]);
-    expect(build2.emitted.$easyWebManaged?.keys).toEqual([
-      'responseOverrides.404',
-      'routes[]',
-    ]);
+
+    expect(build2.emitted).toEqual(build1.emitted);
+    expect(build2.sidecar).toEqual(build1.sidecar);
+    expect(build2.emitted.routes).toBeUndefined();
+  });
+
+  it('defect A: emitted config contains only schema-legal root keys', async () => {
+    const { emitted } = await runIntegration({
+      existingConfig: { $easyWebManaged: { legacy: true } },
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(Object.keys(emitted).every((key) => LEGAL_ROOT_KEYS.includes(key))).toBe(
+      true,
+    );
+    expect(emitted['$easyWebManaged']).toBeUndefined();
+  });
+
+  it('defect B: build writes keys, version, and docs to a sidecar file', async () => {
+    const { sidecarPath, sidecar } = await runIntegration({
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(fs.existsSync(sidecarPath)).toBe(true);
+    expect(sidecar).toEqual({
+      keys: ['responseOverrides.404'],
+      version: '0.2.0',
+      docs: DOCS_URL,
+    });
+  });
+
+  it('consecutive-build defect: user-owned responseOverrides.404 survives build 2', async () => {
+    const userOverride = { rewrite: '/custom-404.html', statusCode: 404 };
+    const build1 = await runIntegration({
+      existingConfig: { responseOverrides: { '404': userOverride } },
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+    const build2 = await runIntegration({
+      existingConfig: build1.emitted,
+      existingSidecar: build1.sidecar,
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(build1.sidecar.keys).toEqual([]);
+    expect(build2.emitted.responseOverrides?.['404']).toEqual(userOverride);
+    expect(build2.sidecar.keys).toEqual([]);
+  });
+
+  it('case 9: malformed JSON in the config throws a SyntaxError naming the config path', async () => {
+    const { tmpDir, configPath, sidecarPath } = createTempConfigDir();
+    fs.writeFileSync(configPath, '{ broken', 'utf-8');
+
+    const error = await captureError(
+      invokeHooks(tmpDir, {
+        i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+      }),
+    );
+
+    expect(error).toBeInstanceOf(SyntaxError);
+    expect(errorMessage(error)).toContain(configPath);
+    expect(errorMessage(error)).toContain('failed to parse JSON');
+    expect(fs.readFileSync(configPath, 'utf-8')).toBe('{ broken');
+    expect(fs.existsSync(sidecarPath)).toBe(false);
+  });
+
+  it('case 10: malformed JSON in the sidecar throws a SyntaxError naming the sidecar path', async () => {
+    const { tmpDir, configPath, sidecarPath } = createTempConfigDir();
+    writeJson(configPath, { responseOverrides: { '404': MANAGED_404 } });
+    fs.writeFileSync(sidecarPath, '{ "keys": [', 'utf-8');
+
+    const error = await captureError(
+      invokeHooks(tmpDir, {
+        i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+      }),
+    );
+
+    expect(error).toBeInstanceOf(SyntaxError);
+    expect(errorMessage(error)).toContain(sidecarPath);
+    expect(errorMessage(error)).toContain('failed to parse JSON');
+    expect(fs.readFileSync(sidecarPath, 'utf-8')).toBe('{ "keys": [');
+  });
+
+  it('case 11: a non-object config document throws a TypeError naming the config path', async () => {
+    const { tmpDir, configPath } = createTempConfigDir();
+    writeJson(configPath, [{ route: '/api/*' }]);
+
+    const error = await captureError(
+      invokeHooks(tmpDir, {
+        i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+      }),
+    );
+
+    expect(error).toBeInstanceOf(TypeError);
+    expect(errorMessage(error)).toContain(configPath);
+    expect(errorMessage(error)).toContain('expected a JSON object');
+  });
+
+  it('case 12: a non-object sidecar document throws a TypeError naming the sidecar path', async () => {
+    const { tmpDir, configPath, sidecarPath } = createTempConfigDir();
+    writeJson(configPath, { responseOverrides: { '404': MANAGED_404 } });
+    writeJson(sidecarPath, 'responseOverrides.404');
+
+    const error = await captureError(
+      invokeHooks(tmpDir, {
+        i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+      }),
+    );
+
+    expect(error).toBeInstanceOf(TypeError);
+    expect(errorMessage(error)).toContain(sidecarPath);
+    expect(errorMessage(error)).toContain('expected a JSON object');
+  });
+
+  for (const { label, value } of INVALID_SIDECARS) {
+    it(`case 13 (${label}): an invalid sidecar shape throws a TypeError naming the sidecar path`, async () => {
+      const { tmpDir, configPath, sidecarPath } = createTempConfigDir();
+      writeJson(configPath, { responseOverrides: { '404': MANAGED_404 } });
+      writeJson(sidecarPath, value);
+
+      const error = await captureError(
+        invokeHooks(tmpDir, {
+          i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+        }),
+      );
+
+      expect(error).toBeInstanceOf(TypeError);
+      expect(errorMessage(error)).toContain(sidecarPath);
+      expect(errorMessage(error)).toContain('invalid managed metadata');
+    });
+  }
+
+  it('case 14: a legacy 0.1.x root sentinel without a sidecar migrates to the sidecar layout', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const legacyManaged404 = { rewrite: '/404.html', statusCode: 404 };
+    const legacyLocaleRoute = {
+      route: '/en/*',
+      rewrite: '/en/404.html',
+      statusCode: 404,
+    };
+    const build1 = await runIntegration({
+      existingConfig: {
+        $easyWebManaged: {
+          keys: ['responseOverrides.404', 'routes[0]'],
+          routeIndices: [0],
+          version: '0.1.0',
+          docs: DOCS_URL,
+        },
+        globalHeaders: { 'X-Frame-Options': 'DENY' },
+        responseOverrides: { '404': legacyManaged404 },
+        routes: [legacyLocaleRoute],
+      },
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'omitting non-schema-legal root key "$easyWebManaged"',
+      ),
+    );
+    expect(build1.emitted['$easyWebManaged']).toBeUndefined();
+    expect(
+      Object.keys(build1.emitted).every((key) => LEGAL_ROOT_KEYS.includes(key)),
+    ).toBe(true);
+    expect(fs.existsSync(build1.sidecarPath)).toBe(true);
+    expect(build1.sidecar.version).toBe('0.2.0');
+    expect(build1.sidecar.keys).toEqual([]);
+    expect(build1.emitted.responseOverrides?.['404']).toEqual(legacyManaged404);
+    expect(build1.emitted.routes).toEqual([legacyLocaleRoute]);
+    expect(build1.emitted.globalHeaders).toEqual({ 'X-Frame-Options': 'DENY' });
+
+    const build2 = await runIntegration({
+      existingConfig: build1.emitted,
+      existingSidecar: build1.sidecar,
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(build2.emitted['$easyWebManaged']).toBeUndefined();
+    expect(build2.emittedRaw).toBe(build1.emittedRaw);
+    expect(build2.sidecarRaw).toBe(build1.sidecarRaw);
+  });
+
+  it('case 15: a legacy root sentinel with no responseOverrides is claimed fresh', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { emitted, sidecar, sidecarPath } = await runIntegration({
+      existingConfig: {
+        $easyWebManaged: {
+          keys: ['routes[0]'],
+          routeIndices: [0],
+          version: '0.1.0',
+          docs: DOCS_URL,
+        },
+        navigationFallback: { rewrite: '/index.html', exclude: ['/api/*'] },
+      },
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'omitting non-schema-legal root key "$easyWebManaged"',
+      ),
+    );
+    expect(emitted['$easyWebManaged']).toBeUndefined();
+    expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
+    expect(emitted.navigationFallback).toEqual({
+      rewrite: '/index.html',
+      exclude: ['/api/*'],
+    });
+    expect(fs.existsSync(sidecarPath)).toBe(true);
+    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+  });
+
+  it('case 16: stale route claims in the sidecar are ignored and dropped', async () => {
+    const userRoutes = [{ route: '/api/*', allowedRoles: ['authenticated'] }];
+    const { emitted, sidecar } = await runIntegration({
+      existingConfig: {
+        responseOverrides: {
+          '404': { rewrite: '/stale-managed-404.html', statusCode: 404 },
+        },
+        routes: userRoutes,
+      },
+      existingSidecar: {
+        keys: ['responseOverrides.404', 'routes[7]', 'routes[9]'],
+        version: '0.1.0',
+        docs: DOCS_URL,
+      },
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(emitted.routes).toEqual(userRoutes);
+    expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
+    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+  });
+
+  it('case 17: a sidecar claiming only stale route keys leaves an existing 404 user-owned', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const userOverride = { rewrite: '/custom-404.html', statusCode: 404 };
+    const { emitted, sidecar } = await runIntegration({
+      existingConfig: { responseOverrides: { '404': userOverride } },
+      existingSidecar: {
+        keys: ['routes[0]'],
+        version: '0.1.0',
+        docs: DOCS_URL,
+      },
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('user override wins'),
+    );
+    expect(emitted.responseOverrides?.['404']).toEqual(userOverride);
+    expect(sidecar.keys).toEqual([]);
+  });
+
+  it('case 18: auth, globalHeaders and navigationFallback survive byte-identically', async () => {
+    const userAuth = {
+      identityProviders: {
+        azureActiveDirectory: {
+          registration: {
+            openIdIssuer: 'https://login.microsoftonline.com/tenant-id/v2.0',
+            clientIdSettingName: 'AZURE_CLIENT_ID',
+            clientSecretSettingName: 'AZURE_CLIENT_SECRET',
+          },
+        },
+      },
+    };
+    const userGlobalHeaders = {
+      'X-Frame-Options': 'DENY',
+      'Content-Security-Policy': "default-src 'self'",
+    };
+    const userNavigationFallback = {
+      rewrite: '/index.html',
+      exclude: ['/images/*.{png,jpg,gif}', '/api/*'],
+    };
+    const { emittedRaw } = await runIntegration({
+      existingConfig: {
+        auth: userAuth,
+        globalHeaders: userGlobalHeaders,
+        navigationFallback: userNavigationFallback,
+        responseOverrides: {
+          '404': { rewrite: '/stale-managed-404.html', statusCode: 404 },
+        },
+      },
+      existingSidecar: {
+        keys: ['responseOverrides.404'],
+        version: '0.2.0',
+        docs: DOCS_URL,
+      },
+      i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+    });
+
+    expect(emittedRaw).toContain(rawRootKeySlice('auth', userAuth));
+    expect(emittedRaw).toContain(
+      rawRootKeySlice('globalHeaders', userGlobalHeaders),
+    );
+    expect(emittedRaw).toContain(
+      rawRootKeySlice('navigationFallback', userNavigationFallback),
+    );
+  });
+
+  it('case 19: a single-locale build claims no routes[] ownership', async () => {
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const userRoutes = [{ route: '/api/*', allowedRoles: ['authenticated'] }];
+    const { emitted, sidecar } = await runIntegration({
+      existingConfig: { routes: userRoutes },
+    });
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('single-locale mode'),
+    );
+    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+    expect(sidecar.keys.some((key) => key.startsWith('routes'))).toBe(false);
+    expect(emitted.routes).toEqual(userRoutes);
+  });
+
+  it('case 20: a non-object responseOverrides throws a TypeError naming the config path', async () => {
+    const { tmpDir, configPath } = createTempConfigDir();
+    writeJson(configPath, { responseOverrides: ['/404.html'] });
+
+    const error = await captureError(
+      invokeHooks(tmpDir, {
+        i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
+      }),
+    );
+
+    expect(error).toBeInstanceOf(TypeError);
+    expect(errorMessage(error)).toContain(configPath);
+    expect(errorMessage(error)).toContain(
+      'expected responseOverrides to be an object',
+    );
   });
 });
