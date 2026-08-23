@@ -158,13 +158,6 @@ function writeJson(filePath: string, value: unknown): void {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
 }
 
-// Drops the wrapper's outer braces so the remainder is the exact nested-at-
-// depth-1 text the writer produces, enabling raw-string byte-identity asserts.
-function rawRootKeySlice(key: string, value: unknown): string {
-  const wrapped = JSON.stringify({ [key]: value }, null, 2);
-  return wrapped.slice(wrapped.indexOf('\n') + 1, wrapped.lastIndexOf('\n'));
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -597,7 +590,7 @@ describe('easyWebNotFound merge algorithm', () => {
     expect(sidecar.keys).toEqual([]);
   });
 
-  it('case 18: auth, globalHeaders and navigationFallback survive byte-identically', async () => {
+  it('case 18: auth, globalHeaders and navigationFallback are value-preserved (formatting normalises)', async () => {
     const userAuth = {
       identityProviders: {
         azureActiveDirectory: {
@@ -617,30 +610,91 @@ describe('easyWebNotFound merge algorithm', () => {
       rewrite: '/index.html',
       exclude: ['/images/*.{png,jpg,gif}', '/api/*'],
     };
-    const { emittedRaw } = await runIntegration({
-      existingConfig: {
-        auth: userAuth,
-        globalHeaders: userGlobalHeaders,
-        navigationFallback: userNavigationFallback,
-        responseOverrides: {
-          '404': { rewrite: '/stale-managed-404.html', statusCode: 404 },
-        },
-      },
-      existingSidecar: {
-        keys: ['responseOverrides.404'],
-        version: '0.2.0',
-        docs: DOCS_URL,
-      },
+
+    // Built with a raw fs.writeFileSync, NOT the writeJson helper: writeJson
+    // pre-canonicalizes with the very serializer under test, which is what made
+    // the previous byte-identity assertion self-fulfilling. Keep this literal.
+    const nonCanonicalRawFixture = [
+      '{',
+      '    "responseOverrides": {',
+      '',
+      '        "404": {',
+      '            "statusCode": 404,',
+      '            "rewrite": "/stale-managed-404.html"',
+      '        }',
+      '    },',
+      '',
+      '    "navigationFallback": {',
+      '        "exclude": [',
+      '            "/images/*.{png,jpg,gif}",',
+      '            "/api/*"',
+      '        ],',
+      '        "rewrite": "/index.html"',
+      '    },',
+      '',
+      '    "globalHeaders": {',
+      '        "Content-Security-Policy": "default-src \'self\'",',
+      '        "X-Frame-Options": "DENY"',
+      '    },',
+      '',
+      '    "auth": {',
+      '        "identityProviders": {',
+      '            "azureActiveDirectory": {',
+      '                "registration": {',
+      '                    "clientSecretSettingName": "AZURE_CLIENT_SECRET",',
+      '                    "clientIdSettingName": "AZURE_CLIENT_ID",',
+      '                    "openIdIssuer": "https://login.microsoftonline.com/tenant-id/v2.0"',
+      '                }',
+      '            }',
+      '        }',
+      '    }',
+      '}',
+      '',
+    ].join('\n');
+
+    const { tmpDir, configPath, sidecarPath } = createTempConfigDir();
+    fs.writeFileSync(configPath, nonCanonicalRawFixture, 'utf-8');
+    writeJson(sidecarPath, {
+      keys: ['responseOverrides.404'],
+      version: '0.2.0',
+      docs: DOCS_URL,
+    });
+
+    await invokeHooks(tmpDir, {
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
     });
 
-    expect(emittedRaw).toContain(rawRootKeySlice('auth', userAuth));
-    expect(emittedRaw).toContain(
-      rawRootKeySlice('globalHeaders', userGlobalHeaders),
+    const emittedRaw = fs.readFileSync(configPath, 'utf-8');
+    const emitted: EmittedConfig = JSON.parse(emittedRaw);
+
+    expect(emitted.auth).toEqual(userAuth);
+    expect(emitted.globalHeaders).toEqual(userGlobalHeaders);
+    expect(emitted.navigationFallback).toEqual(userNavigationFallback);
+
+    const managed404 = emitted.responseOverrides?.['404'];
+    if (!isRecord(managed404)) {
+      throw new TypeError('Expected an emitted responseOverrides.404 object');
+    }
+    expect(managed404).toEqual(MANAGED_404);
+
+    expect(emittedRaw).not.toBe(nonCanonicalRawFixture);
+
+    // Two-space ladder: root keys sit at depth*2 spaces, so 2 / 4 / 6 below.
+    // The fixture put these same three keys at 4 / 8 / 12.
+    expect(emittedRaw).toContain('\n  "auth": {\n');
+    expect(emittedRaw).toContain('\n    "identityProviders": {\n');
+    expect(emittedRaw).toContain('\n      "azureActiveDirectory": {\n');
+    expect(nonCanonicalRawFixture).toContain('\n    "auth": {\n');
+    expect(nonCanonicalRawFixture).toContain(
+      '\n        "identityProviders": {\n',
     );
-    expect(emittedRaw).toContain(
-      rawRootKeySlice('navigationFallback', userNavigationFallback),
-    );
+    expect(emittedRaw).not.toContain('\n    "auth": {\n');
+
+    expect(nonCanonicalRawFixture).toContain('\n\n');
+    expect(emittedRaw).not.toContain('\n\n');
+    expect(emittedRaw.endsWith('}\n')).toBe(true);
+
+    expect(Object.keys(managed404)).toEqual(['rewrite', 'statusCode']);
   });
 
   it('case 19: a single-locale build claims no routes[] ownership', async () => {
