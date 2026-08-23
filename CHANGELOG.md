@@ -14,12 +14,27 @@ See [ADR 0013 — Shared NotFound Primitives](https://github.com/achimismaili/we
 - New export: `notFoundSchema` — a Zod schema and TypeScript type for the 404 content collection entry. Instances declare a `notFound` collection and let Decap CMS edit the copy at runtime.
 - Both exports are additive and backward compatible; no existing imports break.
 
-### @achimismaili/easy-web-swa (new package, 0.1.0)
+### @achimismaili/easy-web-swa (new package, 0.1.0) — superseded by 0.2.0
 
 - New package: `@achimismaili/easy-web-swa` — an Astro integration that generates a sentinel-safe `staticwebapp.config.json` at build time.
 - The integration rewrites the SWA navigation fallback to point at the site's own 404 route instead of serving a bare Azure SWA error page.
 - Sentinel-safe: if a `staticwebapp.config.json` already exists in `public/`, the integration merges only the `navigationFallback` block instead of overwriting the entire file.
 - Usage: add `easywWebSwa()` to `astro.config.ts` integrations array; no further config needed for the standard case.
+
+> ⚠️ **Do not adopt 0.1.0.** Its root-level `$easyWebManaged` sentinel is rejected by the Azure SWA schema, which causes the *entire* config — including `auth` and `globalHeaders` — to be discarded at runtime. Use `0.2.0` or later.
+
+### @achimismaili/easy-web-swa (0.1.0 → 0.2.0)
+
+Defect-remediation release. Both changes are consumer-visible in the emitted build output.
+
+- **BREAKING** — the sentinel moved off the config root into a **sidecar file**, `staticwebapp.config.json.easy-web-managed.json`. The SWA schema sets `additionalProperties: false` at the root and whitelists 11 keys, so 0.1.0's `$easyWebManaged` root key made the SWA CLI reject and **discard the whole config** (dropping `auth`, `globalHeaders`, `navigationFallback` and every route). The emitted `staticwebapp.config.json` now contains only schema-legal root keys. Rebuilding with 0.2.0 strips the legacy root sentinel automatically — no source change required in consuming instances.
+- **BREAKING** — the greedy per-locale `/{locale}/*` rewrite routes are gone; the integration is now **`responseOverrides.404`-centric** and emits no routes at all. Azure evaluates routes first-match-wins, so a `/{locale}/*` catch-all shadows every real page in that locale when it sits ahead of the instance's own routes — it 404'd an entire English customer site during adoption. *Accepted limitation:* SWA supports exactly one global 404 override, so unmatched localized paths serve the **default-locale** 404 body; per-locale 404 content is out of scope.
+- **Fixed** — a user-owned `responseOverrides.404` preserved on build *N* was clobbered on build *N+1*. Ownership is now driven by the sidecar's declared `keys`; an absent sidecar or empty `keys` list leaves an existing 404 user-owned.
+- **Fixed** — config and sidecar reads are validated and report the failing path on parse error; unchecked `as` casts removed.
+- **Removed** — the unused `@achimismaili/easy-web-i18n` peer dependency (never imported by the integration). `astro` remains the only peer dep.
+- **Docs** — README rewritten for the real 0.2.0 behaviour; the stale "package skeleton / safe no-op" claim is gone.
+
+See [ADR 0013 — Shared NotFound Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md) for the sidecar decision and the single-global-404 rationale.
 
 ---
 
