@@ -74,11 +74,13 @@ Every change to a real package follows the same path:
 
 GitHub Actions workflows handle the full release pipeline:
 1. **CI** (`.github/workflows/ci.yml`) — runs on every push to `main`: lint, typecheck, test, build.
-2. **Release** (`.github/workflows/release.yml`) — Changesets action opens/updates the "Version Packages" PR on `main`, and publishes to npm when that PR is merged. Uses **npm Trusted Publishing via OIDC** — no `NPM_TOKEN` secret is set or read. See *npm Trusted Publisher configuration*, *Release-workflow configuration invariants*, and *Required GitHub repo permissions* below.
+2. **Release** (`.github/workflows/release.yml`) — Changesets action opens/updates the "Version Packages" PR on `main`, and publishes to npm when that PR is merged. Uses **npm Trusted Publishing via OIDC** — the workflow passes no `NPM_TOKEN` into the publish step. See *npm Trusted Publisher configuration*, *Release-workflow configuration invariants*, and *Required GitHub repo permissions* below.
+
+> **Correction (2026-08-29).** Until the `@easy-web/*` scope rename, this document claimed "no `NPM_TOKEN` secret is set or read". **Both halves were false.** An `NPM_TOKEN` repo secret does exist — `gh secret list --repo achimismaili/easy-web` reports it, last updated `2026-08-05` — and `release.yml` passed it into the `changesets/action@v1` step's `env:` block. Since that action checks `process.env.NPM_TOKEN` *first* and, when it is set, writes an authenticated `.npmrc` and takes the token path, it never reached its OIDC branch. **Every release published up to that point therefore very likely used the classic token, not Trusted Publishing, despite this document asserting otherwise.** The `env:` reference has been removed so OIDC can actually engage. Deleting the repo secret itself is tracked separately; until that happens, the secret still exists and must not be re-referenced from any workflow.
 
 ### npm Trusted Publisher configuration
 
-**Every `@easy-web/*` package already has a Trusted Publisher registered on npm** pointing at this repo's release workflow. This is a one-time, already-done setup. Do not re-register, and do not fall back to `NPM_TOKEN` / `NODE_AUTH_TOKEN` — those are intentionally not set.
+**Every `@easy-web/*` package already has a Trusted Publisher registered on npm** pointing at this repo's release workflow. This is a one-time, already-done setup. Do not re-register, and do not fall back to `NPM_TOKEN` / `NODE_AUTH_TOKEN` — neither is passed to the release job. `NODE_AUTH_TOKEN` has never been set; an `NPM_TOKEN` repo secret does still exist (predates the move to OIDC) but is no longer referenced by any workflow and is slated for deletion — see the *Correction (2026-08-29)* note above.
 
 TP registration parameters (identical for every package):
 
@@ -89,18 +91,22 @@ TP registration parameters (identical for every package):
 | Workflow filename | `release.yml` |
 | Environment | *(none — the release job does not declare an `environment:`)* |
 
-### Release-workflow configuration invariants (three traps that produce identical E404s)
+### Release-workflow configuration invariants (four traps that silently break OIDC publishing)
 
-The OIDC-authenticated publish path is fragile. On 2026-07-02 we spent hours re-diagnosing three compounding causes of the same symptom: `E404 Not Found - PUT https://registry.npmjs.org/@achimismaili%2f<package>` at the `pnpm changeset publish` step, while Sigstore correctly signed a provenance envelope for the correct workflow identity. If a future agent sees that error, **check these first, in order, before assuming the Trusted Publisher is wrong**:
+Traps (1)–(3) all surface as the *same* E404. Trap (4) produces no error at all — it is the most dangerous of the four.
+
+The OIDC-authenticated publish path is fragile. On 2026-07-02 we spent hours re-diagnosing three compounding causes of the same symptom: `E404 Not Found - PUT https://registry.npmjs.org/@achimismaili%2f<package>` at the `pnpm changeset publish` step, while Sigstore correctly signed a provenance envelope for the correct workflow identity. If a future agent sees that error, **check these first, in order, before assuming the Trusted Publisher is wrong** — and check (4) even when there is no error to explain:
 
 1. **`actions/setup-node` must NOT have `registry-url:`.** When set, setup-node writes `.npmrc` with `_authToken=${NODE_AUTH_TOKEN}`. Since `NODE_AUTH_TOKEN` is intentionally unset for OIDC, the placeholder expands to empty string — but npm CLI treats "any auth in `.npmrc`" as "auth is configured" and skips the OIDC exchange entirely. The publish PUT then goes out unauthenticated → 404. There is a warning comment in `release.yml` at the setup-node step; do not delete it, and do not add `registry-url:` back.
 2. **System npm CLI must be ≥ 11.5.1.** The OIDC token-exchange endpoint (`/-/npm/v1/oidc/token/exchange/package/{url-encoded-pkg-name}`) was introduced in npm CLI 11.5.1 in July 2025. Node 22 LTS still ships with npm 10.x, which doesn't know about the endpoint. `pnpm publish` delegates to system `npm publish` under the hood, so this affects pnpm 10 too. The workflow includes an explicit `npm install -g npm@latest` step before `pnpm install` for this reason. Do not remove it.
-3. **Provenance opt-in belongs in `publishConfig.provenance: true` per package.json, NOT as `NPM_CONFIG_PROVENANCE: true` env var on the changesets step.** The env-var form invokes an older code path that signs the Sigstore envelope out-of-band (visible in the transparency log) but does not force the OIDC-authenticated publish path. When we set it as an env var, provenance succeeded while auth silently failed. Set `publishConfig.provenance: true` in each package that opts in; leave the env var out.
+3. **Provenance opt-in belongs in `publishConfig.provenance: true` per package.json, NOT as `NPM_CONFIG_PROVENANCE: true` env var on the changesets step.** The env-var form invokes an older code path that signs the Sigstore envelope out-of-band (visible in the transparency log) but does not force the OIDC-authenticated publish path. When we set it as an env var, provenance succeeded while auth silently failed. Set `publishConfig.provenance: true` in each package that opts in; leave the env var out. **All 11 packages now set it** — keep it that way when adding a package.
+4. **`NPM_TOKEN` must NOT appear in the changesets step's `env:` block.** Unlike (1)–(3), this trap emits **no error**: `changesets/action@v1` checks `process.env.NPM_TOKEN` before anything else and, when it is set, writes an authenticated `.npmrc` and publishes with the classic token — never reaching its OIDC branch. The release goes green, packages appear on npm, and Trusted Publishing is silently bypassed. Removed on 2026-08-29; there is a warning comment at that `env:` block, do not delete it and do not re-add the variable.
 
 Empirical anchors:
 - `@easy-web/content-blocks@0.6.1` is the first easy-web package published via this workflow with a Sigstore attestation attached (`dist.attestations` populated on the registry). Every prior version across all seven packages was manually published with a classic token — those tarballs have `attestations = null`. If you ever see `attested: false` on a newly-published version, the release ran outside this workflow.
+- **Caveat added 2026-08-29:** an attached attestation proves the *signing* identity, not the *authentication* path. Because trap (4) was live for every workflow release to date, those publishes were almost certainly authenticated with the classic `NPM_TOKEN` while still producing a valid provenance envelope — exactly the split-brain failure mode described in trap (3). Treat "has attestation" as necessary but **not** sufficient evidence that Trusted Publishing was used.
 
-If a publish attempt still fails after checking (1)/(2)/(3), then investigate npm-side transient errors, TP-registration drift, or version regressions in `changesets/action@v1`. Only after those are ruled out should re-registration of the Trusted Publisher be considered.
+If a publish attempt still fails after checking (1)–(4), then investigate npm-side transient errors, TP-registration drift, or version regressions in `changesets/action@v1`. Only after those are ruled out should re-registration of the Trusted Publisher be considered.
 
 ### Required GitHub repo permissions
 
@@ -149,7 +155,7 @@ Bootstrap procedure (done once per new package):
 4. Push to `main`.
 5. **Do not** manually edit `package.json` versions — Changesets handles that.
 6. **Do not** run `pnpm publish`, set `NPM_TOKEN`, or set `NODE_AUTH_TOKEN` — GitHub Actions publishes via the already-configured npm Trusted Publishers (see *npm Trusted Publisher configuration* above).
-7. **Do not** re-add `registry-url:` to `actions/setup-node` or `NPM_CONFIG_PROVENANCE:` to the changesets step env — see *Release-workflow configuration invariants* above.
+7. **Do not** re-add `registry-url:` to `actions/setup-node`, `NPM_CONFIG_PROVENANCE:` to the changesets step env, or `NPM_TOKEN:` to that same env block — see *Release-workflow configuration invariants* above.
 
 ### Publishing coordinates
 - Registry: npm public registry (`https://registry.npmjs.org/`)

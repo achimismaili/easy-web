@@ -36,7 +36,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build workspace packages
-        run: pnpm --filter "@achimismaili/*" build
+        # Do NOT reintroduce a package-scope glob filter here. A pnpm filter
+        # that matches zero packages exits 0, so renaming the scope would
+        # silently turn this step into a no-op and still report green.
+        run: pnpm build
 
       - name: Build docs
         run: pnpm --filter docs build

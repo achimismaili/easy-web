@@ -50,5 +50,8 @@ jobs:
           commit: "chore: version packages"
           title: "chore: version packages"
         env:
+          # Publish auth comes from OIDC Trusted Publishing. Do NOT add any npm
+          # auth token to this block: changesets/action@v1 prefers a token over
+          # OIDC and would silently bypass Trusted Publishing with no error.
+          # See AGENTS.md -> Release-workflow configuration invariants, trap (4).
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

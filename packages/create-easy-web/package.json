@@ -5,7 +5,8 @@
   "private": false,
   "description": "Placeholder package for the future easy-web project generator.",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "license": "MIT",
   "repository": {
