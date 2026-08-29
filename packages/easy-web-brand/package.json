@@ -1,5 +1,5 @@
 {
-  "name": "@achimismaili/easy-web-brand",
+  "name": "@easy-web/brand",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",

@@ -1,5 +1,5 @@
 {
-  "name": "@achimismaili/easy-web-auth",
+  "name": "@easy-web/auth",
   "version": "1.0.0",
   "packageManager": "pnpm@10.34.4",
   "type": "module",

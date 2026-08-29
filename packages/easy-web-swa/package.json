@@ -1,5 +1,5 @@
 {
-  "name": "@achimismaili/easy-web-swa",
+  "name": "@easy-web/swa",
   "version": "0.2.0",
   "type": "module",
   "packageManager": "pnpm@10.34.4",

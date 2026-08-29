@@ -1,5 +1,5 @@
 {
-  "name": "@achimismaili/easy-web-azure-functions-utils",
+  "name": "@easy-web/azure-functions-utils",
   "version": "0.0.0",
   "packageManager": "pnpm@10.34.4",
   "private": false,

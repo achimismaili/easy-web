@@ -1,5 +1,5 @@
 {
-  "name": "@achimismaili/create-easy-web",
+  "name": "@easy-web/create",
   "version": "0.0.0",
   "packageManager": "pnpm@10.34.4",
   "private": false,

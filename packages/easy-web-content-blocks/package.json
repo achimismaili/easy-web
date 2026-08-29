@@ -1,5 +1,5 @@
 {
-  "name": "@achimismaili/easy-web-content-blocks",
+  "name": "@easy-web/content-blocks",
   "version": "1.1.0",
   "packageManager": "pnpm@10.34.4",
   "type": "module",
@@ -25,13 +25,13 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@achimismaili/easy-web-i18n": ">=1.0.0",
-    "@achimismaili/easy-web-theme-core": ">=1.0.0",
+    "@easy-web/i18n": ">=1.0.0",
+    "@easy-web/theme-core": ">=1.0.0",
     "astro": ">=6.0.0 <8.0.0",
     "zod": ">=4.0.0"
   },
   "devDependencies": {
-    "@achimismaili/easy-web-theme-core": "workspace:*",
+    "@easy-web/theme-core": "workspace:*",
     "astro": "^6.4.0",
     "typescript": "^5.5.0",
     "vitest": "^4.1.10",
