@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 
 /**
- * Dynamic robots.txt endpoint injected by @achimismaili/easy-web-seo integration.
+ * Dynamic robots.txt endpoint injected by @easy-web/seo integration.
  *
  * Behavior:
  * - noIndex mode (process.env.EASY_WEB_SEO_NO_INDEX === 'true'):

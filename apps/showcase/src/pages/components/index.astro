@@ -1,26 +1,26 @@
 ---
 import Base from '../../layouts/Base.astro';
-import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
-import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch';
-import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
-import Section from '@achimismaili/easy-web-content-blocks/components/Section';
-import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
-import Card from '@achimismaili/easy-web-content-blocks/components/Card';
-import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard';
-import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
-import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
-import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection';
-import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
-import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
-import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
-import Header from '@achimismaili/easy-web-content-blocks/components/Header';
-import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
-import GalleryImageGrid from '@achimismaili/easy-web-content-blocks/components/GalleryImageGrid';
-import GalleryHeroSlider from '@achimismaili/easy-web-content-blocks/components/GalleryHeroSlider';
-import GalleryCarousel from '@achimismaili/easy-web-content-blocks/components/GalleryCarousel';
-import GalleryMasonryGrid from '@achimismaili/easy-web-content-blocks/components/GalleryMasonryGrid';
-import GalleryFeatureHighlight from '@achimismaili/easy-web-content-blocks/components/GalleryFeatureHighlight';
-import GalleryLightboxGrid from '@achimismaili/easy-web-content-blocks/components/GalleryLightboxGrid';
+import ThemeToggle from '@easy-web/content-blocks/components/ThemeToggle';
+import LanguageSwitch from '@easy-web/content-blocks/components/LanguageSwitch';
+import Hero from '@easy-web/content-blocks/components/Hero';
+import Section from '@easy-web/content-blocks/components/Section';
+import CardGrid from '@easy-web/content-blocks/components/CardGrid';
+import Card from '@easy-web/content-blocks/components/Card';
+import BlogPostCard from '@easy-web/content-blocks/components/BlogPostCard';
+import Prose from '@easy-web/content-blocks/components/Prose';
+import CtaSection from '@easy-web/content-blocks/components/CtaSection';
+import ContactSection from '@easy-web/content-blocks/components/ContactSection';
+import DraftBanner from '@easy-web/content-blocks/components/DraftBanner';
+import LanguageNotice from '@easy-web/content-blocks/components/LanguageNotice';
+import LegalLayout from '@easy-web/content-blocks/components/LegalLayout';
+import Header from '@easy-web/content-blocks/components/Header';
+import Footer from '@easy-web/content-blocks/components/Footer';
+import GalleryImageGrid from '@easy-web/content-blocks/components/GalleryImageGrid';
+import GalleryHeroSlider from '@easy-web/content-blocks/components/GalleryHeroSlider';
+import GalleryCarousel from '@easy-web/content-blocks/components/GalleryCarousel';
+import GalleryMasonryGrid from '@easy-web/content-blocks/components/GalleryMasonryGrid';
+import GalleryFeatureHighlight from '@easy-web/content-blocks/components/GalleryFeatureHighlight';
+import GalleryLightboxGrid from '@easy-web/content-blocks/components/GalleryLightboxGrid';
 ---
 
 <Base title="Component Gallery — easy-web" lang="en">
@@ -37,7 +37,7 @@ import GalleryLightboxGrid from '@achimismaili/easy-web-content-blocks/component
         <div class="preview-box">
           <ThemeToggle />
         </div>
-        <pre><code>import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+        <pre><code>import ThemeToggle from '@easy-web/content-blocks/components/ThemeToggle';
 
 &lt;ThemeToggle /&gt;</code></pre>
       </div>
@@ -48,7 +48,7 @@ import GalleryLightboxGrid from '@achimismaili/easy-web-content-blocks/component
         <div class="preview-box">
           <LanguageSwitch currentLang="en" pathname="/components/" />
         </div>
-        <pre><code>import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch';
+        <pre><code>import LanguageSwitch from '@easy-web/content-blocks/components/LanguageSwitch';
 
 &lt;LanguageSwitch currentLang="en" pathname="/components/" /&gt;</code></pre>
       </div>
@@ -64,8 +64,8 @@ import GalleryLightboxGrid from '@achimismaili/easy-web-content-blocks/component
             <Footer siteName="easy-web" legalLinks={[{label: "Privacy", href: "#"}, {label: "Terms", href: "#"}]} />
           </div>
         </div>
-        <pre><code>import Header from '@achimismaili/easy-web-content-blocks/components/Header';
-import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
+        <pre><code>import Header from '@easy-web/content-blocks/components/Header';
+import Footer from '@easy-web/content-blocks/components/Footer';
 
 &lt;Header siteName="easy-web" navItems=&amp;#123;[]&amp;#125; currentLang="en" pathname="/components/" /&gt;
 &lt;Footer siteName="easy-web" legalLinks=&amp;#123;[&amp;#123;label: "Privacy", href: "#"&amp;#125;]&amp;#125; /&gt;</code></pre>
@@ -86,7 +86,7 @@ import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
             ctaHref="#" 
           />
         </div>
-        <pre><code>import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+        <pre><code>import Hero from '@easy-web/content-blocks/components/Hero';
 
 &lt;Hero 
   title="Showcase Your Work" 
@@ -104,7 +104,7 @@ import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
             <p>This is the content inside the section. It automatically uses the design system's spacing.</p>
           </Section>
         </div>
-        <pre><code>import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+        <pre><code>import Section from '@easy-web/content-blocks/components/Section';
 
 &lt;Section title="My Section Title"&gt;
   &lt;p&gt;This is the content inside the section. It automatically uses the design system's spacing.&lt;/p&gt;
@@ -124,8 +124,8 @@ import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
             <Card title="Feature Two" description="This is another feature." href="#" />
           </CardGrid>
         </div>
-        <pre><code>import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
-import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+        <pre><code>import CardGrid from '@easy-web/content-blocks/components/CardGrid';
+import Card from '@easy-web/content-blocks/components/Card';
 
 &lt;CardGrid&gt;
   &lt;Card title="Feature One" description="This is a great feature." href="#" /&gt;
@@ -147,7 +147,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             />
           </div>
         </div>
-        <pre><code>import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard';
+        <pre><code>import BlogPostCard from '@easy-web/content-blocks/components/BlogPostCard';
 
 &lt;BlogPostCard 
   title="Building the component gallery" 
@@ -167,7 +167,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             <p>Automatically applies correct spacing and styling to bare HTML tags like <code>p</code>, <code>ul</code>, and headings.</p>
           </Prose>
         </div>
-        <pre><code>import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
+        <pre><code>import Prose from '@easy-web/content-blocks/components/Prose';
 
 &lt;Prose&gt;
   &lt;h2&gt;Typographic styling&lt;/h2&gt;
@@ -191,7 +191,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             variant="primary" 
           />
         </div>
-        <pre><code>import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+        <pre><code>import CtaSection from '@easy-web/content-blocks/components/CtaSection';
 
 &lt;CtaSection 
   heading="Ready to get started?" 
@@ -213,7 +213,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             buttonLabel="Email Us" 
           />
         </div>
-        <pre><code>import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection';
+        <pre><code>import ContactSection from '@easy-web/content-blocks/components/ContactSection';
 
 &lt;ContactSection 
   heading="Need custom development?" 
@@ -233,7 +233,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
         <div class="preview-box">
           <DraftBanner message="This page is currently a draft and should not be published." />
         </div>
-        <pre><code>import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
+        <pre><code>import DraftBanner from '@easy-web/content-blocks/components/DraftBanner';
 
 &lt;DraftBanner message="This page is currently a draft and should not be published." /&gt;</code></pre>
       </div>
@@ -244,7 +244,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
         <div class="preview-box">
           <LanguageNotice message="Please note: The English translation is provided for convenience. Only the German original is legally binding." />
         </div>
-        <pre><code>import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
+        <pre><code>import LanguageNotice from '@easy-web/content-blocks/components/LanguageNotice';
 
 &lt;LanguageNotice message="Please note: The English translation is provided for convenience. Only the German original is legally binding." /&gt;</code></pre>
       </div>
@@ -259,7 +259,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             </LegalLayout>
           </div>
         </div>
-        <pre><code>import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+        <pre><code>import LegalLayout from '@easy-web/content-blocks/components/LegalLayout';
 
 &lt;LegalLayout title="Privacy Policy" lastUpdated="June 2026"&gt;
   &lt;p&gt;Your privacy is important to us. This is a sample legal text to demonstrate the layout width and typography constraints applied by LegalLayout.&lt;/p&gt;
@@ -284,7 +284,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             ]}
           />
         </div>
-        <pre><code>import GalleryImageGrid from '@achimismaili/easy-web-content-blocks/components/GalleryImageGrid';
+        <pre><code>import GalleryImageGrid from '@easy-web/content-blocks/components/GalleryImageGrid';
 
 &lt;GalleryImageGrid 
   title="Image Grid"
@@ -314,7 +314,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             ]}
           />
         </div>
-        <pre><code>import GalleryHeroSlider from '@achimismaili/easy-web-content-blocks/components/GalleryHeroSlider';
+        <pre><code>import GalleryHeroSlider from '@easy-web/content-blocks/components/GalleryHeroSlider';
 
 &lt;GalleryHeroSlider
   title="Hero Slider"
@@ -344,7 +344,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             ]}
           />
         </div>
-        <pre><code>import GalleryCarousel from '@achimismaili/easy-web-content-blocks/components/GalleryCarousel';
+        <pre><code>import GalleryCarousel from '@easy-web/content-blocks/components/GalleryCarousel';
 
 &lt;GalleryCarousel
   title="Carousel"
@@ -374,7 +374,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             ]}
           />
         </div>
-        <pre><code>import GalleryMasonryGrid from '@achimismaili/easy-web-content-blocks/components/GalleryMasonryGrid';
+        <pre><code>import GalleryMasonryGrid from '@easy-web/content-blocks/components/GalleryMasonryGrid';
 
 &lt;GalleryMasonryGrid
   title="Masonry Grid"
@@ -400,7 +400,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             ]}
           />
         </div>
-        <pre><code>import GalleryFeatureHighlight from '@achimismaili/easy-web-content-blocks/components/GalleryFeatureHighlight';
+        <pre><code>import GalleryFeatureHighlight from '@easy-web/content-blocks/components/GalleryFeatureHighlight';
 
 &lt;GalleryFeatureHighlight
   title="Feature Highlight"
@@ -427,7 +427,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             ]}
           />
         </div>
-        <pre><code>import GalleryLightboxGrid from '@achimismaili/easy-web-content-blocks/components/GalleryLightboxGrid';
+        <pre><code>import GalleryLightboxGrid from '@easy-web/content-blocks/components/GalleryLightboxGrid';
 
 &lt;GalleryLightboxGrid
   title="Lightbox Grid"

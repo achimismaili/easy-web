@@ -1,4 +1,4 @@
-# @achimismaili/easy-web-swa
+# @easy-web/swa
 
 Astro integration that manages Azure Static Web Apps (SWA) 404 handling via a sentinel-marked sidecar file. Ensures the integration's configuration changes are preserved across rebuilds while respecting user-authored settings.
 
@@ -16,7 +16,7 @@ When you add `easyWebNotFound()` to your Astro config, the integration:
 ```ts
 // astro.config.mjs
 import { defineConfig } from 'astro/config';
-import easyWebNotFound from '@achimismaili/easy-web-swa';
+import easyWebNotFound from '@easy-web/swa';
 
 export default defineConfig({
   integrations: [

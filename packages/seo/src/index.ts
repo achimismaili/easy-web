@@ -9,16 +9,16 @@ export type Options = {
 
 export default function easyWebSeo(options: Options = {}): AstroIntegration {
   return {
-    name: '@achimismaili/easy-web-seo',
+    name: '@easy-web/seo',
     hooks: {
       'astro:config:setup': ({ config, updateConfig, injectRoute, logger }) => {
         // 1. Validate site URL
         if (!config.site) {
           logger.error(
-            '@achimismaili/easy-web-seo: astro.config.mjs must set `site` (a full https:// URL). ' +
+            '@easy-web/seo: astro.config.mjs must set `site` (a full https:// URL). ' +
             'Example: site: "https://yoursite.example"'
           );
-          throw new Error('@achimismaili/easy-web-seo: `site` is required in astro.config.mjs');
+          throw new Error('@easy-web/seo: `site` is required in astro.config.mjs');
         }
 
         // 2. Build BCP-47 locale map for sitemap
@@ -32,7 +32,7 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
               localeMap[id] = `${id}-${id.toUpperCase()}`;
             }
             logger.warn(
-              '@achimismaili/easy-web-seo: auto-generated BCP-47 locale tags (' +
+              '@easy-web/seo: auto-generated BCP-47 locale tags (' +
               Object.entries(localeMap).map(([k, v]) => `${k}→${v}`).join(', ') +
               '). Provide the `sitemapLocales` option for region-specific tags (e.g. { de: "de-DE", en: "en-US" }).'
             );

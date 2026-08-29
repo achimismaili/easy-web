@@ -1,11 +1,11 @@
-# @achimismaili/easy-web-content-blocks
+# @easy-web/content-blocks
 
-Reusable Astro content-block components for the IT-CI ismaili.de web ecosystem. Twenty-two pure-Astro components covering page chrome (Header, Footer, ThemeToggle, LanguageSwitch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system with six variants, blog post cards, legal-page layouts, banners, and styled prose. All components use the `--ew-*` design tokens from `@achimismaili/easy-web-theme-core`; no styling system of their own.
+Reusable Astro content-block components for the IT-CI ismaili.de web ecosystem. Twenty-two pure-Astro components covering page chrome (Header, Footer, ThemeToggle, LanguageSwitch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system with six variants, blog post cards, legal-page layouts, banners, and styled prose. All components use the `--ew-*` design tokens from `@easy-web/theme-core`; no styling system of their own.
 
 ## Installation
 
 ```bash
-pnpm add @achimismaili/easy-web-content-blocks
+pnpm add @easy-web/content-blocks
 ```
 
 This package is published to npm. Install it like any other npm package.
@@ -14,7 +14,7 @@ This package is published to npm. Install it like any other npm package.
 
 * `astro >= 6.0.0`
 
-You almost certainly also want `@achimismaili/easy-web-theme-core` (for the `--ew-*` token CSS) and, if you build a bilingual site, `@achimismaili/easy-web-i18n` (for the alternate-link helper used by `LanguageSwitch`).
+You almost certainly also want `@easy-web/theme-core` (for the `--ew-*` token CSS) and, if you build a bilingual site, `@easy-web/i18n` (for the alternate-link helper used by `LanguageSwitch`).
 
 ## Import convention
 
@@ -22,12 +22,12 @@ Components ship as **raw `.astro` files**. There is no JavaScript barrel. Import
 
 ```astro
 ---
-import Header from '@achimismaili/easy-web-content-blocks/components/Header';
-import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
-import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
-import Section from '@achimismaili/easy-web-content-blocks/components/Section';
-import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
-import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import Header from '@easy-web/content-blocks/components/Header';
+import Footer from '@easy-web/content-blocks/components/Footer';
+import Hero from '@easy-web/content-blocks/components/Hero';
+import Section from '@easy-web/content-blocks/components/Section';
+import CardGrid from '@easy-web/content-blocks/components/CardGrid';
+import Card from '@easy-web/content-blocks/components/Card';
 ---
 ```
 
@@ -40,10 +40,10 @@ The package's `package.json` exports map declares `./components/*` → `./src/co
 ```astro
 ---
 // src/layouts/Base.astro
-import '@achimismaili/easy-web-theme-core/tokens.css';
-import { noFlashScript } from '@achimismaili/easy-web-theme-core';
-import Header from '@achimismaili/easy-web-content-blocks/components/Header';
-import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
+import '@easy-web/theme-core/tokens.css';
+import { noFlashScript } from '@easy-web/theme-core';
+import Header from '@easy-web/content-blocks/components/Header';
+import Footer from '@easy-web/content-blocks/components/Footer';
 import { siteConfig } from '../config';
 
 interface Props {
@@ -81,10 +81,10 @@ const legalLinks = siteConfig.legalLinks[lang];
 ---
 // src/pages/index.astro
 import Layout from '../layouts/Base.astro';
-import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
-import Section from '@achimismaili/easy-web-content-blocks/components/Section';
-import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
-import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+import Hero from '@easy-web/content-blocks/components/Hero';
+import Section from '@easy-web/content-blocks/components/Section';
+import CardGrid from '@easy-web/content-blocks/components/CardGrid';
+import Card from '@easy-web/content-blocks/components/Card';
 ---
 <Layout lang="de" title="Home" pathname="/">
   <Hero
@@ -109,7 +109,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
 
 ## Component reference
 
-All components use the `--ew-*` design tokens from `@achimismaili/easy-web-theme-core`. None ship their own theme system; they inherit whatever tokens are loaded in the consuming page.
+All components use the `--ew-*` design tokens from `@easy-web/theme-core`. None ship their own theme system; they inherit whatever tokens are loaded in the consuming page.
 
 ### Site chrome
 
@@ -120,7 +120,7 @@ All components use the `--ew-*` design tokens from `@achimismaili/easy-web-theme
 | `HeaderHideOnScroll` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Variant: `position: fixed` header that slides off screen on scroll-down, reappears on scroll-up. Compensates body padding via JS. `data-testid="header-hide-on-scroll"`. |
 | `HeaderFlyout` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Variant: items with `children[]` show a flyout dropdown (hover/focus desktop, click mobile, keyboard accessible). `data-testid="header-flyout"`. |
 | `Footer` | `siteName: string`, `legalLinks: Array<{ label: string; href: string }>` | — | Simple copyright + legal-link footer. |
-| `ThemeToggle` | — | — | Light / dark / system trio button. Talks to `@achimismaili/easy-web-theme-core` via `data-theme` on `<html>` and `localStorage`. |
+| `ThemeToggle` | — | — | Light / dark / system trio button. Talks to `@easy-web/theme-core` via `data-theme` on `<html>` and `localStorage`. |
 | `LanguageSwitch` | `currentLang: string`, `pathname: string` | `alternateHref?: string` | DE ↔ EN switcher. If `alternateHref` is provided, links there directly; otherwise infers the alternate path from `pathname`. |
 
 #### Header `actions` slot
@@ -129,10 +129,10 @@ All four header variants expose a named `actions` slot. When the slot receives c
 
 ```astro
 ---
-import Header from '@achimismaili/easy-web-content-blocks/components/Header';
-import HeaderCentered from '@achimismaili/easy-web-content-blocks/components/HeaderCentered';
-import HeaderHideOnScroll from '@achimismaili/easy-web-content-blocks/components/HeaderHideOnScroll';
-import HeaderFlyout from '@achimismaili/easy-web-content-blocks/components/HeaderFlyout';
+import Header from '@easy-web/content-blocks/components/Header';
+import HeaderCentered from '@easy-web/content-blocks/components/HeaderCentered';
+import HeaderHideOnScroll from '@easy-web/content-blocks/components/HeaderHideOnScroll';
+import HeaderFlyout from '@easy-web/content-blocks/components/HeaderFlyout';
 ---
 
 <!-- Default: ThemeToggle + LanguageSwitch rendered automatically -->
@@ -154,10 +154,10 @@ Selecting the header variant in a Base layout via a `headerVariant` prop:
 ```astro
 ---
 // Base.astro
-import Header from '@achimismaili/easy-web-content-blocks/components/Header';
-import HeaderCentered from '@achimismaili/easy-web-content-blocks/components/HeaderCentered';
-import HeaderHideOnScroll from '@achimismaili/easy-web-content-blocks/components/HeaderHideOnScroll';
-import HeaderFlyout from '@achimismaili/easy-web-content-blocks/components/HeaderFlyout';
+import Header from '@easy-web/content-blocks/components/Header';
+import HeaderCentered from '@easy-web/content-blocks/components/HeaderCentered';
+import HeaderHideOnScroll from '@easy-web/content-blocks/components/HeaderHideOnScroll';
+import HeaderFlyout from '@easy-web/content-blocks/components/HeaderFlyout';
 
 interface Props {
   headerVariant?: 'classic' | 'centered' | 'hide-on-scroll' | 'flyout';
@@ -206,7 +206,7 @@ Schema is exported from this package and consumed by each instance's `content.co
 ```ts
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
-import { gallerySchema } from '@achimismaili/easy-web-content-blocks/schemas/galleries';
+import { gallerySchema } from '@easy-web/content-blocks/schemas/galleries';
 
 const galleries = defineCollection({
   loader: glob({ pattern: '**/*.{yml,yaml}', base: './src/content/galleries' }),
@@ -218,7 +218,7 @@ Use the `GallerySection` dispatcher in pages — it switches on `entry.data.kind
 
 ```astro
 ---
-import GallerySection from '@achimismaili/easy-web-content-blocks/components/GallerySection';
+import GallerySection from '@easy-web/content-blocks/components/GallerySection';
 import { getEntry } from 'astro:content';
 
 const heroEntry = await getEntry('galleries', 'home-hero-de');
@@ -291,7 +291,7 @@ A universal image dispatcher component that renders images from any source type 
 ```astro
 ---
 import type { ImageMetadata } from 'astro';
-import UniversalMedia from '@achimismaili/easy-web-content-blocks/components/UniversalMedia';
+import UniversalMedia from '@easy-web/content-blocks/components/UniversalMedia';
 
 const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/**', { import: 'default' });
 ---
@@ -307,7 +307,7 @@ const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/**', { 
 
 ## Styling
 
-All components reference the `@achimismaili/easy-web-theme-core` CSS custom properties:
+All components reference the `@easy-web/theme-core` CSS custom properties:
 
 * Colors: `--ew-surface`, `--ew-on-surface`, `--ew-surface-muted`, `--ew-primary`, `--ew-on-primary`, `--ew-border`, `--ew-muted`
 * Typography: `--ew-font-sans`, `--ew-text-{xs,sm,base,lg,xl,2xl,3xl}`, `--ew-leading-{tight,normal,loose}`
@@ -327,6 +327,6 @@ The [package adoption matrix](https://github.com/achimismaili/websites/blob/main
 
 ## See also
 
-* [`@achimismaili/easy-web-theme-core`](https://github.com/achimismaili/easy-web/blob/main/packages/theme-core/README.md) — the design-token package these components consume.
-* [`@achimismaili/easy-web-i18n`](https://github.com/achimismaili/easy-web/blob/main/packages/i18n/README.md) — Astro + Paraglide bilingual utilities used together with `LanguageSwitch`.
+* [`@easy-web/theme-core`](https://github.com/achimismaili/easy-web/blob/main/packages/theme-core/README.md) — the design-token package these components consume.
+* [`@easy-web/i18n`](https://github.com/achimismaili/easy-web/blob/main/packages/i18n/README.md) — Astro + Paraglide bilingual utilities used together with `LanguageSwitch`.
 * [`easy-web/AGENTS.md`](https://github.com/achimismaili/easy-web/blob/main/AGENTS.md) — repo orientation and publishing workflow.

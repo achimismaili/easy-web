@@ -12,7 +12,7 @@
  * Usage:
  *
  * ```ts
- * import { notFoundSchema } from '@achimismaili/easy-web-content-blocks/schemas/notFound';
+ * import { notFoundSchema } from '@easy-web/content-blocks/schemas/notFound';
  *
  * const data = notFoundSchema.parse(await import('../content/not-found.json'));
  * ```

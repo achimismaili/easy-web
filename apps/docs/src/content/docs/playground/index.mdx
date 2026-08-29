@@ -32,7 +32,7 @@ The `Hero` component renders a full-width introductory section.
 
 ```astro
 ---
-import { Hero } from '@achimismaili/easy-web-content-blocks';
+import { Hero } from '@easy-web/content-blocks';
 ---
 <Hero
   title="Welcome to My Site"
@@ -51,13 +51,13 @@ import { Hero } from '@achimismaili/easy-web-content-blocks';
 
 ## ThemeToggle Component
 
-The `ThemeToggle` component switches between light and dark themes using CSS custom properties from `@achimismaili/easy-web-theme-core`.
+The `ThemeToggle` component switches between light and dark themes using CSS custom properties from `@easy-web/theme-core`.
 
 ### Usage
 
 ```astro
 ---
-import { ThemeToggle } from '@achimismaili/easy-web-content-blocks';
+import { ThemeToggle } from '@easy-web/content-blocks';
 ---
 <!-- Place in your site Header -->
 <ThemeToggle />
@@ -65,7 +65,7 @@ import { ThemeToggle } from '@achimismaili/easy-web-content-blocks';
 
 ### How It Works
 
-The toggle switches the `data-theme` attribute on `<html>` between `light` and `dark`. The theme CSS from `@achimismaili/easy-web-theme-core` uses this attribute to apply the correct CSS custom property values.
+The toggle switches the `data-theme` attribute on `<html>` between `light` and `dark`. The theme CSS from `@easy-web/theme-core` uses this attribute to apply the correct CSS custom property values.
 
 ```css
 /* theme-core applies tokens like this: */
@@ -84,7 +84,7 @@ The `CardGrid` component renders a responsive grid of cards.
 
 ```astro
 ---
-import { CardGrid, Card } from '@achimismaili/easy-web-content-blocks';
+import { CardGrid, Card } from '@easy-web/content-blocks';
 ---
 <CardGrid>
   <Card
@@ -122,7 +122,7 @@ The `Section` component wraps content in a semantically correct `<section>` elem
 
 ```astro
 ---
-import { Section } from '@achimismaili/easy-web-content-blocks';
+import { Section } from '@easy-web/content-blocks';
 ---
 <Section title="About Us" id="about">
   <p>Content goes here...</p>
@@ -143,8 +143,8 @@ import {
   Header,
   Footer,
   ThemeToggle
-} from '@achimismaili/easy-web-content-blocks';
-import '@achimismaili/easy-web-theme-core/theme.css';
+} from '@easy-web/content-blocks';
+import '@easy-web/theme-core/theme.css';
 ---
 <html>
   <body>

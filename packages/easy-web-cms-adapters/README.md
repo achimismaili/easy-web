@@ -1,4 +1,4 @@
-# @achimismaili/easy-web-cms-adapters
+# @easy-web/cms-adapters
 
 Decap CMS integration package for the [easy-web](https://github.com/achimismaili/easy-web) ecosystem.
 
@@ -13,9 +13,9 @@ Decap CMS integration package for the [easy-web](https://github.com/achimismaili
 See `docs/entra-cms-setup.md` in your instance repo for Entra ID app registration guidance.
 
 ```ts
-import AdminPage from '@achimismaili/easy-web-cms-adapters/components/AdminPage.astro';
-import type { BlogFrontmatter } from '@achimismaili/easy-web-cms-adapters';
-import { generateDecapConfig } from '@achimismaili/easy-web-cms-adapters';
+import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
+import type { BlogFrontmatter } from '@easy-web/cms-adapters';
+import { generateDecapConfig } from '@easy-web/cms-adapters';
 ```
 
 ## Consumed by
@@ -24,4 +24,4 @@ import { generateDecapConfig } from '@achimismaili/easy-web-cms-adapters';
 
 ## Architecture
 
-Part of the `@achimismaili/easy-web-*` package family. See [ADR 0006](https://github.com/achimismaili/websites/blob/main/docs/decisions/0006-cms-agnostic-adapter-pattern.md) for the design rationale.
+Part of the `@easy-web/*` package family. See [ADR 0006](https://github.com/achimismaili/websites/blob/main/docs/decisions/0006-cms-agnostic-adapter-pattern.md) for the design rationale.

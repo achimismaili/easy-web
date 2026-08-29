@@ -1,4 +1,4 @@
-# Migration Guide — @achimismaili/easy-web-content-blocks
+# Migration Guide — @easy-web/content-blocks
 
 Upgrade paths for consuming instances. Every section provides an **Automated** path (recommended), a **Manual** checklist (for auditing what the script does), and a **Rollback** procedure.
 
@@ -10,7 +10,7 @@ The shared 404 architecture is documented in [ADR 0013 — Shared Not-Found Prim
 
 **Scope**: additive, non-breaking. v1.1.0 exposes the shared `NotFound` component and the `notFoundSchema` Zod schema so every instance can render a brand-conform 404 page driven by a CMS-editable `notFound.json` singleton. See ADR 0013 for the full contract.
 
-**Companion package**: pair this upgrade with [`@achimismaili/easy-web-swa@^0.1.0`](../easy-web-swa/MIGRATION.md), which wires the corresponding `staticwebapp.config.json` slice for Azure Static Web Apps hosting.
+**Companion package**: pair this upgrade with [`@easy-web/swa@^0.1.0`](../easy-web-swa/MIGRATION.md), which wires the corresponding `staticwebapp.config.json` slice for Azure Static Web Apps hosting.
 
 ### Automated
 
@@ -28,7 +28,7 @@ If you prefer to adopt by hand (or need to audit what the script does), perform 
 
 1. **Bump the dependency** in the instance's `package.json`:
    ```bash
-   pnpm add @achimismaili/easy-web-content-blocks@^1.1.0
+   pnpm add @easy-web/content-blocks@^1.1.0
    ```
 
 2. **Create the `notFound.json` singleton** at `src/content/siteConfig/notFound.json` (or your instance's equivalent `siteConfig` collection path). One entry per supported locale, keyed by locale code:
@@ -56,7 +56,7 @@ If you prefer to adopt by hand (or need to audit what the script does), perform 
 3. **Register the schema** in `src/content.config.ts` so Astro validates the singleton and Decap CMS can edit it:
    ```ts
    import { defineCollection } from 'astro:content';
-   import { notFoundSchema } from '@achimismaili/easy-web-content-blocks/schemas/notFound';
+   import { notFoundSchema } from '@easy-web/content-blocks/schemas/notFound';
 
    // extend your existing siteConfig collection schema:
    const siteConfig = defineCollection({
@@ -69,7 +69,7 @@ If you prefer to adopt by hand (or need to audit what the script does), perform 
    ```astro
    ---
    import Base from '../layouts/Base.astro';
-   import NotFound from '@achimismaili/easy-web-content-blocks/components/NotFound';
+   import NotFound from '@easy-web/content-blocks/components/NotFound';
    import { getEntry } from 'astro:content';
 
    const entry = await getEntry('siteConfig', 'notFound');
@@ -95,7 +95,7 @@ If the adoption breaks something and you need to revert:
 git revert <commit-sha-of-the-adoption-commit>
 
 # Pin back to the previous line:
-pnpm add @achimismaili/easy-web-content-blocks@^1.0.0
+pnpm add @easy-web/content-blocks@^1.0.0
 
 # Rebuild:
 pnpm build
@@ -129,8 +129,8 @@ If your instance is on Astro 5, upgrade Astro first (see the [Astro upgrade guid
 ### Additive changes (1.0.0 → 1.1.0)
 
 - **`NotFound` component** — brand-conform 404 body driven by the `notFound.json` singleton. Adopted via the steps in the [v1.1.0 section above](#migrating-to-v110-from-v10x).
-- **`notFoundSchema` Zod schema** — exported from `@achimismaili/easy-web-content-blocks/schemas/notFound` so instances can register it in their `siteConfig` collection.
-- **`@achimismaili/easy-web-i18n` peer dependency added** (range `>=1.0.0`) — the `NotFound` component uses the i18n locale utilities. If your instance already consumes `easy-web-i18n` (all pilot and customer instances do), nothing changes.
+- **`notFoundSchema` Zod schema** — exported from `@easy-web/content-blocks/schemas/notFound` so instances can register it in their `siteConfig` collection.
+- **`@easy-web/i18n` peer dependency added** (range `>=1.0.0`) — the `NotFound` component uses the i18n locale utilities. If your instance already consumes `easy-web-i18n` (all pilot and customer instances do), nothing changes.
 
 ### Automated
 
@@ -148,10 +148,10 @@ The script handles the 1.0.0 → 1.1.0 additive adoption. The 0.6 → 1.0 bounda
 pnpm why astro
 
 # 2. Bump directly from 0.6.x to 1.1.0
-pnpm add @achimismaili/easy-web-content-blocks@^1.1.0
+pnpm add @easy-web/content-blocks@^1.1.0
 
 # 3. If not already consumed, install the new i18n peer
-pnpm add @achimismaili/easy-web-i18n@^1.0.0
+pnpm add @easy-web/i18n@^1.0.0
 
 # 4. Run the v1.1.0 adoption steps from the section above
 ```
@@ -162,7 +162,7 @@ Then follow the [Manual checklist for v1.1.0](#manual) to adopt the shared 404 p
 
 ```bash
 git revert <commit-sha-of-the-upgrade-commit>
-pnpm add @achimismaili/easy-web-content-blocks@^0.6.1
+pnpm add @easy-web/content-blocks@^0.6.1
 pnpm build
 ```
 
@@ -171,6 +171,6 @@ pnpm build
 ## See also
 
 - [ADR 0013 — Shared Not-Found Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md) — architecture rationale for the shared 404 pattern.
-- [`@achimismaili/easy-web-swa` MIGRATION.md](../easy-web-swa/MIGRATION.md) — companion package that manages the `staticwebapp.config.json` slice.
+- [`@easy-web/swa` MIGRATION.md](../easy-web-swa/MIGRATION.md) — companion package that manages the `staticwebapp.config.json` slice.
 - [`CHANGELOG.md`](./CHANGELOG.md) — chronological release notes.
 - [`README.md`](./README.md) — component reference and quick-start.

@@ -1,8 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
-import Section from '@achimismaili/easy-web-content-blocks/components/Section';
-import Card from '@achimismaili/easy-web-content-blocks/components/Card';
-import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
+import Section from '@easy-web/content-blocks/components/Section';
+import Card from '@easy-web/content-blocks/components/Card';
+import CardGrid from '@easy-web/content-blocks/components/CardGrid';
 ---
 
 <Base 
@@ -32,9 +32,9 @@ pnpm --version</code></pre>
 
     <Section title="2. Install Packages" id="install">
       <p>Install the core easy-web packages to your project. These provide design tokens, i18n helpers, and UI components.</p>
-      <pre><code>pnpm add @achimismaili/easy-web-theme-core
-pnpm add @achimismaili/easy-web-i18n
-pnpm add @achimismaili/easy-web-content-blocks</code></pre>
+      <pre><code>pnpm add @easy-web/theme-core
+pnpm add @easy-web/i18n
+pnpm add @easy-web/content-blocks</code></pre>
       <ul>
         <li><strong>theme-core</strong>: CSS variables, dark mode logic, and typography.</li>
         <li><strong>i18n</strong>: Bilingual routing and translation utilities.</li>
@@ -46,8 +46,8 @@ pnpm add @achimismaili/easy-web-content-blocks</code></pre>
       <p>Import the global design tokens in your main layout file and include the <code>noFlashScript</code> to prevent dark mode flickering during page load.</p>
       <pre><code>
 // Import tokens
-import '@achimismaili/easy-web-theme-core/tokens.css';
-import &amp;#123; noFlashScript &amp;#125; from '@achimismaili/easy-web-theme-core';
+import '@easy-web/theme-core/tokens.css';
+import &amp;#123; noFlashScript &amp;#125; from '@easy-web/theme-core';
 
 &lt;html&gt;
   &lt;head&gt;
@@ -60,8 +60,8 @@ import &amp;#123; noFlashScript &amp;#125; from '@achimismaili/easy-web-theme-co
       <p>Start building your pages using the provided content blocks. These components automatically use your theme tokens.</p>
       <pre><code>
 // Use components
-import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
-import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+import Hero from '@easy-web/content-blocks/components/Hero';
+import ThemeToggle from '@easy-web/content-blocks/components/ThemeToggle';
 
 &lt;Hero
   title="My Site"

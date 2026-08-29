@@ -1,6 +1,6 @@
 ---
 title: easy-web
-description: Baseline @achimismaili/easy-web-* package family — shared library for the ismaili.de web ecosystem
+description: Baseline @easy-web/* package family — shared library for the ismaili.de web ecosystem
 template: splash
 hero:
   tagline: A shared library for building ismaili.de web instances with Astro
@@ -20,12 +20,12 @@ The easy-web library consists of several focused packages:
 
 | Package | Description |
 | ------- | ----------- |
-| `@achimismaili/easy-web-theme-core` | CSS design tokens, light/dark theme, no-flash script |
-| `@achimismaili/easy-web-i18n` | i18n helpers for Astro sites |
-| `@achimismaili/easy-web-content-blocks` | Hero, Section, CardGrid, Card, Header, Footer, ThemeToggle |
-| `@achimismaili/easy-web-auth` | MSAL.js authentication, Microsoft Graph integration |
-| `@achimismaili/easy-web-cms-adapters` | Decap CMS integration for content management |
-| `@achimismaili/create-easy-web` | Scaffold CLI for creating new site instances |
+| `@easy-web/theme-core` | CSS design tokens, light/dark theme, no-flash script |
+| `@easy-web/i18n` | i18n helpers for Astro sites |
+| `@easy-web/content-blocks` | Hero, Section, CardGrid, Card, Header, Footer, ThemeToggle |
+| `@easy-web/auth` | MSAL.js authentication, Microsoft Graph integration |
+| `@easy-web/cms-adapters` | Decap CMS integration for content management |
+| `@easy-web/create` | Scaffold CLI for creating new site instances |
 
 ## Why easy-web?
 
@@ -35,10 +35,10 @@ The ismaili.de web ecosystem runs multiple site instances for different organisa
 
 ```bash
 # Install the theme and core UI components
-pnpm add @achimismaili/easy-web-theme-core @achimismaili/easy-web-content-blocks
+pnpm add @easy-web/theme-core @easy-web/content-blocks
 
 # Import the theme in your Astro layout
-# import '@achimismaili/easy-web-theme-core/theme.css';
+# import '@easy-web/theme-core/theme.css';
 ```
 
 See [Installation →](./getting-started/installation/) for the complete setup guide.

@@ -6,12 +6,12 @@ description: MSAL.js authentication, Microsoft Graph integration, and SharePoint
 ## Installation
 
 ```bash
-pnpm add @achimismaili/easy-web-auth
+pnpm add @easy-web/auth
 ```
 
 ## Overview
 
-`@achimismaili/easy-web-auth` wraps MSAL.js (Microsoft Authentication Library) to provide Entra ID / Azure AD authentication in the easy-web ecosystem. It exports an `AuthProvider` React context root, hooks for reading auth state and calling Microsoft Graph, pre-built UI components (login button, user avatar, protected content wrapper), and SharePoint-specific components and utilities.
+`@easy-web/auth` wraps MSAL.js (Microsoft Authentication Library) to provide Entra ID / Azure AD authentication in the easy-web ecosystem. It exports an `AuthProvider` React context root, hooks for reading auth state and calling Microsoft Graph, pre-built UI components (login button, user avatar, protected content wrapper), and SharePoint-specific components and utilities.
 
 :::caution[Single-island constraint]
 All auth-dependent React components on a given page **must live inside a single React island**. React Context does not cross Astro island boundaries — two `client:*` directives create two independent `MsalProvider` instances which will corrupt the `sessionStorage` token cache. See [ADR 0010](https://github.com/achimismaili/websites/blob/main/docs/decisions/0010-react-auth-single-island.md) for full rationale.
@@ -45,7 +45,7 @@ Converts an `AuthConfig` into a fully-formed MSAL `Configuration` object ready t
 **Signature:** `function buildMsalConfig(config: AuthConfig): Configuration`
 
 ```typescript
-import { buildMsalConfig } from '@achimismaili/easy-web-auth';
+import { buildMsalConfig } from '@easy-web/auth';
 
 const msalConfig = buildMsalConfig({
   clientId: import.meta.env.PUBLIC_ENTRA_CLIENT_ID,
@@ -64,7 +64,7 @@ The root React component that sets up MSAL context. Every auth-dependent compone
 ```astro
 ---
 // src/layouts/Base.astro
-import { buildMsalConfig } from '@achimismaili/easy-web-auth';
+import { buildMsalConfig } from '@easy-web/auth';
 import AuthShell from '../islands/AuthShell';
 
 const msalConfig = buildMsalConfig({
@@ -79,7 +79,7 @@ const msalConfig = buildMsalConfig({
 
 ```tsx
 // src/islands/AuthShell.tsx
-import { AuthProvider, LoginButton, UserAvatar, ProtectedContent } from '@achimismaili/easy-web-auth';
+import { AuthProvider, LoginButton, UserAvatar, ProtectedContent } from '@easy-web/auth';
 import type { Configuration } from '@azure/msal-browser';
 
 export default function AuthShell({ msalConfig }: { msalConfig: Configuration }) {
@@ -121,7 +121,7 @@ interface AuthUser {
 ```
 
 ```tsx
-import { useAuth } from '@achimismaili/easy-web-auth';
+import { useAuth } from '@easy-web/auth';
 
 function NavActions() {
   const { isAuthenticated, user, login, logout } = useAuth();
@@ -147,7 +147,7 @@ Returns a pre-authenticated Microsoft Graph client instance.
 **Signature:** `function useGraphClient(): UseGraphClientReturn`
 
 ```tsx
-import { useGraphClient } from '@achimismaili/easy-web-auth';
+import { useGraphClient } from '@easy-web/auth';
 
 function MyComponent() {
   const { client, isLoading } = useGraphClient();
@@ -176,7 +176,7 @@ All UI components must be rendered inside an `AuthProvider` subtree.
 
 A pre-wired login/logout toggle button. Shows a login button when unauthenticated; shows logout when authenticated.
 
-**Import:** `import { LoginButton } from '@achimismaili/easy-web-auth'`
+**Import:** `import { LoginButton } from '@easy-web/auth'`
 
 No required props.
 
@@ -184,16 +184,16 @@ No required props.
 
 Displays the authenticated user's name and initials avatar. Renders nothing when unauthenticated.
 
-**Import:** `import { UserAvatar } from '@achimismaili/easy-web-auth'`
+**Import:** `import { UserAvatar } from '@easy-web/auth'`
 
 ### `ProtectedContent`
 
 Renders its children only when the user is authenticated. Renders nothing (or an optional fallback) when unauthenticated.
 
-**Import:** `import { ProtectedContent } from '@achimismaili/easy-web-auth'`
+**Import:** `import { ProtectedContent } from '@easy-web/auth'`
 
 ```tsx
-import { ProtectedContent } from '@achimismaili/easy-web-auth';
+import { ProtectedContent } from '@easy-web/auth';
 
 <ProtectedContent>
   <MembersOnlyDashboard />
@@ -204,19 +204,19 @@ import { ProtectedContent } from '@achimismaili/easy-web-auth';
 
 Renders a photo gallery from a SharePoint document library.
 
-**Import:** `import { SharePointGallery } from '@achimismaili/easy-web-auth'`
+**Import:** `import { SharePointGallery } from '@easy-web/auth'`
 
 ### `SharePointFileList`
 
 Renders a file list from a SharePoint document library.
 
-**Import:** `import { SharePointFileList } from '@achimismaili/easy-web-auth'`
+**Import:** `import { SharePointFileList } from '@easy-web/auth'`
 
 ### `SharePointListView`
 
 Renders items from a SharePoint list.
 
-**Import:** `import { SharePointListView } from '@achimismaili/easy-web-auth'`
+**Import:** `import { SharePointListView } from '@easy-web/auth'`
 
 ## Graph utilities
 
@@ -237,7 +237,7 @@ Low-level Graph API functions. These are used internally by the hooks but are al
 | `getImageThumbnails(client, siteId, driveId, itemId)` | Fetch image thumbnails |
 
 ```typescript
-import { createGraphClient, getSite, getListItems } from '@achimismaili/easy-web-auth';
+import { createGraphClient, getSite, getListItems } from '@easy-web/auth';
 
 const client = createGraphClient(msalInstance);
 const site = await getSite(client, 'your-site-id');
@@ -256,8 +256,8 @@ const items = await getListItems(client, 'your-site-id', 'your-list-id');
 ## Scope constants
 
 ```typescript
-import { DEFAULT_SCOPES, LOGIN_SCOPES } from '@achimismaili/easy-web-auth';
-import type { DefaultScope, LoginScope } from '@achimismaili/easy-web-auth';
+import { DEFAULT_SCOPES, LOGIN_SCOPES } from '@easy-web/auth';
+import type { DefaultScope, LoginScope } from '@easy-web/auth';
 ```
 
 `DEFAULT_SCOPES` contains the Graph scopes requested on each token acquisition. `LOGIN_SCOPES` contains the scopes requested during the interactive login prompt.

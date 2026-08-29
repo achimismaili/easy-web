@@ -7,7 +7,7 @@ assignees: ''
 ---
 
 **Package affected**
-Which `@achimismaili/easy-web-*` package is affected?
+Which `@easy-web/*` package is affected?
 
 **Describe the bug**
 A clear and concise description of what the bug is.

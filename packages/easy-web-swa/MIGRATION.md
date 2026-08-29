@@ -1,4 +1,4 @@
-# Migration Guide — @achimismaili/easy-web-swa
+# Migration Guide — @easy-web/swa
 
 Adoption paths for the shared Azure Static Web Apps integration. Each section provides an **Automated** path (recommended), a **Manual** checklist (for auditing what the script does), and a **Rollback** procedure.
 
@@ -10,7 +10,7 @@ The sentinel-merge architecture and the "why not just template `staticwebapp.con
 
 **Scope**: first release of the `easyWebNotFound()` Astro integration. It writes a sentinel-marked slice into `dist/staticwebapp.config.json` on every build so shared 404 handling works consistently on Azure SWA across all instances. The integration is safe to adopt on any Astro 6 or 7 project; single-locale and multi-locale instances both supported.
 
-**Companion package**: pair this adoption with [`@achimismaili/easy-web-content-blocks@^1.1.0`](../easy-web-content-blocks/MIGRATION.md), which ships the `NotFound` component the 404 page renders. The two are designed to adopt together.
+**Companion package**: pair this adoption with [`@easy-web/content-blocks@^1.1.0`](../easy-web-content-blocks/MIGRATION.md), which ships the `NotFound` component the 404 page renders. The two are designed to adopt together.
 
 ### The sentinel contract (read before hand-editing anything)
 
@@ -36,13 +36,13 @@ If you prefer to adopt by hand (or need to audit what the script does), perform 
 
 1. **Install the package** in the instance:
    ```bash
-   pnpm add @achimismaili/easy-web-swa@^0.1.0
+   pnpm add @easy-web/swa@^0.1.0
    ```
 
 2. **Register the integration** in `astro.config.mjs`:
    ```js
    import { defineConfig } from 'astro/config';
-   import { easyWebNotFound } from '@achimismaili/easy-web-swa';
+   import { easyWebNotFound } from '@easy-web/swa';
 
    export default defineConfig({
      // ... your existing config (site, i18n, etc.) ...
@@ -87,7 +87,7 @@ If the integration breaks something and you need to revert:
 #    Then commit that edit.
 
 # 2. Uninstall the package:
-pnpm remove @achimismaili/easy-web-swa
+pnpm remove @easy-web/swa
 
 # 3. Revert the staticwebapp.config.json changes:
 git revert <commit-sha-of-the-staticwebapp-config-cleanup-commit>
@@ -106,6 +106,6 @@ The integration writes only to `dist/staticwebapp.config.json` (build output, no
 ## See also
 
 - [ADR 0013 — Shared Not-Found Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md) — architecture rationale, sentinel-merge algorithm, and preservation contract.
-- [`@achimismaili/easy-web-content-blocks` MIGRATION.md](../easy-web-content-blocks/MIGRATION.md) — companion package that ships the `NotFound` component and `notFoundSchema`.
+- [`@easy-web/content-blocks` MIGRATION.md](../easy-web-content-blocks/MIGRATION.md) — companion package that ships the `NotFound` component and `notFoundSchema`.
 - [`CHANGELOG.md`](./CHANGELOG.md) — chronological release notes.
 - [`README.md`](./README.md) — integration API and options reference.

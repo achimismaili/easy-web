@@ -7,7 +7,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'easy-web',
-      description: 'Baseline @achimismaili/easy-web-* package family — shared library for the ismaili.de web ecosystem',
+      description: 'Baseline @easy-web/* package family — shared library for the ismaili.de web ecosystem',
       social: [
         {
           icon: 'github',

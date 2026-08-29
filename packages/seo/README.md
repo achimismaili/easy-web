@@ -1,12 +1,12 @@
-# @achimismaili/easy-web-seo
+# @easy-web/seo
 
-Shared SEO primitives for the `@achimismaili/easy-web-*` ecosystem.
+Shared SEO primitives for the `@easy-web/*` ecosystem.
 
 ## Usage
 
 ```ts
 // astro.config.mjs
-import easyWebSeo from '@achimismaili/easy-web-seo';
+import easyWebSeo from '@easy-web/seo';
 
 export default defineConfig({
   site: 'https://yoursite.example',
@@ -21,7 +21,7 @@ export default defineConfig({
 
 ```astro
 // In your Base layout:
-import SeoHead from '@achimismaili/easy-web-seo/components/SeoHead.astro';
+import SeoHead from '@easy-web/seo/components/SeoHead.astro';
 
 <SeoHead
   title={title}

@@ -25,13 +25,13 @@ easy-web/
 
 ```mermaid
 graph TD
-    TC["@achimismaili/easy-web-theme-core"]
-    I18N["@achimismaili/easy-web-i18n"]
-    CB["@achimismaili/easy-web-content-blocks"]
-    AUTH["@achimismaili/easy-web-auth"]
-    CMS["@achimismaili/easy-web-cms-adapters"]
-    AFU["@achimismaili/easy-web-azure-functions-utils"]
-    CLI["@achimismaili/create-easy-web"]
+    TC["@easy-web/theme-core"]
+    I18N["@easy-web/i18n"]
+    CB["@easy-web/content-blocks"]
+    AUTH["@easy-web/auth"]
+    CMS["@easy-web/cms-adapters"]
+    AFU["@easy-web/azure-functions-utils"]
+    CLI["@easy-web/create"]
 
     CB --> TC
     AUTH --> TC
@@ -46,7 +46,7 @@ Site instances install easy-web packages from the public npm registry:
 ```mermaid
 flowchart LR
     EW["easy-web\n(this repo)"]
-    NPM["npm registry\n(@achimismaili/*)"]
+    NPM["npm registry\n(@easy-web/*)"]
     DEV["dev.ismaili.de\n(pilot instance)"]
     HARLEY["harleyrentflorida.de\n(customer)"]
     FUTURE["future instances..."]

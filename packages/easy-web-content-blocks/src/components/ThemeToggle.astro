@@ -1,6 +1,6 @@
 ---
 /**
- * ThemeToggle – switches between light and dark themes using @achimismaili/easy-web-theme-core.
+ * ThemeToggle – switches between light and dark themes using @easy-web/theme-core.
  * Pure Astro component with inline vanilla JS. No framework dependency.
  */
 interface Props {
@@ -71,7 +71,7 @@ const { label = 'Toggle color theme (Darkmode)' } = Astro.props;
 </style>
 
 <script>
-  import { applyTheme, getPreferredTheme } from '@achimismaili/easy-web-theme-core';
+  import { applyTheme, getPreferredTheme } from '@easy-web/theme-core';
 
   const btn = document.querySelector('.ew-theme-toggle') as HTMLButtonElement | null;
   btn?.addEventListener('click', () => {

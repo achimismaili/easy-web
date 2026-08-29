@@ -6,12 +6,12 @@ description: CSS design tokens, light/dark theme switching, and no-flash SSR scr
 ## Installation
 
 ```bash
-pnpm add @achimismaili/easy-web-theme-core
+pnpm add @easy-web/theme-core
 ```
 
 ## Overview
 
-`@achimismaili/easy-web-theme-core` ships the `--ew-*` CSS custom properties that all other easy-web packages rely on for colour, typography, spacing, and motion. It also provides TypeScript helpers for reading and writing the active theme, a breakpoint map for use in JavaScript, and a compact inline script (`noFlashScript`) that must be injected into `<head>` to prevent the flash-of-wrong-theme on first load.
+`@easy-web/theme-core` ships the `--ew-*` CSS custom properties that all other easy-web packages rely on for colour, typography, spacing, and motion. It also provides TypeScript helpers for reading and writing the active theme, a breakpoint map for use in JavaScript, and a compact inline script (`noFlashScript`) that must be injected into `<head>` to prevent the flash-of-wrong-theme on first load.
 
 Import the token stylesheet once in your base layout, then call `noFlashScript` as an inline `<script is:inline>` so it runs before the browser paints.
 
@@ -20,7 +20,7 @@ Import the token stylesheet once in your base layout, then call `noFlashScript` 
 ```astro
 ---
 // src/layouts/Base.astro
-import '@achimismaili/easy-web-theme-core/tokens.css';
+import '@easy-web/theme-core/tokens.css';
 ---
 ```
 
@@ -36,7 +36,7 @@ A pre-built inline script string that reads `localStorage` on load and sets `dat
 
 ```astro
 ---
-import { noFlashScript } from '@achimismaili/easy-web-theme-core';
+import { noFlashScript } from '@easy-web/theme-core';
 ---
 <html>
   <head>
@@ -53,7 +53,7 @@ Sets the active theme by writing `data-theme` on `<html>` and persisting to `loc
 **Signature:** `function applyTheme(theme: Theme): void`
 
 ```typescript
-import { applyTheme } from '@achimismaili/easy-web-theme-core';
+import { applyTheme } from '@easy-web/theme-core';
 
 applyTheme('dark');   // force dark
 applyTheme('light');  // force light
@@ -67,7 +67,7 @@ Reads the persisted theme from `localStorage`. Returns `'light'` or `'dark'` if 
 **Signature:** `function getPreferredTheme(): Theme`
 
 ```typescript
-import { getPreferredTheme } from '@achimismaili/easy-web-theme-core';
+import { getPreferredTheme } from '@easy-web/theme-core';
 
 const current = getPreferredTheme(); // 'light' | 'dark' | 'system'
 ```
@@ -79,7 +79,7 @@ Subscribes to the OS `prefers-color-scheme` media query and fires the callback w
 **Signature:** `function subscribeToSystem(cb: (isDark: boolean) => void): () => void`
 
 ```typescript
-import { subscribeToSystem } from '@achimismaili/easy-web-theme-core';
+import { subscribeToSystem } from '@easy-web/theme-core';
 
 const unsubscribe = subscribeToSystem((isDark) => {
   console.log('OS prefers dark:', isDark);
@@ -104,7 +104,7 @@ A deeply-nested constant object that maps every design-token category to its cor
 Categories: `color`, `font`, `text`, `leading`, `space`, `radius`, `shadow`, `motion`, `zIndex`.
 
 ```typescript
-import { tokens } from '@achimismaili/easy-web-theme-core';
+import { tokens } from '@easy-web/theme-core';
 
 // Use in a canvas context or anywhere CSS vars aren't available
 const primaryColor = tokens.color.primary; // 'var(--ew-primary)'
@@ -125,7 +125,7 @@ Raw pixel breakpoint values (not CSS custom properties — media queries cannot 
 **Signature:** `const breakpoints: { sm: 640; md: 768; lg: 1024; xl: 1280; '2xl': 1536 }`
 
 ```typescript
-import { breakpoints } from '@achimismaili/easy-web-theme-core';
+import { breakpoints } from '@easy-web/theme-core';
 
 const isMobile = window.matchMedia(`(max-width: ${breakpoints.md}px)`).matches;
 ```

@@ -5,10 +5,10 @@ description: Scaffold a new site instance with the easy-web CLI
 
 ## Using the Scaffold CLI
 
-The `@achimismaili/create-easy-web` CLI scaffolds a new Astro site pre-configured with all easy-web packages:
+The `@easy-web/create` CLI scaffolds a new Astro site pre-configured with all easy-web packages:
 
 ```bash
-pnpm create @achimismaili/easy-web my-site
+pnpm create @easy-web my-site
 cd my-site
 pnpm install
 pnpm dev
@@ -32,9 +32,9 @@ cd my-site
 ### 2. Install easy-web packages
 
 ```bash
-pnpm add @achimismaili/easy-web-theme-core \
-         @achimismaili/easy-web-i18n \
-         @achimismaili/easy-web-content-blocks
+pnpm add @easy-web/theme-core \
+         @easy-web/i18n \
+         @easy-web/content-blocks
 ```
 
 ### 3. Add the theme to your base layout
@@ -42,8 +42,8 @@ pnpm add @achimismaili/easy-web-theme-core \
 ```astro
 ---
 // src/layouts/Base.astro
-import '@achimismaili/easy-web-theme-core/theme.css';
-import { ThemeToggle, Header, Footer } from '@achimismaili/easy-web-content-blocks';
+import '@easy-web/theme-core/theme.css';
+import { ThemeToggle, Header, Footer } from '@easy-web/content-blocks';
 ---
 <html>
   <head>
@@ -80,7 +80,7 @@ export default defineConfig({
 
 ```typescript
 // Use localizedHref for locale-aware links
-import { localizedHref } from '@achimismaili/easy-web-i18n';
+import { localizedHref } from '@easy-web/i18n';
 
 const link = localizedHref('/about', 'de'); // → '/de/about'
 const defaultLink = localizedHref('/about', 'en'); // → '/about'

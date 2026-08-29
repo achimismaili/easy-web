@@ -1,13 +1,13 @@
 # AGENTS.md — easy-web
 
 > **For AI agents working in this repo.**
-> Baseline `@achimismaili/easy-web-*` package monorepo. Publishes the shared library every site instance consumes.
+> Baseline `@easy-web/*` package monorepo. Publishes the shared library every site instance consumes.
 
 ## Project identity
 
 - **Purpose**: Shared package family for the ismaili.de web ecosystem — theme tokens, i18n primitives, content blocks, CMS adapters, MSAL auth components, and the scaffold CLI for new instances.
 - **Type**: pnpm + Turborepo monorepo. Node 22.12.0 via Volta, pnpm 9.15.4.
-- **Publishes to**: npm public registry. Packages namespaced `@achimismaili/easy-web-*`.
+- **Publishes to**: npm public registry. Packages namespaced `@easy-web/*`.
 - **Consumed by**: every instance repo (`dev.ismaili.de`, `harleyrentflorida.de`, future sites).
 
 ## Ecosystem context
@@ -41,14 +41,14 @@ When changing anything in `packages/auth/`:
 
 | Path | Purpose | Status |
 | :--- | :--- | :--- |
-| `packages/seo/` | `@achimismaili/easy-web-seo` — shared SEO primitives: `easyWebSeo()` AstroIntegration (wraps `@astrojs/sitemap` with i18n hreflang, injects a dynamic `robots.txt` route with `noIndex` mode) and the `<SeoHead>` component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest). See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md). | Real at v1.0.0 |
-| `packages/theme-core/` | `@achimismaili/easy-web-theme-core` — CSS design tokens, light/dark theme, no-flash script | Real (consumed at ^0.3.x by instances) |
-| `packages/i18n/` | `@achimismaili/easy-web-i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers | Real (consumed at ^0.3.x by instances) |
-| `packages/easy-web-content-blocks/` | `@achimismaili/easy-web-content-blocks` — Hero, Section, CardGrid, Card, and other reusable page blocks | Real (consumed at ^0.2.x by instances) |
-| `packages/auth/` | `@achimismaili/easy-web-auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). | Real at v0.1.1 — fully wired (AuthProvider, useAuth, LoginButton, ProtectedContent, UserAvatar, Graph client, SharePoint hooks and UI components). Published to npm (tag `v0.1.1`); consumed by `dev.ismaili.de` at `^0.1.1`. |
-| `packages/easy-web-cms-adapters/` | `@achimismaili/easy-web-cms-adapters` — CMS adapter contract per ADR 0006 | Stub |
-| `packages/easy-web-azure-functions-utils/` | `@achimismaili/easy-web-azure-functions-utils` — server-side helpers for Azure Functions | Stub |
-| `packages/create-easy-web/` | `@achimismaili/create-easy-web` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline | Stub |
+| `packages/seo/` | `@easy-web/seo` — shared SEO primitives: `easyWebSeo()` AstroIntegration (wraps `@astrojs/sitemap` with i18n hreflang, injects a dynamic `robots.txt` route with `noIndex` mode) and the `<SeoHead>` component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest). See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md). | Real at v1.0.0 |
+| `packages/theme-core/` | `@easy-web/theme-core` — CSS design tokens, light/dark theme, no-flash script | Real (consumed at ^0.3.x by instances) |
+| `packages/i18n/` | `@easy-web/i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers | Real (consumed at ^0.3.x by instances) |
+| `packages/easy-web-content-blocks/` | `@easy-web/content-blocks` — Hero, Section, CardGrid, Card, and other reusable page blocks | Real (consumed at ^0.2.x by instances) |
+| `packages/auth/` | `@easy-web/auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). | Real at v0.1.1 — fully wired (AuthProvider, useAuth, LoginButton, ProtectedContent, UserAvatar, Graph client, SharePoint hooks and UI components). Published to npm (tag `v0.1.1`); consumed by `dev.ismaili.de` at `^0.1.1`. |
+| `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` — CMS adapter contract per ADR 0006 | Stub |
+| `packages/easy-web-azure-functions-utils/` | `@easy-web/azure-functions-utils` — server-side helpers for Azure Functions | Stub |
+| `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline | Stub |
 | `examples/` | Reference instances consuming the packages locally for development | Empty (placeholder) |
 | `scripts/` | Workspace-level tooling (release, validation) | — |
 | `docs/` | Repo-local notes; canonical docs live in `websites/docs/` | — |
@@ -78,7 +78,7 @@ GitHub Actions workflows handle the full release pipeline:
 
 ### npm Trusted Publisher configuration
 
-**Every `@achimismaili/easy-web-*` package already has a Trusted Publisher registered on npm** pointing at this repo's release workflow. This is a one-time, already-done setup. Do not re-register, and do not fall back to `NPM_TOKEN` / `NODE_AUTH_TOKEN` — those are intentionally not set.
+**Every `@easy-web/*` package already has a Trusted Publisher registered on npm** pointing at this repo's release workflow. This is a one-time, already-done setup. Do not re-register, and do not fall back to `NPM_TOKEN` / `NODE_AUTH_TOKEN` — those are intentionally not set.
 
 TP registration parameters (identical for every package):
 
@@ -98,7 +98,7 @@ The OIDC-authenticated publish path is fragile. On 2026-07-02 we spent hours re-
 3. **Provenance opt-in belongs in `publishConfig.provenance: true` per package.json, NOT as `NPM_CONFIG_PROVENANCE: true` env var on the changesets step.** The env-var form invokes an older code path that signs the Sigstore envelope out-of-band (visible in the transparency log) but does not force the OIDC-authenticated publish path. When we set it as an env var, provenance succeeded while auth silently failed. Set `publishConfig.provenance: true` in each package that opts in; leave the env var out.
 
 Empirical anchors:
-- `@achimismaili/easy-web-content-blocks@0.6.1` is the first easy-web package published via this workflow with a Sigstore attestation attached (`dist.attestations` populated on the registry). Every prior version across all seven packages was manually published with a classic token — those tarballs have `attestations = null`. If you ever see `attested: false` on a newly-published version, the release ran outside this workflow.
+- `@easy-web/content-blocks@0.6.1` is the first easy-web package published via this workflow with a Sigstore attestation attached (`dist.attestations` populated on the registry). Every prior version across all seven packages was manually published with a classic token — those tarballs have `attestations = null`. If you ever see `attested: false` on a newly-published version, the release ran outside this workflow.
 
 If a publish attempt still fails after checking (1)/(2)/(3), then investigate npm-side transient errors, TP-registration drift, or version regressions in `changesets/action@v1`. Only after those are ruled out should re-registration of the Trusted Publisher be considered.
 
@@ -153,14 +153,14 @@ Bootstrap procedure (done once per new package):
 
 ### Publishing coordinates
 - Registry: npm public registry (`https://registry.npmjs.org/`)
-- All packages are namespaced `@achimismaili/easy-web-*`
+- All packages are namespaced `@easy-web/*`
 - pnpm pinned via `packageManager: "pnpm@10.34.4"` in every workspace `package.json`, and `version: 10.34.4` in both workflows. Bumping pnpm requires updating all locations in sync (the action rejects mismatch with `ERR_PNPM_BAD_PM_VERSION`).
 
 ## What to change here
 
 ✅ **In scope**:
 - New shared components that more than one instance would benefit from.
-- Bug fixes to existing `@achimismaili/easy-web-*` packages.
+- Bug fixes to existing `@easy-web/*` packages.
 - Theme-token additions, new locales, new content blocks, new auth components.
 - New packages, when a clear cross-instance need exists.
 - Tests, types, lint configuration, build pipeline.
@@ -181,7 +181,7 @@ pnpm lint                          # turbo run lint across all packages
 pnpm typecheck                     # turbo run typecheck across all packages
 pnpm test                          # turbo run test --passWithNoTests across all packages
 pnpm build                         # turbo run build across all packages
-pnpm --filter @achimismaili/easy-web-auth test    # target a single package
+pnpm --filter @easy-web/auth test    # target a single package
 pnpm changeset                     # create a changeset for release
 ```
 

@@ -1,11 +1,11 @@
-# @achimismaili/easy-web-theme-core
+# @easy-web/theme-core
 
 Design system foundation for the easy-web ecosystem. This package provides semantic design tokens, color ramps, typography, and spacing constants as CSS custom properties and typed TypeScript objects.
 
 ## Installation
 
 ```bash
-pnpm add @achimismaili/easy-web-theme-core
+pnpm add @easy-web/theme-core
 ```
 
 This package is published to npm. Install it like any other npm package.
@@ -16,14 +16,14 @@ This package is published to npm. Install it like any other npm package.
 Import the design tokens in your main entry file (e.g., `main.ts` or `app.tsx`).
 
 ```typescript
-import '@achimismaili/easy-web-theme-core/tokens.css';
+import '@easy-web/theme-core/tokens.css';
 ```
 
 ### 2. Prevent Theme Flash (Optional)
 To avoid a white flash during page load when using dark mode, inject the `noFlashScript` in your HTML `<head>` before the stylesheet.
 
 ```typescript
-import { noFlashScript } from '@achimismaili/easy-web-theme-core';
+import { noFlashScript } from '@easy-web/theme-core';
 
 // In your root component or HTML template:
 // <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
@@ -50,7 +50,7 @@ Use semantic variables in your CSS files.
 Use the typed `tokens` object for CSS-in-JS or dynamic styles.
 
 ```typescript
-import { tokens } from '@achimismaili/easy-web-theme-core';
+import { tokens } from '@easy-web/theme-core';
 
 const styles = {
   backgroundColor: tokens.color.surface,
@@ -66,7 +66,7 @@ The system supports light and dark modes via the `data-theme` attribute on the `
 ### JavaScript API
 
 ```typescript
-import { applyTheme, getPreferredTheme } from '@achimismaili/easy-web-theme-core';
+import { applyTheme, getPreferredTheme } from '@easy-web/theme-core';
 
 // Set theme manually (persists to localStorage)
 applyTheme('dark');
@@ -158,7 +158,7 @@ All durations automatically reset to `0ms` under `prefers-reduced-motion: reduce
 Breakpoints are raw pixel numbers — CSS variables **cannot** be used inside `@media` queries.
 
 ```typescript
-import { breakpoints } from '@achimismaili/easy-web-theme-core';
+import { breakpoints } from '@easy-web/theme-core';
 const isMobile = window.matchMedia(`(max-width: ${breakpoints.md}px)`).matches;
 ```
 
@@ -195,8 +195,8 @@ Import `fonts.css` to activate Inter Variable + JetBrains Mono Variable. Sites t
 
 **Step 1: Import the stylesheet** (after `tokens.css`)
 ```typescript
-import '@achimismaili/easy-web-theme-core/tokens.css';
-import '@achimismaili/easy-web-theme-core/fonts.css';
+import '@easy-web/theme-core/tokens.css';
+import '@easy-web/theme-core/fonts.css';
 ```
 
 **Step 2: Add font files** to `public/fonts/`:

@@ -56,7 +56,7 @@ const MANAGED_RESPONSE_OVERRIDE = {
  */
 export function easyWebNotFound(_options: Options = {}): AstroIntegration {
   return {
-    name: '@achimismaili/easy-web-swa',
+    name: '@easy-web/swa',
     hooks: {
       'astro:config:setup': ({ config }) => {
         if (!config.i18n) {

@@ -1,6 +1,6 @@
 # easy-web
 
-Baseline `@achimismaili/easy-web-*` package family — shared library for the ismaili.de web ecosystem. All site instances consume these packages via npm.
+Baseline `@easy-web/*` package family — shared library for the ismaili.de web ecosystem. All site instances consume these packages via npm.
 
 For full architecture, role boundaries, and how this repo relates to instance repos, see [`WebSites/docs/repos/easy-web.md`](https://github.com/achimismaili/easy-web/blob/main/docs/repos/easy-web.md).
 
@@ -8,14 +8,14 @@ For full architecture, role boundaries, and how this repo relates to instance re
 
 | Package | Version | Description |
 | :--- | :--- | :--- |
-| `@achimismaili/easy-web-theme-core` | `^0.3.x` | CSS design tokens, light/dark theme, no-flash script |
-| `@achimismaili/easy-web-i18n` | `^0.3.x` | `localizedHref`, `getLocaleFromPath`, alternate-link helpers |
-| `@achimismaili/easy-web-content-blocks` | `^1.1.x` | Hero, Section, CardGrid, Card, Header, Footer, ThemeToggle; now includes `<NotFound>` component and `notFoundSchema` |
-| `@achimismaili/easy-web-auth` | `^0.1.x` | MSAL.js auth, Microsoft Graph, SharePoint components |
-| `@achimismaili/easy-web-cms-adapters` | `^0.1.x` | Admin page mounting, config scaffolding, and frontmatter types for Decap CMS |
-| `@achimismaili/easy-web-swa` | `^0.1.x` | Astro integration for sentinel-safe Azure SWA 404 config |
-| `@achimismaili/easy-web-azure-functions-utils` | stub | Server-side Azure Functions helpers |
-| `@achimismaili/create-easy-web` | stub | Scaffold CLI for new site instances (ADR 0003) |
+| `@easy-web/theme-core` | `^0.3.x` | CSS design tokens, light/dark theme, no-flash script |
+| `@easy-web/i18n` | `^0.3.x` | `localizedHref`, `getLocaleFromPath`, alternate-link helpers |
+| `@easy-web/content-blocks` | `^1.1.x` | Hero, Section, CardGrid, Card, Header, Footer, ThemeToggle; now includes `<NotFound>` component and `notFoundSchema` |
+| `@easy-web/auth` | `^0.1.x` | MSAL.js auth, Microsoft Graph, SharePoint components |
+| `@easy-web/cms-adapters` | `^0.1.x` | Admin page mounting, config scaffolding, and frontmatter types for Decap CMS |
+| `@easy-web/swa` | `^0.1.x` | Astro integration for sentinel-safe Azure SWA 404 config |
+| `@easy-web/azure-functions-utils` | stub | Server-side Azure Functions helpers |
+| `@easy-web/create` | stub | Scaffold CLI for new site instances (ADR 0003) |
 
 > **Version column** reflects the range consumed by active instances. For the per-instance adoption matrix see [`docs/architecture/package-adoption.md`](docs/architecture/package-adoption.md).
 >
@@ -25,7 +25,7 @@ For full architecture, role boundaries, and how this repo relates to instance re
 
 | Path | Purpose |
 | :--- | :--- |
-| `packages/` | `@achimismaili/easy-web-*` workspace packages |
+| `packages/` | `@easy-web/*` workspace packages |
 | `examples/` | Reference instances consuming the packages locally |
 | `scripts/` | Workspace-level tooling |
 | `docs/` | Repo-local notes; canonical docs live in `WebSites/docs/` |

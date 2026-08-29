@@ -1,18 +1,18 @@
 ---
 import Base from '../../../layouts/Base.astro';
-import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
-import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch';
-import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
-import Section from '@achimismaili/easy-web-content-blocks/components/Section';
-import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
-import Card from '@achimismaili/easy-web-content-blocks/components/Card';
-import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard';
-import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
-import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
-import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection';
-import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
-import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
-import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+import ThemeToggle from '@easy-web/content-blocks/components/ThemeToggle';
+import LanguageSwitch from '@easy-web/content-blocks/components/LanguageSwitch';
+import Hero from '@easy-web/content-blocks/components/Hero';
+import Section from '@easy-web/content-blocks/components/Section';
+import CardGrid from '@easy-web/content-blocks/components/CardGrid';
+import Card from '@easy-web/content-blocks/components/Card';
+import BlogPostCard from '@easy-web/content-blocks/components/BlogPostCard';
+import Prose from '@easy-web/content-blocks/components/Prose';
+import CtaSection from '@easy-web/content-blocks/components/CtaSection';
+import ContactSection from '@easy-web/content-blocks/components/ContactSection';
+import DraftBanner from '@easy-web/content-blocks/components/DraftBanner';
+import LanguageNotice from '@easy-web/content-blocks/components/LanguageNotice';
+import LegalLayout from '@easy-web/content-blocks/components/LegalLayout';
 ---
 
 <Base title="Komponenten-Galerie — easy-web" lang="de">
@@ -29,7 +29,7 @@ import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalL
         <div class="preview-box">
           <ThemeToggle label="Design umschalten (Darkmode)" />
         </div>
-        <pre><code>import ThemeToggle from '@achimismaili/easy-web-content-blocks/components/ThemeToggle';
+        <pre><code>import ThemeToggle from '@easy-web/content-blocks/components/ThemeToggle';
 
 &lt;ThemeToggle label="Design umschalten (Darkmode)" /&gt;</code></pre>
       </div>
@@ -40,7 +40,7 @@ import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalL
         <div class="preview-box">
           <LanguageSwitch currentLang="de" pathname="/de/components/" ariaLabel="Zu Englisch wechseln" />
         </div>
-        <pre><code>import LanguageSwitch from '@achimismaili/easy-web-content-blocks/components/LanguageSwitch';
+        <pre><code>import LanguageSwitch from '@easy-web/content-blocks/components/LanguageSwitch';
 
 &lt;LanguageSwitch currentLang="de" pathname="/de/components/" ariaLabel="Zu Englisch wechseln" /&gt;</code></pre>
       </div>
@@ -48,8 +48,8 @@ import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalL
       <div class="component-demo">
         <h3>Header &amp; Footer</h3>
         <p>Bereits im Base-Layout enthalten. (Nur Code)</p>
-        <pre><code>import Header from '@achimismaili/easy-web-content-blocks/components/Header';
-import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
+        <pre><code>import Header from '@easy-web/content-blocks/components/Header';
+import Footer from '@easy-web/content-blocks/components/Footer';
 
 &lt;Header siteTitle="easy-web" navigation="none" /&gt;
 &lt;Footer siteTitle="easy-web" /&gt;</code></pre>
@@ -70,7 +70,7 @@ import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
             ctaHref="#" 
           />
         </div>
-        <pre><code>import Hero from '@achimismaili/easy-web-content-blocks/components/Hero';
+        <pre><code>import Hero from '@easy-web/content-blocks/components/Hero';
 
 &lt;Hero 
   title="Präsentiere deine Arbeit" 
@@ -88,7 +88,7 @@ import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
             <p>Dies ist der Inhalt innerhalb des Bereichs. Er nutzt automatisch die Abstände des Designsystems.</p>
           </Section>
         </div>
-        <pre><code>import Section from '@achimismaili/easy-web-content-blocks/components/Section';
+        <pre><code>import Section from '@easy-web/content-blocks/components/Section';
 
 &lt;Section title="Mein Bereichstitel"&gt;
   &lt;p&gt;Dies ist der Inhalt innerhalb des Bereichs. Er nutzt automatisch die Abstände des Designsystems.&lt;/p&gt;
@@ -108,8 +108,8 @@ import Footer from '@achimismaili/easy-web-content-blocks/components/Footer';
             <Card title="Funktion Zwei" description="Dies ist eine weitere Funktion." href="#" />
           </CardGrid>
         </div>
-        <pre><code>import CardGrid from '@achimismaili/easy-web-content-blocks/components/CardGrid';
-import Card from '@achimismaili/easy-web-content-blocks/components/Card';
+        <pre><code>import CardGrid from '@easy-web/content-blocks/components/CardGrid';
+import Card from '@easy-web/content-blocks/components/Card';
 
 &lt;CardGrid&gt;
   &lt;Card title="Funktion Eins" description="Dies ist eine großartige Funktion." href="#" /&gt;
@@ -131,7 +131,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             />
           </div>
         </div>
-        <pre><code>import BlogPostCard from '@achimismaili/easy-web-content-blocks/components/BlogPostCard';
+        <pre><code>import BlogPostCard from '@easy-web/content-blocks/components/BlogPostCard';
 
 &lt;BlogPostCard 
   title="Aufbau der Komponenten-Galerie" 
@@ -151,7 +151,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             <p>Wendet automatisch korrekte Abstände und Formatierungen auf reine HTML-Tags wie <code>p</code>, <code>ul</code> und Überschriften an.</p>
           </Prose>
         </div>
-        <pre><code>import Prose from '@achimismaili/easy-web-content-blocks/components/Prose';
+        <pre><code>import Prose from '@easy-web/content-blocks/components/Prose';
 
 &lt;Prose&gt;
   &lt;h2&gt;Typografisches Styling&lt;/h2&gt;
@@ -175,7 +175,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             variant="primary" 
           />
         </div>
-        <pre><code>import CtaSection from '@achimismaili/easy-web-content-blocks/components/CtaSection';
+        <pre><code>import CtaSection from '@easy-web/content-blocks/components/CtaSection';
 
 &lt;CtaSection 
   heading="Bereit loszulegen?" 
@@ -197,7 +197,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
             buttonLabel="Schreib uns" 
           />
         </div>
-        <pre><code>import ContactSection from '@achimismaili/easy-web-content-blocks/components/ContactSection';
+        <pre><code>import ContactSection from '@easy-web/content-blocks/components/ContactSection';
 
 &lt;ContactSection 
   heading="Individuelle Entwicklung benötigt?" 
@@ -217,7 +217,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
         <div class="preview-box">
           <DraftBanner message="Diese Seite ist derzeit ein Entwurf und sollte nicht veröffentlicht werden." />
         </div>
-        <pre><code>import DraftBanner from '@achimismaili/easy-web-content-blocks/components/DraftBanner';
+        <pre><code>import DraftBanner from '@easy-web/content-blocks/components/DraftBanner';
 
 &lt;DraftBanner message="Diese Seite ist derzeit ein Entwurf und sollte nicht veröffentlicht werden." /&gt;</code></pre>
       </div>
@@ -228,7 +228,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
         <div class="preview-box">
           <LanguageNotice message="Bitte beachten: Die deutsche Übersetzung dient nur zur Bequemlichkeit. Lediglich das Original ist rechtlich bindend." />
         </div>
-        <pre><code>import LanguageNotice from '@achimismaili/easy-web-content-blocks/components/LanguageNotice';
+        <pre><code>import LanguageNotice from '@easy-web/content-blocks/components/LanguageNotice';
 
 &lt;LanguageNotice message="Bitte beachten: Die deutsche Übersetzung dient nur zur Bequemlichkeit. Lediglich das Original ist rechtlich bindend." /&gt;</code></pre>
       </div>
@@ -236,7 +236,7 @@ import Card from '@achimismaili/easy-web-content-blocks/components/Card';
       <div class="component-demo">
         <h3>LegalLayout</h3>
         <p>Schmaler Content-Wrapper für Rechtstexte. (Nur Code)</p>
-        <pre><code>import LegalLayout from '@achimismaili/easy-web-content-blocks/components/LegalLayout';
+        <pre><code>import LegalLayout from '@easy-web/content-blocks/components/LegalLayout';
 
 &lt;LegalLayout title="Datenschutzerklärung" lastUpdated="Juni 2026"&gt;
   &lt;p&gt;Ihre Privatsphäre ist uns wichtig...&lt;/p&gt;

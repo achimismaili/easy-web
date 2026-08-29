@@ -6,12 +6,12 @@ description: Decap CMS integration — admin page component, config generator, a
 ## Installation
 
 ```bash
-pnpm add @achimismaili/easy-web-cms-adapters
+pnpm add @easy-web/cms-adapters
 ```
 
 ## Overview
 
-`@achimismaili/easy-web-cms-adapters` integrates [Decap CMS](https://decapcms.org/) into the easy-web ecosystem. It provides three things:
+`@easy-web/cms-adapters` integrates [Decap CMS](https://decapcms.org/) into the easy-web ecosystem. It provides three things:
 
 1. **`AdminPage` Astro component** — a standalone page that loads Decap CMS from CDN. It deliberately does not use the site's main Astro layout so it cannot interfere with the MSAL-based authentication on the rest of the site.
 2. **Config generator** — `generateDecapConfigString` and `generateDecapConfig` produce the `config.yml` that Decap requires, pre-wired for the Azure DevOps backend and Entra ID OAuth.
@@ -23,13 +23,13 @@ See [ADR 0006](https://github.com/achimismaili/websites/blob/main/docs/decisions
 
 `AdminPage` is a standalone Astro component that renders a complete HTML admin interface. Because it deliberately avoids the site layout, it must be placed at a route that uses no shared layout (typically `/admin`).
 
-**Import:** `import AdminPage from '@achimismaili/easy-web-cms-adapters/components/AdminPage.astro'`
+**Import:** `import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro'`
 
 ```astro
 ---
 // src/pages/admin.astro
 // No layout — AdminPage renders the full HTML document itself
-import AdminPage from '@achimismaili/easy-web-cms-adapters/components/AdminPage.astro';
+import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
 ---
 <AdminPage />
 ```
@@ -60,7 +60,7 @@ interface DecapConfigOptions {
 ```
 
 ```typescript
-import { generateDecapConfigString } from '@achimismaili/easy-web-cms-adapters';
+import { generateDecapConfigString } from '@easy-web/cms-adapters';
 
 const yaml = generateDecapConfigString({
   tenantId: process.env.ENTRA_TENANT_ID,
@@ -97,7 +97,7 @@ interface DecapConfigWriteResult {
 ```
 
 ```typescript
-import { generateDecapConfig } from '@achimismaili/easy-web-cms-adapters';
+import { generateDecapConfig } from '@easy-web/cms-adapters';
 import path from 'node:path';
 
 const result = await generateDecapConfig({
@@ -153,7 +153,7 @@ import type {
   BlogFrontmatter,
   PageFrontmatter,
   SiteConfig,
-} from '@achimismaili/easy-web-cms-adapters';
+} from '@easy-web/cms-adapters';
 ```
 
 ### `BlogFrontmatter`
@@ -162,7 +162,7 @@ Frontmatter shape for entries in `src/content/blog/[locale]/`.
 
 ```typescript
 // Fields include: title, description, pubDate, draft, locale, translationKey, heroImage?
-import type { BlogFrontmatter } from '@achimismaili/easy-web-cms-adapters';
+import type { BlogFrontmatter } from '@easy-web/cms-adapters';
 ```
 
 ### `PageFrontmatter`
@@ -171,7 +171,7 @@ Frontmatter shape for entries in `src/content/pages/`.
 
 ```typescript
 // Fields include: title, description, locale, translationKey
-import type { PageFrontmatter } from '@achimismaili/easy-web-cms-adapters';
+import type { PageFrontmatter } from '@easy-web/cms-adapters';
 ```
 
 ### `SiteConfig`
@@ -180,7 +180,7 @@ Type for site-wide configuration data managed in Decap (e.g. `src/content/data/c
 
 ```typescript
 // Fields include: companyName, defaultTitle, url
-import type { SiteConfig } from '@achimismaili/easy-web-cms-adapters';
+import type { SiteConfig } from '@easy-web/cms-adapters';
 ```
 
 ### Additional types

@@ -1,11 +1,11 @@
-# @achimismaili/easy-web-markdown
+# @easy-web/markdown
 
 Remark plugin for the easy-web ecosystem. Normalises `/src/assets/...` image URLs in markdown body to relative paths Astro's built-in markdown image resolver accepts.
 
 ## Installation
 
 ```sh
-pnpm add @achimismaili/easy-web-markdown
+pnpm add @easy-web/markdown
 ```
 
 ## Usage (Astro 6)
@@ -13,7 +13,7 @@ pnpm add @achimismaili/easy-web-markdown
 ```ts
 // astro.config.mjs
 import { defineConfig } from 'astro/config';
-import easyWebMarkdown from '@achimismaili/easy-web-markdown';
+import easyWebMarkdown from '@easy-web/markdown';
 
 export default defineConfig({
   markdown: {
@@ -28,7 +28,7 @@ Astro 7 replaced the default markdown pipeline with Sätteri. To keep using rema
 
 ```ts
 import { unified } from '@astrojs/markdown-remark';
-import easyWebMarkdown from '@achimismaili/easy-web-markdown';
+import easyWebMarkdown from '@easy-web/markdown';
 
 export default defineConfig({
   markdown: {

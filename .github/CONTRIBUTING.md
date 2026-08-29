@@ -33,12 +33,12 @@ Run `pnpm changeset` to create one interactively.
 
 | Package | Purpose |
 |---------|---------|
-| `@achimismaili/easy-web-theme-core` | CSS design tokens, light/dark theme |
-| `@achimismaili/easy-web-i18n` | i18n helpers for Astro sites |
-| `@achimismaili/easy-web-content-blocks` | Astro UI components |
-| `@achimismaili/easy-web-auth` | MSAL.js auth integration |
-| `@achimismaili/easy-web-cms-adapters` | Decap CMS integration |
-| `@achimismaili/create-easy-web` | Scaffold CLI for new instances |
+| `@easy-web/theme-core` | CSS design tokens, light/dark theme |
+| `@easy-web/i18n` | i18n helpers for Astro sites |
+| `@easy-web/content-blocks` | Astro UI components |
+| `@easy-web/auth` | MSAL.js auth integration |
+| `@easy-web/cms-adapters` | Decap CMS integration |
+| `@easy-web/create` | Scaffold CLI for new instances |
 
 ## Code of Conduct
 

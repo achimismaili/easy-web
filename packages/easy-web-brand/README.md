@@ -1,11 +1,11 @@
-# @achimismaili/easy-web-brand
+# @easy-web/brand
 
 Logo trimming and favicon generation for the easy-web ecosystem.
 
 ## Install
 
 ```bash
-pnpm add -D @achimismaili/easy-web-brand
+pnpm add -D @easy-web/brand
 ```
 
 ## Usage (CLI)
@@ -18,7 +18,7 @@ easy-web-brand favicons src/assets/logos --out src/assets/logos/favicons
 ## Usage (API)
 
 ```ts
-import { trimFolder, generateFaviconsForFolder } from '@achimismaili/easy-web-brand';
+import { trimFolder, generateFaviconsForFolder } from '@easy-web/brand';
 
 await trimFolder('src/assets/logos');
 await generateFaviconsForFolder('src/assets/logos', 'src/assets/logos/favicons');

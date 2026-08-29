@@ -24,7 +24,7 @@ describe('easyWebSeo integration factory', () => {
 
   it('returns an AstroIntegration shape with name and astro:config:setup hook', () => {
     const integration = easyWebSeo();
-    expect(integration.name).toBe('@achimismaili/easy-web-seo');
+    expect(integration.name).toBe('@easy-web/seo');
     expect(typeof integration.hooks['astro:config:setup']).toBe('function');
   });
 
@@ -89,7 +89,7 @@ describe('easyWebSeo integration factory', () => {
         injectRoute: vi.fn(),
         logger: mockLogger,
       }),
-    ).toThrow('@achimismaili/easy-web-seo');
+    ).toThrow('@easy-web/seo');
     expect(mockLogger.error).toHaveBeenCalledOnce();
   });
 
