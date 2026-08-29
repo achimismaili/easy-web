@@ -50,13 +50,13 @@ importers:
 
   apps/showcase:
     dependencies:
-      '@achimismaili/easy-web-content-blocks':
+      '@easy-web/content-blocks':
         specifier: workspace:*
         version: link:../../packages/easy-web-content-blocks
-      '@achimismaili/easy-web-i18n':
+      '@easy-web/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
-      '@achimismaili/easy-web-theme-core':
+      '@easy-web/theme-core':
         specifier: workspace:*
         version: link:../../packages/theme-core
       astro:
@@ -158,12 +158,11 @@ importers:
         version: 5.9.3
 
   packages/easy-web-content-blocks:
-    dependencies:
-      '@achimismaili/easy-web-i18n':
-        specifier: '>=1.0.0'
-        version: 1.0.0(@inlang/paraglide-js@2.18.1(typescript@5.9.3))(astro@6.4.2(@types/node@25.9.4)(rollup@4.60.4)(yaml@2.9.0))
     devDependencies:
-      '@achimismaili/easy-web-theme-core':
+      '@easy-web/i18n':
+        specifier: workspace:*
+        version: link:../i18n
+      '@easy-web/theme-core':
         specifier: workspace:*
         version: link:../theme-core
       astro:
@@ -206,9 +205,6 @@ importers:
 
   packages/easy-web-swa:
     devDependencies:
-      '@achimismaili/easy-web-i18n':
-        specifier: workspace:*
-        version: link:../i18n
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.1
@@ -246,7 +242,7 @@ importers:
         specifier: ^3.7.3
         version: 3.7.3
     devDependencies:
-      '@achimismaili/easy-web-i18n':
+      '@easy-web/i18n':
         specifier: workspace:*
         version: link:../i18n
       '@vitest/coverage-v8':
@@ -275,12 +271,6 @@ importers:
         version: 3.2.4(@types/debug@4.1.13)(@types/node@25.9.4)(jsdom@29.1.1)(yaml@2.9.0)
 
 packages:
-
-  '@achimismaili/easy-web-i18n@1.0.0':
-    resolution: {integrity: sha512-bZkn5pFge1jYUkmWCYOvkZwkfd3zXzCZQuTJOIhfy80iEJb8DSbm9nJFxEh1f9LFthQckkE2Y8EurY/xqQNkKg==}
-    peerDependencies:
-      '@inlang/paraglide-js': ^2.0.0
-      astro: '>=6.0.0 <8.0.0'
 
   '@adobe/css-tools@4.5.0':
     resolution: {integrity: sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q==}
@@ -4298,11 +4288,6 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
-
-  '@achimismaili/easy-web-i18n@1.0.0(@inlang/paraglide-js@2.18.1(typescript@5.9.3))(astro@6.4.2(@types/node@25.9.4)(rollup@4.60.4)(yaml@2.9.0))':
-    dependencies:
-      '@inlang/paraglide-js': 2.18.1(typescript@5.9.3)
-      astro: 6.4.2(@types/node@25.9.4)(rollup@4.60.4)(yaml@2.9.0)
 
   '@adobe/css-tools@4.5.0': {}
 
