@@ -41,6 +41,7 @@ When changing anything in `packages/auth/`:
 
 | Path | Purpose | Status |
 | :--- | :--- | :--- |
+| `packages/seo/` | `@achimismaili/easy-web-seo` — shared SEO primitives: `easyWebSeo()` AstroIntegration (wraps `@astrojs/sitemap` with i18n hreflang, injects a dynamic `robots.txt` route with `noIndex` mode) and the `<SeoHead>` component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest). See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md). | Real at v1.0.0 |
 | `packages/theme-core/` | `@achimismaili/easy-web-theme-core` — CSS design tokens, light/dark theme, no-flash script | Real (consumed at ^0.3.x by instances) |
 | `packages/i18n/` | `@achimismaili/easy-web-i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers | Real (consumed at ^0.3.x by instances) |
 | `packages/easy-web-content-blocks/` | `@achimismaili/easy-web-content-blocks` — Hero, Section, CardGrid, Card, and other reusable page blocks | Real (consumed at ^0.2.x by instances) |
@@ -104,6 +105,31 @@ If a publish attempt still fails after checking (1)/(2)/(3), then investigate np
 ### Required GitHub repo permissions
 
 - **Settings → Actions → General → Workflow permissions → "Allow GitHub Actions to create and approve pull requests"** must be enabled so `changesets/action@v1` can open the "Version Packages" PR after force-pushing the `changeset-release/main` branch. If this is disabled, the branch is still produced correctly on every push to `main`, but the PR must be opened manually: `gh pr create --repo achimismaili/easy-web --base main --head changeset-release/main --title "chore: version packages"`. The workflow's own `permissions:` block declares `contents: write`, `pull-requests: write`, and `id-token: write`, which is necessary but not sufficient on its own — the repo-level setting is a second gate.
+
+### Bootstrapping a brand-new package (first-time publish)
+
+The OIDC Trusted Publisher workflow handles all subsequent publishes automatically. But the **very first publish** of a new package requires a one-time manual bootstrap because the package namespace does not yet exist on the npm registry, and OIDC Trusted Publishing cannot create a package that has never been published before.
+
+Bootstrap procedure (done once per new package):
+
+1. Navigate to the package directory: `cd packages/<new-package-name>`
+2. Build the package: `pnpm run build`
+3. Authenticate with npm via the web device flow — this opens a browser URL you visit to complete login (Windows Hello / passkey supported):
+   ```pwsh
+   npm login --auth-type=web
+   # Prints: "Login at: https://www.npmjs.com/login?next=/login/cli/<id>"
+   # Press ENTER → browser opens → authenticate → terminal shows "Logged in"
+   ```
+4. Publish the bootstrap version with `--no-provenance` (provenance requires CI; subsequent versions via GHA will have it):
+   ```pwsh
+   npm publish --access public --no-provenance
+   # Prints: "Authenticate your account at: https://www.npmjs.com/auth/cli/<id>"
+   # Press ENTER → browser opens → authenticate with Windows Hello → "+ @achimismaili/<pkg>@<version>"
+   ```
+5. Register the Trusted Publisher on npmjs.com for the new package (one-time, same parameters as all other packages — see *npm Trusted Publisher configuration* above).
+6. All future releases happen automatically via the Changesets workflow — no manual steps needed.
+
+> **Why `--no-provenance` for the bootstrap?** Provenance attestation requires the OIDC token exchange that only the GitHub Actions environment provides. The bootstrap publish skips it. The Trusted Publisher configuration enables OIDC for all subsequent releases, which will have full provenance attestation.
 
 ### Publishing via Changesets
 
