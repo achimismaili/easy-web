@@ -32,10 +32,10 @@ describe('createI18n', () => {
     expect(i18n.getAlternateLinks('/about')).toHaveLength(3);
   });
   it('getCanonicalUrl for default locale', () => {
-    expect(i18n.getCanonicalUrl('/about', 'de')).toBe('https://dev.ismaili.de/about');
+    expect(i18n.getCanonicalUrl('/about', 'de')).toBe('https://dev.ismaili.de/about/');
   });
   it('getCanonicalUrl for non-default locale', () => {
-    expect(i18n.getCanonicalUrl('/about', 'en')).toBe('https://dev.ismaili.de/en/about');
+    expect(i18n.getCanonicalUrl('/about', 'en')).toBe('https://dev.ismaili.de/en/about/');
   });
   it('format.number works', () => {
     expect(i18n.format.number('de', 1234.5)).toBe('1.234,5');

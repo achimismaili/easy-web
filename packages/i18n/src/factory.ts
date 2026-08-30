@@ -1,4 +1,5 @@
 import { formatCurrency, formatDate, formatList, formatNumber, formatRelativeTime } from './formatters.js'
+import type { LocalizedPathGroup, TrailingSlash } from './localized-paths.js'
 import { getLocaleFromPath, localizedHref } from './routing.js'
 import { getAlternateLinks, getCanonicalUrl } from './seo.js'
 
@@ -6,12 +7,18 @@ export interface I18nConfig<L extends string> {
   locales: readonly L[]
   defaultLocale: L
   baseUrl: string
+  localizedPaths?: readonly LocalizedPathGroup[]
+  trailingSlash?: TrailingSlash
 }
 
 export function createI18n<L extends string>(cfg: I18nConfig<L>) {
+  const trailingSlash = cfg.trailingSlash ?? 'always'
+
   return {
     locales: cfg.locales,
     defaultLocale: cfg.defaultLocale,
+    localizedPaths: cfg.localizedPaths ?? [],
+    trailingSlash,
     localizedHref: (path: string, locale: L): string =>
       localizedHref({ path, locale, defaultLocale: cfg.defaultLocale }),
     getLocaleFromPath: (pathname: string): L =>
@@ -22,9 +29,17 @@ export function createI18n<L extends string>(cfg: I18nConfig<L>) {
         locales: cfg.locales,
         defaultLocale: cfg.defaultLocale,
         baseUrl: cfg.baseUrl,
+        localizedPaths: cfg.localizedPaths,
+        trailingSlash,
       }),
     getCanonicalUrl: (path: string, locale: L): string =>
-      getCanonicalUrl({ path, locale, defaultLocale: cfg.defaultLocale, baseUrl: cfg.baseUrl }),
+      getCanonicalUrl({
+        path,
+        locale,
+        defaultLocale: cfg.defaultLocale,
+        baseUrl: cfg.baseUrl,
+        trailingSlash,
+      }),
     format: {
       date: (locale: L, date: Date | number, opts?: Intl.DateTimeFormatOptions): string =>
         formatDate(locale, date, opts),

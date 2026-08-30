@@ -85,6 +85,52 @@ const links = i18n.getAlternateLinks(Astro.url.pathname);
 </head>
 ```
 
+### Routes whose slug differs per locale
+
+By default alternates are derived by re-prefixing the current path, which
+assumes the slug is identical in every locale. When it is not — DE
+`/datenschutz/` versus EN `/en/privacy/` — that derivation produces
+`/en/datenschutz/`, a URL that does not exist. Declare such routes:
+
+```ts
+export const i18n = createI18n({
+  locales: ['de', 'en'] as const,
+  defaultLocale: 'de',
+  baseUrl: 'https://dev.ismaili.de',
+  localizedPaths: [
+    { de: '/datenschutz/', en: '/en/privacy/' },
+    { de: '/kontakt/', en: '/en/contact/' },
+  ],
+});
+```
+
+Matching ignores trailing slashes, query strings and hashes. Routes sharing a
+slug across locales need no entry. `x-default` points at the default-locale
+member of the group, and a locale absent from a group is omitted rather than
+guessed.
+
+Pass the same groups to `easyWebSeo()` from `@easy-web/seo` so the sitemap and
+the page `<head>` agree — declare them once in a shared module and import it
+into both.
+
+### URL form
+
+`getCanonicalUrl` and `getAlternateLinks` emit the URL form the site actually
+serves, so the canonical and the self-referencing hreflang always match. The
+default is a trailing slash, matching Astro's `directory` build output. Pass
+`trailingSlash: 'never'` if the instance uses `build.format: 'file'`:
+
+```ts
+export const i18n = createI18n({
+  locales: ['de', 'en'] as const,
+  defaultLocale: 'de',
+  baseUrl: 'https://dev.ismaili.de',
+  trailingSlash: 'never',
+});
+```
+
+Callers may pass `/about` or `/about/` — the emitted URL is identical either way.
+
 ## Migration from v0.1
 
 | v0.1 Primitive | v0.3 Factory (Recommended) | v0.3 Primitive |

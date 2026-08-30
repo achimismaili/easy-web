@@ -32,6 +32,9 @@ describe('easyWebSeo integration factory', () => {
     const integration = easyWebSeo();
     const mockConfig = {
       site: new URL('https://example.com'),
+      base: '/',
+      trailingSlash: 'ignore',
+      build: { format: 'directory' },
       i18n: undefined,
       integrations: [],
     };
@@ -61,6 +64,9 @@ describe('easyWebSeo integration factory', () => {
     const integration = easyWebSeo({ noIndex: true });
     const mockConfig = {
       site: new URL('https://example.com'),
+      base: '/',
+      trailingSlash: 'ignore',
+      build: { format: 'directory' },
       i18n: undefined,
       integrations: [],
     };
@@ -93,10 +99,13 @@ describe('easyWebSeo integration factory', () => {
     expect(mockLogger.error).toHaveBeenCalledOnce();
   });
 
-  it('auto-generates uppercased BCP-47 locale map (id → id-ID.toUpperCase()) when i18n is set but sitemapLocales is not', () => {
+  it('falls back to language-only hreflang tags when i18n is set but sitemapLocales is not', () => {
     const integration = easyWebSeo();
     const mockConfig = {
       site: new URL('https://example.com'),
+      base: '/',
+      trailingSlash: 'ignore',
+      build: { format: 'directory' },
       i18n: { locales: ['de', 'en'], defaultLocale: 'de', routing: {} },
       integrations: [],
     };
@@ -119,8 +128,8 @@ describe('easyWebSeo integration factory', () => {
     );
     expect(mockLogger.warn).toHaveBeenCalledOnce();
     const warning = mockLogger.warn.mock.calls[0][0] as string;
-    expect(warning).toContain('de→de-DE');
-    expect(warning).toContain('en→en-EN');
+    expect(warning).toContain('language-only');
+    expect(warning).not.toContain('en-EN');
   });
 
   it('passes sitemapLocales verbatim (no warning) when caller provides an explicit locale map', () => {
@@ -128,6 +137,9 @@ describe('easyWebSeo integration factory', () => {
     const integration = easyWebSeo({ sitemapLocales: customLocales });
     const mockConfig = {
       site: new URL('https://example.com'),
+      base: '/',
+      trailingSlash: 'ignore',
+      build: { format: 'directory' },
       i18n: { locales: ['de', 'en'], defaultLocale: 'de', routing: {} },
       integrations: [],
     };
@@ -151,10 +163,13 @@ describe('easyWebSeo integration factory', () => {
     );
   });
 
-  it('handles Astro path-style locales (objects with .path) when auto-generating BCP-47 tags', () => {
+  it('handles Astro path-style locales (objects with .path) when falling back to language-only tags', () => {
     const integration = easyWebSeo();
     const mockConfig = {
       site: new URL('https://example.com'),
+      base: '/',
+      trailingSlash: 'ignore',
+      build: { format: 'directory' },
       i18n: {
         locales: [{ path: 'de', codes: ['de'] }, { path: 'en', codes: ['en'] }],
         defaultLocale: 'de',
@@ -173,7 +188,8 @@ describe('easyWebSeo integration factory', () => {
 
     expect(mockLogger.warn).toHaveBeenCalledOnce();
     const warning = mockLogger.warn.mock.calls[0][0] as string;
-    expect(warning).toContain('de→de-DE');
-    expect(warning).toContain('en→en-EN');
+    expect(warning).toContain('de');
+    expect(warning).toContain('en');
+    expect(warning).not.toContain('en-EN');
   });
 });

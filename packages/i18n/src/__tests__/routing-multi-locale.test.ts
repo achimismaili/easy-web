@@ -75,7 +75,7 @@ describe('createI18n – three-locale factory', () => {
   it('getAlternateLinks includes fr hreflang', () => {
     const links = i18n.getAlternateLinks('/about');
     const fr = links.find(l => l.hreflang === 'fr');
-    expect(fr?.href).toBe('https://example.com/fr/about');
+    expect(fr?.href).toBe('https://example.com/fr/about/');
   });
   it('localizedHref for fr', () => {
     expect(i18n.localizedHref('/about', 'fr')).toBe('/fr/about');
@@ -84,6 +84,6 @@ describe('createI18n – three-locale factory', () => {
     expect(i18n.getLocaleFromPath('/fr/contact')).toBe('fr');
   });
   it('getCanonicalUrl for fr locale', () => {
-    expect(i18n.getCanonicalUrl('/contact', 'fr')).toBe('https://example.com/fr/contact');
+    expect(i18n.getCanonicalUrl('/contact', 'fr')).toBe('https://example.com/fr/contact/');
   });
 });

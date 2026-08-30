@@ -1,4 +1,17 @@
+import {
+  findLocalizedGroup,
+  toServedPath,
+  type LocalizedPathGroup,
+  type TrailingSlash,
+} from './localized-paths.js'
+
 export type AlternateLink = { hreflang: string; href: string }
+
+function toServedUrl(url: string, style: TrailingSlash): string {
+  const parsed = new URL(url)
+  parsed.pathname = toServedPath(parsed.pathname, style)
+  return parsed.href
+}
 
 function normalizePath(path: string): string {
   return path.startsWith('/') ? path : `/${path}`
@@ -46,18 +59,58 @@ export function getAlternateLinks(opts: {
   locales: readonly string[]
   defaultLocale: string
   baseUrl: string
+  /**
+   * Routes whose slug differs per locale. When `path` belongs to one of these
+   * groups the alternates are read from the group instead of being derived by
+   * re-prefixing `path`, which would otherwise point at a URL that does not
+   * exist (e.g. `/en/datenschutz` for the DE privacy page).
+   */
+  localizedPaths?: readonly LocalizedPathGroup[]
+  /** URL form to emit; must match what the site serves. Defaults to Astro's `directory` output. */
+  trailingSlash?: TrailingSlash
 }): AlternateLink[] {
-  const { path, locales, defaultLocale, baseUrl } = opts
+  const { path, locales, defaultLocale, baseUrl, localizedPaths } = opts
+  const style = opts.trailingSlash ?? 'always'
+
+  const group = findLocalizedGroup(path, localizedPaths)
+
+  if (group) {
+    const base = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+    const hrefFor = (locale: string): string | undefined => {
+      const declared = group[locale]
+      return declared === undefined ? undefined : base + toServedPath(declared, style)
+    }
+
+    const links: AlternateLink[] = []
+
+    for (const locale of locales) {
+      const href = hrefFor(locale)
+      // Omit untranslated locales rather than inventing a URL — the bug this fixes.
+      if (href !== undefined) {
+        links.push({ hreflang: locale, href })
+      }
+    }
+
+    const fallback = hrefFor(defaultLocale)
+    if (fallback !== undefined) {
+      links.push({ hreflang: 'x-default', href: fallback })
+    }
+
+    return links
+  }
 
   const stripLocales = [...locales]
   const links: AlternateLink[] = locales.map((locale) => ({
     hreflang: locale,
-    href: buildUrl(baseUrl, locale !== defaultLocale ? locale : '', path, stripLocales),
+    href: toServedUrl(
+      buildUrl(baseUrl, locale !== defaultLocale ? locale : '', path, stripLocales),
+      style,
+    ),
   }))
 
   links.push({
     hreflang: 'x-default',
-    href: buildUrl(baseUrl, '', path, stripLocales),
+    href: toServedUrl(buildUrl(baseUrl, '', path, stripLocales), style),
   })
 
   return links
@@ -68,7 +121,11 @@ export function getCanonicalUrl(opts: {
   locale: string
   defaultLocale: string
   baseUrl: string
+  trailingSlash?: TrailingSlash
 }): string {
   const { path, locale, defaultLocale, baseUrl } = opts
-  return buildUrl(baseUrl, locale !== defaultLocale ? locale : '', path, [locale, defaultLocale])
+  return toServedUrl(
+    buildUrl(baseUrl, locale !== defaultLocale ? locale : '', path, [locale, defaultLocale]),
+    opts.trailingSlash ?? 'always',
+  )
 }
