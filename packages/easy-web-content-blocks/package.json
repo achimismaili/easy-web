@@ -25,14 +25,14 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@easy-web/i18n": ">=1.0.0",
-    "@easy-web/theme-core": ">=1.0.0",
     "astro": ">=6.0.0 <8.0.0",
     "zod": ">=4.0.0"
   },
-  "devDependencies": {
+  "dependencies": {
     "@easy-web/i18n": "workspace:*",
-    "@easy-web/theme-core": "workspace:*",
+    "@easy-web/theme-core": "workspace:*"
+  },
+  "devDependencies": {
     "astro": "^6.4.0",
     "typescript": "^5.5.0",
     "vitest": "^4.1.10",

@@ -158,13 +158,14 @@ importers:
         version: 5.9.3
 
   packages/easy-web-content-blocks:
-    devDependencies:
+    dependencies:
       '@easy-web/i18n':
         specifier: workspace:*
         version: link:../i18n
       '@easy-web/theme-core':
         specifier: workspace:*
         version: link:../theme-core
+    devDependencies:
       astro:
         specifier: ^6.4.0
         version: 6.4.2(@types/node@25.9.4)(rollup@4.60.4)(yaml@2.9.0)
@@ -241,10 +242,10 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.7.3
         version: 3.7.3
-    devDependencies:
       '@easy-web/i18n':
         specifier: workspace:*
         version: link:../i18n
+    devDependencies:
       '@vitest/coverage-v8':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4(@types/debug@4.1.13)(@types/node@25.9.4)(jsdom@29.1.1)(yaml@2.9.0))

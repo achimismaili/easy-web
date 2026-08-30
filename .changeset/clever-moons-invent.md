@@ -1,6 +1,6 @@
 ---
-'@easy-web/i18n': major
-'@easy-web/seo': major
+'@easy-web/i18n': minor
+'@easy-web/seo': minor
 ---
 
 Make canonical, hreflang and sitemap URLs agree; support translated slugs
