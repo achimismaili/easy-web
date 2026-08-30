@@ -41,21 +41,40 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      # Guard for the zero-changeset case: `changeset publish` cannot express
-      # "nothing to do" — its per-package registry probe false-negatives on this
-      # runner and it republishes everything, which npm rejects. Skipping the
-      # step makes that case unreachable. README.md is docs, not a changeset.
-      - name: Check for pending changesets
-        id: changeset-check
+      # `changesets/action` does one of two things: it opens the version PR when
+      # changesets are pending, and publishes when they are not. Gating the step
+      # on pending changesets alone therefore made publishing unreachable - the
+      # version PR consumes the changesets, so the run that merges it always saw
+      # zero and skipped. Gate on both signals instead.
+      #
+      # The second signal exists because `changeset publish` cannot express
+      # "nothing to do": its per-package registry probe false-negatives on this
+      # runner and reattempts every package, which npm rejects. Comparing a
+      # bellwether package against the registry keeps that case unreachable.
+      # All @easy-web/* packages are a `fixed` version group, so any one of them
+      # is a faithful proxy for the whole family. README.md is docs, not a
+      # changeset.
+      - name: Determine release action
+        id: release-state
         shell: bash
         run: |
           COUNT=$(find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d '[:space:]')
-          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          LOCAL=$(node -p "require('./packages/i18n/package.json').version")
+          REMOTE=$(npm view @easy-web/i18n version 2>/dev/null || echo "none")
+
+          if [ "$LOCAL" != "$REMOTE" ]; then NEEDS_PUBLISH=true; else NEEDS_PUBLISH=false; fi
+
+          {
+            echo "changesets=$COUNT"
+            echo "needs_publish=$NEEDS_PUBLISH"
+          } >> "$GITHUB_OUTPUT"
+
           echo "Pending changesets: $COUNT"
+          echo "Bellwether @easy-web/i18n - local: $LOCAL, npm: $REMOTE, needs publish: $NEEDS_PUBLISH"
 
       - name: Create Release Pull Request or Publish
         id: changesets
-        if: steps.changeset-check.outputs.count != '0'
+        if: steps.release-state.outputs.changesets != '0' || steps.release-state.outputs.needs_publish == 'true'
         uses: changesets/action@v1
         with:
           publish: pnpm changeset publish
