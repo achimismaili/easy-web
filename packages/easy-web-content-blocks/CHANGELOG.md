@@ -2,6 +2,14 @@
 
 ## 1.1.0
 
+### Patch Changes
+
+- Updated dependencies [cb8ab71]
+  - @easy-web/i18n@1.1.0
+  - @easy-web/theme-core@1.1.0
+
+## 1.1.0
+
 ### Minor Changes
 
 - 17632de: Add NotFound component + notFoundSchema for shared brand-conform 404 pages.
