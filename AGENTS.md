@@ -128,9 +128,9 @@ Bootstrap procedure (done once per new package):
    ```
 4. Publish the bootstrap version with `--no-provenance` (provenance requires CI; subsequent versions via GHA will have it):
    ```pwsh
-   npm publish --access public --no-provenance
-   # Prints: "Authenticate your account at: https://www.npmjs.com/auth/cli/<id>"
-   # Press ENTER → browser opens → authenticate with Windows Hello → "+ @achimismaili/<pkg>@<version>"
+    npm publish --access public --no-provenance
+    # Prints: "Authenticate your account at: https://www.npmjs.com/auth/cli/<id>"
+    # Press ENTER → browser opens → authenticate with Windows Hello → "+ @easy-web/<pkg>@<version>"
    ```
 5. Register the Trusted Publisher on npmjs.com for the new package (one-time, same parameters as all other packages — see *npm Trusted Publisher configuration* above).
 6. All future releases happen automatically via the Changesets workflow — no manual steps needed.
