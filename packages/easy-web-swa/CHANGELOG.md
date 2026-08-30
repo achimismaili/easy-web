@@ -1,5 +1,7 @@
 # @achimismaili/easy-web-swa
 
+## 1.1.0
+
 ## 0.2.0
 
 ### Minor Changes
@@ -10,7 +12,7 @@
 
 - **BREAKING — dropped the per-locale greedy rewrite routes in favour of a `responseOverrides.404`-centric model.** `0.1.0` appended a `/{locale}/* → rewrite /{locale}/404/index.html` route per non-default locale. Azure evaluates routes first-match-wins, so such a rule shadows every real page in that locale whenever it lands ahead of the instance's own routes — it 404'd an entire English site in production adoption. `0.2.0` emits **no routes at all**; the single global `responseOverrides.404` is now the only primitive the integration manages, and `routeIndices` was removed from the sentinel because there is no route ownership left to track.
 
-  _Known limitation (accepted):_ Azure SWA supports exactly **one** global 404 override, so unmatched localized paths serve the **default-locale** 404 body. Per-locale 404 *content* is explicitly out of scope — see the README and [ADR 0013](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md).
+  _Known limitation (accepted):_ Azure SWA supports exactly **one** global 404 override, so unmatched localized paths serve the **default-locale** 404 body. Per-locale 404 _content_ is explicitly out of scope — see the README and [ADR 0013](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md).
 
 ### Patch Changes
 
