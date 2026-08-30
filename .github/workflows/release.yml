@@ -41,8 +41,21 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      # Guard for the zero-changeset case: `changeset publish` cannot express
+      # "nothing to do" — its per-package registry probe false-negatives on this
+      # runner and it republishes everything, which npm rejects. Skipping the
+      # step makes that case unreachable. README.md is docs, not a changeset.
+      - name: Check for pending changesets
+        id: changeset-check
+        shell: bash
+        run: |
+          COUNT=$(find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d '[:space:]')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Pending changesets: $COUNT"
+
       - name: Create Release Pull Request or Publish
         id: changesets
+        if: steps.changeset-check.outputs.count != '0'
         uses: changesets/action@v1
         with:
           publish: pnpm changeset publish
