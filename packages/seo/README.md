@@ -2,6 +2,13 @@
 
 Shared SEO primitives for the `@easy-web/*` ecosystem.
 
+`@easy-web/i18n` is a regular **dependency** of this package, not a peer — installing
+`@easy-web/seo` pulls it in for you. It was promoted from peer because changesets
+escalates peer-dependents to a major bump, which together with the `fixed` version
+group made minor releases impossible. The i18n helpers are pure functions with no
+shared runtime state, so a duplicate copy costs bundle size, not correctness.
+`astro` remains the only peer dependency.
+
 ## Usage
 
 ```ts
@@ -76,6 +83,31 @@ This matters because `/about` and `/about/` both return 200 on Azure Static Web
 Apps. If the canonical and the sitemap disagree, Google sees competing
 duplicates. Pages may therefore pass `pathname` in either spelling — the emitted
 URL is the same either way.
+
+The integration resolves the style itself: `'never'` when Astro's `trailingSlash`
+is `'never'` or `build.format` is not `'directory'`, `'always'` otherwise. It then
+publishes the resolved value so `<SeoHead>` reuses it, which is why the canonical,
+the sitemap `<loc>` and the self-referencing hreflang cannot drift apart.
+
+`createI18n` from `@easy-web/i18n` does not read `astro.config`, so pass it the
+matching style explicitly with the `trailingSlash: 'always' | 'never'` option
+(default `'always'`):
+
+```ts
+// src/lib/i18n.ts
+import { createI18n } from '@easy-web/i18n';
+import { localizedPaths } from './localized-paths';
+
+export const i18n = createI18n({
+  locales: ['de', 'en'],
+  defaultLocale: 'de',
+  baseUrl: 'https://yoursite.example',
+  localizedPaths,
+  trailingSlash: 'always', // must match the site's Astro config
+});
+```
+
+Setting it on one side only is the one way these surfaces can still disagree.
 
 ## hreflang locale tags
 

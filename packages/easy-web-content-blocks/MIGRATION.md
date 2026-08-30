@@ -2,7 +2,7 @@
 
 Upgrade paths for consuming instances. Every section provides an **Automated** path (recommended), a **Manual** checklist (for auditing what the script does), and a **Rollback** procedure.
 
-The shared 404 architecture is documented in [ADR 0013 — Shared Not-Found Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md). This guide does not repeat that rationale — read the ADR first if you need the "why".
+The shared 404 architecture is documented in [ADR 0013 — Shared Not-Found Primitives](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md). This guide does not repeat that rationale — read the ADR first if you need the "why".
 
 ---
 
@@ -10,7 +10,7 @@ The shared 404 architecture is documented in [ADR 0013 — Shared Not-Found Prim
 
 **Scope**: additive, non-breaking. v1.1.0 exposes the shared `NotFound` component and the `notFoundSchema` Zod schema so every instance can render a brand-conform 404 page driven by a CMS-editable `notFound.json` singleton. See ADR 0013 for the full contract.
 
-**Companion package**: pair this upgrade with [`@easy-web/swa@^0.1.0`](../easy-web-swa/MIGRATION.md), which wires the corresponding `staticwebapp.config.json` slice for Azure Static Web Apps hosting.
+**Companion package**: pair this upgrade with [`@easy-web/swa@^1.1.0`](../easy-web-swa/MIGRATION.md), which wires the corresponding `staticwebapp.config.json` slice for Azure Static Web Apps hosting.
 
 ### Automated
 
@@ -130,7 +130,7 @@ If your instance is on Astro 5, upgrade Astro first (see the [Astro upgrade guid
 
 - **`NotFound` component** — brand-conform 404 body driven by the `notFound.json` singleton. Adopted via the steps in the [v1.1.0 section above](#migrating-to-v110-from-v10x).
 - **`notFoundSchema` Zod schema** — exported from `@easy-web/content-blocks/schemas/notFound` so instances can register it in their `siteConfig` collection.
-- **`@easy-web/i18n` peer dependency added** (range `>=1.0.0`) — the `NotFound` component uses the i18n locale utilities. If your instance already consumes `easy-web-i18n` (all pilot and customer instances do), nothing changes.
+- **`@easy-web/i18n` added as a regular dependency** — the `NotFound` component uses the i18n locale utilities. Because it is a normal dependency (not a peer), your package manager installs it automatically; nothing to do on the instance side. `@easy-web/theme-core` is a regular dependency for the same reason.
 
 ### Automated
 
@@ -150,8 +150,9 @@ pnpm why astro
 # 2. Bump directly from 0.6.x to 1.1.0
 pnpm add @easy-web/content-blocks@^1.1.0
 
-# 3. If not already consumed, install the new i18n peer
-pnpm add @easy-web/i18n@^1.0.0
+# 3. i18n and theme-core arrive as regular dependencies — no separate install needed.
+#    Add them explicitly only if your own code imports them directly:
+pnpm add @easy-web/i18n@^1.1.0
 
 # 4. Run the v1.1.0 adoption steps from the section above
 ```
@@ -170,7 +171,7 @@ pnpm build
 
 ## See also
 
-- [ADR 0013 — Shared Not-Found Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md) — architecture rationale for the shared 404 pattern.
+- [ADR 0013 — Shared Not-Found Primitives](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md) — architecture rationale for the shared 404 pattern.
 - [`@easy-web/swa` MIGRATION.md](../easy-web-swa/MIGRATION.md) — companion package that manages the `staticwebapp.config.json` slice.
 - [`CHANGELOG.md`](./CHANGELOG.md) — chronological release notes.
 - [`README.md`](./README.md) — component reference and quick-start.

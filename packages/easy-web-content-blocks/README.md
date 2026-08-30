@@ -12,9 +12,10 @@ This package is published to npm. Install it like any other npm package.
 
 ### Peer dependencies
 
-* `astro >= 6.0.0`
+* `astro >= 6.0.0 < 8.0.0`
+* `zod >= 4.0.0`
 
-You almost certainly also want `@easy-web/theme-core` (for the `--ew-*` token CSS) and, if you build a bilingual site, `@easy-web/i18n` (for the alternate-link helper used by `LanguageSwitch`).
+`@easy-web/theme-core` (the `--ew-*` token CSS) and `@easy-web/i18n` (the alternate-link helper behind `LanguageSwitch` and the locale utilities behind `NotFound`) are regular **dependencies** of this package, so your package manager installs them for you. They used to be peer dependencies; they were promoted because changesets escalates peer-dependents to a major bump, which together with the `fixed` version group made minor releases impossible. Both are pure functions and CSS tokens with no shared runtime state, so a duplicate copy costs bundle size, not correctness. `@easy-web/auth` is deliberately excluded from that promotion — its MSAL single-instance requirement is real.
 
 ## Import convention
 
@@ -320,10 +321,9 @@ Components use BEM-style class names prefixed with `ew-` (e.g., `.ew-hero`, `.ew
 
 ## Adoption status
 
-The [package adoption matrix](https://github.com/achimismaili/websites/blob/main/docs/architecture/package-adoption.md) tracks which sites consume which version of this package. As of 2026-06-10:
+The published version is `1.1.0`. Both active instances — `dev.ismaili.de` (pilot) and `harleyrentflorida.de` (customer) — consume this package at `^1.1.0`.
 
-* `dev.ismaili.de` (pilot) — `^0.2.0`
-* `harleyrentflorida.de` (customer) — `^0.1.0` (one minor behind; bump pending while `/preview` is paused)
+The [package adoption matrix](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/architecture/package-adoption.md) in the `websites` meta-repo is the canonical per-instance record.
 
 ## See also
 

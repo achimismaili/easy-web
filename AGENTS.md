@@ -41,14 +41,17 @@ When changing anything in `packages/auth/`:
 
 | Path | Purpose | Status |
 | :--- | :--- | :--- |
-| `packages/seo/` | `@easy-web/seo` — shared SEO primitives: `easyWebSeo()` AstroIntegration (wraps `@astrojs/sitemap` with i18n hreflang, injects a dynamic `robots.txt` route with `noIndex` mode) and the `<SeoHead>` component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest). See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md). | Real at v1.0.0 |
-| `packages/theme-core/` | `@easy-web/theme-core` — CSS design tokens, light/dark theme, no-flash script | Real (consumed at ^0.3.x by instances) |
-| `packages/i18n/` | `@easy-web/i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers | Real (consumed at ^0.3.x by instances) |
-| `packages/easy-web-content-blocks/` | `@easy-web/content-blocks` — Hero, Section, CardGrid, Card, and other reusable page blocks | Real (consumed at ^0.2.x by instances) |
-| `packages/auth/` | `@easy-web/auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). | Real at v0.1.1 — fully wired (AuthProvider, useAuth, LoginButton, ProtectedContent, UserAvatar, Graph client, SharePoint hooks and UI components). Published to npm (tag `v0.1.1`); consumed by `dev.ismaili.de` at `^0.1.1`. |
-| `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` — CMS adapter contract per ADR 0006 | Stub |
-| `packages/easy-web-azure-functions-utils/` | `@easy-web/azure-functions-utils` — server-side helpers for Azure Functions | Stub |
-| `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline | Stub |
+| `packages/seo/` | `@easy-web/seo` — shared SEO primitives: `easyWebSeo()` AstroIntegration (wraps `@astrojs/sitemap` with i18n hreflang, injects a dynamic `robots.txt` route with `noIndex` mode, supports `localizedPaths` for per-locale slugs) and the `<SeoHead>` component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest). See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md). | Real at v1.1.0 |
+| `packages/theme-core/` | `@easy-web/theme-core` — CSS design tokens, light/dark theme, no-flash script | Real at v1.1.0 |
+| `packages/i18n/` | `@easy-web/i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers, `createI18n` with `localizedPaths` and `trailingSlash` | Real at v1.1.0 |
+| `packages/easy-web-content-blocks/` | `@easy-web/content-blocks` — Hero, Section, CardGrid, Card, `<NotFound>`, and other reusable page blocks | Real at v1.1.0 |
+| `packages/auth/` | `@easy-web/auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). | Real at v1.1.0 — fully wired and published to npm. Both instances consume it at `^1.1.0`. |
+| `packages/easy-web-brand/` | `@easy-web/brand` — brand asset generation (favicons, icons) plus the `easy-web-brand` CLI | Real at v1.1.0 |
+| `packages/easy-web-markdown/` | `@easy-web/markdown` — remark plugin normalising markdown-body image URLs to paths Astro's built-in image resolver accepts | Real at v1.1.0 |
+| `packages/easy-web-swa/` | `@easy-web/swa` — AstroIntegration merging a sentinel-marked `staticwebapp.config.json` slice for shared 404 handling on Azure Static Web Apps | Real at v1.1.0 |
+| `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` — Decap CMS integration per ADR 0006: `AdminPage` component, frontmatter types, config scaffold | Real at v1.1.0 |
+| `packages/easy-web-azure-functions-utils/` | `@easy-web/azure-functions-utils` — placeholder for server-side Azure Functions helpers | Stub (versioned 1.1.0, no `src/`) |
+| `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline | Stub (versioned 1.1.0, no `src/`) |
 | `examples/` | Reference instances consuming the packages locally for development | Empty (placeholder) |
 | `scripts/` | Workspace-level tooling (release, validation) | — |
 | `docs/` | Repo-local notes; canonical docs live in `websites/docs/` | — |
@@ -193,7 +196,9 @@ pnpm changeset                     # create a changeset for release
 
 ## Related docs
 
-- `README.md` — human-readable project overview (currently understates the real package status; verify against `packages/*/package.json`).
+* [`docs/architecture.md`](docs/architecture.md) - package graph, propagation path, release flow and the single-source SEO model, as Mermaid diagrams.
+
+- `README.md` — human-readable project overview, including the package inventory at their published versions.
 - [`websites/AGENTS.md`](../websites/AGENTS.md) — full ecosystem map and decision tree for AI agents.
 - [`websites/docs/repos/easy-web.md`](../websites/docs/repos/easy-web.md) — canonical role description (may lag behind reality; verify against this repo's actual contents).
 - [`websites/docs/decisions/`](../websites/docs/decisions/) — full ADR set. ADRs especially relevant to this repo:
