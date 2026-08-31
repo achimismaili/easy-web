@@ -43,6 +43,23 @@ export function stripQueryAndHash(path: string): string {
 export type TrailingSlash = 'always' | 'never'
 
 /**
+ * The URL form `@easy-web/seo` resolved from `astro.config.mjs`, for callers
+ * that run outside an Astro integration and so cannot read the config.
+ *
+ * Components and instance modules render links with this so internal hrefs
+ * point at the canonical URL instead of the form the host will redirect away.
+ */
+export function ambientTrailingSlash(): TrailingSlash {
+  const runtime = globalThis as {
+    process?: { env?: Record<string, string | undefined> }
+  }
+
+  return runtime.process?.env?.['EASY_WEB_SEO_TRAILING_SLASH'] === 'never'
+    ? 'never'
+    : 'always'
+}
+
+/**
  * Renders a path in the form the site actually serves.
  *
  * Canonical, hreflang alternates and the sitemap must all agree byte-for-byte,

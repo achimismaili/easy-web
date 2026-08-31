@@ -1,4 +1,5 @@
 import { formatCurrency, formatDate, formatList, formatNumber, formatRelativeTime } from './formatters.js'
+import { ambientTrailingSlash } from './localized-paths.js'
 import type { LocalizedPathGroup, TrailingSlash } from './localized-paths.js'
 import { getLocaleFromPath, localizedHref } from './routing.js'
 import { getAlternateLinks, getCanonicalUrl } from './seo.js'
@@ -8,30 +9,12 @@ export interface I18nConfig<L extends string> {
   defaultLocale: L
   baseUrl: string
   localizedPaths?: readonly LocalizedPathGroup[]
+  /** Defaults to the form `@easy-web/seo` resolved from `astro.config.mjs`. */
   trailingSlash?: TrailingSlash
 }
 
-/**
- * Falls back to the URL form `@easy-web/seo` resolved from `astro.config.mjs`.
- *
- * `createI18n` is called from instance code, not from an Astro integration, so
- * it cannot read the Astro config itself. Without this the alternates would
- * default to trailing slashes while the canonical followed the real config, and
- * a self-referencing hreflang that disagrees with the canonical invalidates the
- * whole cluster. Pass `trailingSlash` explicitly to override.
- */
-function detectTrailingSlash(): TrailingSlash {
-  const runtime = globalThis as {
-    process?: { env?: Record<string, string | undefined> }
-  }
-
-  return runtime.process?.env?.['EASY_WEB_SEO_TRAILING_SLASH'] === 'never'
-    ? 'never'
-    : 'always'
-}
-
 export function createI18n<L extends string>(cfg: I18nConfig<L>) {
-  const trailingSlash = cfg.trailingSlash ?? detectTrailingSlash()
+  const trailingSlash = cfg.trailingSlash ?? ambientTrailingSlash()
 
   return {
     locales: cfg.locales,

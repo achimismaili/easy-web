@@ -1,8 +1,10 @@
 ---
 /**
- * LanguageSwitch – links to the alternate locale version of the current page.
- * Convention: default locale (e.g. "de") lives at `/`, non-default (e.g. "en") at `/en/…`.
+ * LanguageSwitch - links to the alternate locale version of the current page.
+ * Convention: default locale (e.g. "de") lives at `/`, non-default (e.g. "en") at `/en/.`.
  */
+import { ambientTrailingSlash, toServedPath } from '@easy-web/i18n';
+
 interface Props {
   /** Current page language, e.g. "de" or "en". */
   currentLang: string;
@@ -10,7 +12,7 @@ interface Props {
   pathname: string;
   /** The default locale that uses bare paths (no prefix). Defaults to "de". */
   defaultLocale?: string;
-  /** Explicit alternate URL for translated slugs (e.g. /en/privacy/ for /datenschutz/). Bypasses automatic derivation. */
+  /** Explicit alternate URL for translated slugs (e.g. /en/privacy for /datenschutz). Bypasses automatic derivation. */
   alternateHref?: string;
   /** Accessible label override. */
   ariaLabel?: string;
@@ -30,7 +32,9 @@ function deriveAlternateHref(): string {
   return stripped || '/';
 }
 
-const resolvedHref = explicitHref ?? deriveAlternateHref();
+// Render in the form the site serves, so switching language is a direct hit
+// rather than a redirect. Also normalises any alternateHref a page passes in.
+const resolvedHref = toServedPath(explicitHref ?? deriveAlternateHref(), ambientTrailingSlash());
 const resolvedAriaLabel = ariaLabel ?? `Switch to ${alternateLang}`;
 ---
 
