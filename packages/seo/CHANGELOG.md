@@ -1,5 +1,12 @@
 # @achimismaili/easy-web-seo
 
+## 1.2.2
+
+### Patch Changes
+
+- Updated dependencies [9e5463b]
+  - @easy-web/i18n@1.2.2
+
 ## 1.2.1
 
 ### Patch Changes
