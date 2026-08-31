@@ -1,5 +1,13 @@
 # @itci/easy-web-content-blocks
 
+## 1.2.1
+
+### Patch Changes
+
+- Updated dependencies [b96f19f]
+  - @easy-web/i18n@1.2.1
+  - @easy-web/theme-core@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes
