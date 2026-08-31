@@ -1,6 +1,6 @@
 {
   "name": "@easy-web/seo",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "Shared SEO primitives for @easy-web/* consumer instances — Astro integration wrapping @astrojs/sitemap with i18n hreflang, dynamic robots.txt route with noIndex mode, and <SeoHead> component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest).",
   "keywords": [
