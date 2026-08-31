@@ -14,10 +14,11 @@ export type Options = {
   readonly locales?: readonly string[];
 };
 
-const SENTINEL_VERSION = '0.2.0';
+const SENTINEL_VERSION = '1.2.0';
 const SENTINEL_DOCS =
-  'https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md';
+  'https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md';
 const KEY_RESPONSE_OVERRIDES_404 = 'responseOverrides.404';
+const KEY_TRAILING_SLASH = 'trailingSlash';
 const SIDECAR_SUFFIX = '.easy-web-managed.json';
 const SCHEMA_LEGAL_ROOT_KEYS = new Set([
   '$schema',
@@ -46,6 +47,37 @@ const MANAGED_RESPONSE_OVERRIDE = {
   statusCode: 404,
 } as const;
 
+/** The two URL forms Azure SWA can normalise to. Astro's `'ignore'` has no SWA equivalent. */
+export type SwaTrailingSlash = 'always' | 'never';
+
+type AstroUrlShape = {
+  readonly trailingSlash?: string;
+  readonly build?: { readonly format?: string };
+};
+
+/**
+ * Derives the SWA `trailingSlash` mode from Astro's own configuration.
+ *
+ * Read directly from Astro rather than shared with `@easy-web/seo`: Astro's
+ * config is the single source of truth both packages consume, so this is two
+ * readers of one value rather than two competing rules. Keeping it local also
+ * spares this package a dependency it otherwise does not need.
+ *
+ * Returns `null` when no single form is correct, in which case the key is left
+ * unmanaged rather than guessed.
+ */
+export function resolveSwaTrailingSlash(
+  config: AstroUrlShape,
+): SwaTrailingSlash | null {
+  if (config.trailingSlash === 'always') return 'always';
+  if (config.trailingSlash === 'never') return 'never';
+
+  if (config.build?.format === 'directory') return 'always';
+  if (config.build?.format === 'file') return 'never';
+
+  return null;
+}
+
 /**
  * Astro integration that adds shared Azure Static Web Apps 404 handling.
  *
@@ -55,6 +87,8 @@ const MANAGED_RESPONSE_OVERRIDE = {
  * setting are preserved; no locale-wide rewrite routes are emitted.
  */
 export function easyWebNotFound(_options: Options = {}): AstroIntegration {
+  let trailingSlash: SwaTrailingSlash | null = null;
+
   return {
     name: '@easy-web/swa',
     hooks: {
@@ -70,6 +104,14 @@ export function easyWebNotFound(_options: Options = {}): AstroIntegration {
             '[easy-web-swa] non-static output detected; integration will write staticwebapp.config.json directly to dist/ instead of relying on public/ passthrough',
           );
         }
+
+        trailingSlash = resolveSwaTrailingSlash(config);
+
+        if (trailingSlash === null) {
+          console.warn(
+            '[easy-web-swa] build.format "preserve" emits both file and directory routes, so no single trailingSlash rule is correct; leaving the key unmanaged. Set trailingSlash in astro.config.mjs to have it managed.',
+          );
+        }
       },
       'astro:build:done': ({ dir }) => {
         const distDir = fileURLToPath(dir);
@@ -81,6 +123,7 @@ export function easyWebNotFound(_options: Options = {}): AstroIntegration {
           existing,
           previousSentinel,
           configPath,
+          trailingSlash,
         );
 
         writeJson(configPath, config);
@@ -142,6 +185,7 @@ function mergeConfig(
   existing: JsonObject | null,
   previousSentinel: ManagedSentinel | null,
   configPath: string,
+  trailingSlash: SwaTrailingSlash | null,
 ): { readonly config: JsonObject; readonly sentinel: ManagedSentinel } {
   const config = schemaLegalConfig(existing);
   const responseOverrides = readResponseOverrides(config, configPath);
@@ -149,23 +193,46 @@ function mergeConfig(
     previousSentinel?.keys.includes(KEY_RESPONSE_OVERRIDES_404) ?? false;
   const userOwns404 = '404' in responseOverrides && !integrationOwns404;
 
+  const managedKeys: string[] = [];
+  let merged: JsonObject = config;
+
   if (userOwns404) {
     console.warn(
       '[easy-web-swa] user has defined responseOverrides.404; user override wins; integration will not manage it',
     );
-    return { config, sentinel: makeSentinel([]) };
-  }
-
-  return {
-    config: {
-      ...config,
+  } else {
+    merged = {
+      ...merged,
       responseOverrides: {
         ...responseOverrides,
         '404': MANAGED_RESPONSE_OVERRIDE,
       },
-    },
-    sentinel: makeSentinel([KEY_RESPONSE_OVERRIDES_404]),
-  };
+    };
+    managedKeys.push(KEY_RESPONSE_OVERRIDES_404);
+  }
+
+  const integrationOwnsTrailingSlash =
+    previousSentinel?.keys.includes(KEY_TRAILING_SLASH) ?? false;
+  const userOwnsTrailingSlash =
+    KEY_TRAILING_SLASH in merged && !integrationOwnsTrailingSlash;
+
+  if (userOwnsTrailingSlash) {
+    console.warn(
+      `[easy-web-swa] user has defined trailingSlash: "${String(merged[KEY_TRAILING_SLASH])}" in staticwebapp.config.json; user override wins; integration will not manage it. Remove it to have the value derived from astro.config.mjs.`,
+    );
+  } else if (trailingSlash !== null) {
+    merged = { ...merged, [KEY_TRAILING_SLASH]: trailingSlash };
+    managedKeys.push(KEY_TRAILING_SLASH);
+  } else if (integrationOwnsTrailingSlash) {
+    merged = withoutStaleTrailingSlash(merged);
+  }
+
+  return { config: merged, sentinel: makeSentinel(managedKeys) };
+}
+
+function withoutStaleTrailingSlash(config: JsonObject): JsonObject {
+  const { [KEY_TRAILING_SLASH]: _stale, ...rest } = config;
+  return rest;
 }
 
 function schemaLegalConfig(existing: JsonObject | null): JsonObject {

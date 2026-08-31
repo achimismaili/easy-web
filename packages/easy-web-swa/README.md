@@ -8,8 +8,9 @@ When you add `easyWebNotFound()` to your Astro config, the integration:
 
 1. **Reads** the existing `staticwebapp.config.json` at build time (if present)
 2. **Emits** a global 404 response override (`responseOverrides.404`) that rewrites unmatched routes to `/404.html`
-3. **Tracks ownership** via a sidecar file (`staticwebapp.config.json.easy-web-managed.json`) so future builds know which settings the integration manages
-4. **Preserves** all user-authored settings: `auth`, `globalHeaders`, `navigationFallback`, custom routes, and any other `responseOverrides` the user defined
+3. **Derives** `trailingSlash` from your Astro config so the SWA redirect can never contradict the canonical URLs `@easy-web/seo` emits
+4. **Tracks ownership** via a sidecar file (`staticwebapp.config.json.easy-web-managed.json`) so future builds know which settings the integration manages
+5. **Preserves** all user-authored settings: `auth`, `globalHeaders`, `navigationFallback`, custom routes, and any other `responseOverrides` the user defined
 
 ## Usage
 
@@ -36,9 +37,9 @@ SWA's `staticwebapp.config.json` schema uses `additionalProperties: false` at th
 ```json
 // staticwebapp.config.json.easy-web-managed.json
 {
-  "keys": ["responseOverrides.404"],
-  "version": "0.2.0",
-  "docs": "https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md"
+  "keys": ["responseOverrides.404", "trailingSlash"],
+  "version": "1.2.0",
+  "docs": "https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md"
 }
 ```
 
@@ -52,11 +53,34 @@ Azure Static Web Apps supports only **one global 404 response override**. This i
 - Per-locale 404 content is **not supported** by this integration
 - If you need locale-specific 404 pages, you must implement them outside this integration (e.g., via Astro routing or a custom SWA configuration)
 
-See [ADR 0013 — Shared Not-Found Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md) for the full rationale.
+See [ADR 0013 — Shared Not-Found Primitives](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md) for the full rationale.
+
+### Trailing slash
+
+Azure SWA serves `/about` and `/about/` with `200` by default, so both forms are reachable and search engines see duplicate content. The integration therefore derives an explicit `trailingSlash` from your Astro config - the same config that drives the canonical, hreflang and sitemap URLs emitted by `@easy-web/seo`, so the redirect and the canonical cannot disagree.
+
+| Astro config | Emitted `trailingSlash` | SWA behaviour |
+| :--- | :--- | :--- |
+| `trailingSlash: 'always'` / `'never'` | used as-is | explicit intent outranks the output shape |
+| `build.format: 'directory'` (default) | `always` | `/about` -> 301 -> `/about/` |
+| `build.format: 'file'` | `never` | `/about/` -> 301 -> `/about` |
+| `build.format: 'preserve'` | *unmanaged* | emits both shapes, so no single rule is correct |
+
+To choose the other form, set it once in `astro.config.mjs`:
+
+```ts
+export default defineConfig({
+  trailingSlash: 'never',
+});
+```
+
+The canonical tag, hreflang alternates, sitemap `<loc>` entries and the SWA redirect all follow that one value.
+
+Setting `trailingSlash` yourself in `staticwebapp.config.json` still wins, with a warning. Remove it to hand control back to the integration.
 
 ## Preservation guarantees
 
-The integration **only manages** `responseOverrides.404`. All other settings are preserved exactly as you authored them:
+The integration **only manages** `responseOverrides.404` and `trailingSlash`. All other settings are preserved exactly as you authored them:
 
 - ✅ `auth` — untouched
 - ✅ `globalHeaders` — untouched

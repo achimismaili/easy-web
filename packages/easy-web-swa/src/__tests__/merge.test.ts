@@ -25,6 +25,8 @@ type RunOpts = {
     readonly locales: readonly (string | { readonly path: string })[];
   };
   readonly output?: string;
+  readonly build?: { readonly format?: string };
+  readonly trailingSlash?: string;
   readonly integrationOptions?: {
     readonly defaultLocale?: string;
     readonly locales?: readonly string[];
@@ -34,7 +36,7 @@ type RunOpts = {
 const tempDirectories: string[] = [];
 const MANAGED_404 = { rewrite: '/404.html', statusCode: 404 };
 const DOCS_URL =
-  'https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md';
+  'https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md';
 const LEGAL_ROOT_KEYS: readonly string[] = [
   '$schema',
   'routes',
@@ -112,7 +114,12 @@ async function invokeHooks(tmpDir: string, opts: RunOpts = {}): Promise<void> {
   const setupHook = hooks['astro:config:setup'];
   if (typeof setupHook === 'function') {
     await setupHook({
-      config: { i18n: opts.i18n, output: opts.output ?? 'static' },
+      config: {
+        i18n: opts.i18n,
+        output: opts.output ?? 'static',
+        build: opts.build ?? { format: 'directory' },
+        trailingSlash: opts.trailingSlash ?? 'ignore',
+      },
     });
   }
   const doneHook = hooks['astro:build:done'];
@@ -176,6 +183,80 @@ function errorMessage(error: unknown): string {
 }
 
 describe('easyWebNotFound merge algorithm', () => {
+  it('derives trailingSlash "always" from build.format directory', async () => {
+    const { emitted, sidecar } = await runIntegration({
+      build: { format: 'directory' },
+    });
+
+    expect(emitted.trailingSlash).toBe('always');
+    expect(sidecar.keys).toContain('trailingSlash');
+  });
+
+  it('derives trailingSlash "never" from build.format file', async () => {
+    const { emitted } = await runIntegration({ build: { format: 'file' } });
+
+    expect(emitted.trailingSlash).toBe('never');
+  });
+
+  it('lets an explicit astro trailingSlash outrank the output shape', async () => {
+    const never = await runIntegration({
+      build: { format: 'directory' },
+      trailingSlash: 'never',
+    });
+    const always = await runIntegration({
+      build: { format: 'file' },
+      trailingSlash: 'always',
+    });
+
+    expect(never.emitted.trailingSlash).toBe('never');
+    expect(always.emitted.trailingSlash).toBe('always');
+  });
+
+  it('leaves trailingSlash unmanaged for build.format preserve, which emits both shapes', async () => {
+    const { emitted, sidecar } = await runIntegration({
+      build: { format: 'preserve' },
+    });
+
+    expect(emitted.trailingSlash).toBeUndefined();
+    expect(sidecar.keys).not.toContain('trailingSlash');
+    expect(sidecar.keys).toContain('responseOverrides.404');
+  });
+
+  it('yields to a user-defined trailingSlash and stops managing it', async () => {
+    const { emitted, sidecar } = await runIntegration({
+      existingConfig: { trailingSlash: 'never' },
+      build: { format: 'directory' },
+    });
+
+    expect(emitted.trailingSlash).toBe('never');
+    expect(sidecar.keys).not.toContain('trailingSlash');
+  });
+
+  it('drops a previously managed trailingSlash once it is no longer derivable', async () => {
+    const build1 = await runIntegration({ build: { format: 'directory' } });
+    expect(build1.emitted.trailingSlash).toBe('always');
+
+    const build2 = await runIntegration({
+      existingConfig: build1.emitted,
+      existingSidecar: build1.sidecar,
+      build: { format: 'preserve' },
+    });
+
+    expect(build2.emitted.trailingSlash).toBeUndefined();
+    expect(build2.sidecar.keys).not.toContain('trailingSlash');
+  });
+
+  it('rewrites its own managed trailingSlash when the astro config changes', async () => {
+    const build1 = await runIntegration({ build: { format: 'directory' } });
+    const build2 = await runIntegration({
+      existingConfig: build1.emitted,
+      existingSidecar: build1.sidecar,
+      build: { format: 'file' },
+    });
+
+    expect(build2.emitted.trailingSlash).toBe('never');
+    expect(build2.sidecar.keys).toContain('trailingSlash');
+  });
   it('case 1: no existing file emits a global 404 override and sidecar only', async () => {
     const result = await runIntegration({
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
@@ -183,11 +264,12 @@ describe('easyWebNotFound merge algorithm', () => {
 
     expect(result.emitted).toEqual({
       responseOverrides: { '404': MANAGED_404 },
+      trailingSlash: 'always',
     });
     expect(result.emitted.routes).toBeUndefined();
     expect(result.sidecar).toEqual({
-      keys: ['responseOverrides.404'],
-      version: '0.2.0',
+      keys: ['responseOverrides.404', 'trailingSlash'],
+      version: '1.2.0',
       docs: DOCS_URL,
     });
   });
@@ -204,7 +286,7 @@ describe('easyWebNotFound merge algorithm', () => {
 
     expect(emitted.routes).toEqual(userRoutes);
     expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
-    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+    expect(sidecar.keys).toEqual(['responseOverrides.404', 'trailingSlash']);
   });
 
   it('case 3: claimed 404 is refreshed while unrelated config is preserved', async () => {
@@ -254,7 +336,7 @@ describe('easyWebNotFound merge algorithm', () => {
       statusCode: 500,
     });
     expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
-    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+    expect(sidecar.keys).toEqual(['responseOverrides.404', 'trailingSlash']);
   });
 
   it('case 4: unclaimed user 404 wins and remains unclaimed', async () => {
@@ -270,7 +352,7 @@ describe('easyWebNotFound merge algorithm', () => {
       expect.stringContaining('user override wins'),
     );
     expect(emitted.responseOverrides?.['404']).toEqual(userOverride);
-    expect(sidecar.keys).toEqual([]);
+    expect(sidecar.keys).toEqual(['trailingSlash']);
   });
 
   it('case 5: no i18n config uses the same global-only model', async () => {
@@ -282,7 +364,7 @@ describe('easyWebNotFound merge algorithm', () => {
     );
     expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
     expect(emitted.routes).toBeUndefined();
-    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+    expect(sidecar.keys).toEqual(['responseOverrides.404', 'trailingSlash']);
   });
 
   it('case 6: config and sidecar use two-space JSON with one trailing newline', async () => {
@@ -296,14 +378,16 @@ describe('easyWebNotFound merge algorithm', () => {
       '      "rewrite": "/404.html",\n' +
       '      "statusCode": 404\n' +
       '    }\n' +
-      '  }\n' +
+      '  },\n' +
+      '  "trailingSlash": "always"\n' +
       '}\n';
     const expectedSidecar =
       '{\n' +
       '  "keys": [\n' +
-      '    "responseOverrides.404"\n' +
+      '    "responseOverrides.404",\n' +
+      '    "trailingSlash"\n' +
       '  ],\n' +
-      '  "version": "0.2.0",\n' +
+      '  "version": "1.2.0",\n' +
       `  "docs": "${DOCS_URL}"\n` +
       '}\n';
 
@@ -325,7 +409,7 @@ describe('easyWebNotFound merge algorithm', () => {
     });
 
     expect(emitted.routes).toEqual([userRoute]);
-    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+    expect(sidecar.keys).toEqual(['responseOverrides.404', 'trailingSlash']);
   });
 
   it('case 8: changing locales is a no-op for the locale-agnostic managed slice', async () => {
@@ -362,8 +446,8 @@ describe('easyWebNotFound merge algorithm', () => {
 
     expect(fs.existsSync(sidecarPath)).toBe(true);
     expect(sidecar).toEqual({
-      keys: ['responseOverrides.404'],
-      version: '0.2.0',
+      keys: ['responseOverrides.404', 'trailingSlash'],
+      version: '1.2.0',
       docs: DOCS_URL,
     });
   });
@@ -380,9 +464,9 @@ describe('easyWebNotFound merge algorithm', () => {
       i18n: { defaultLocale: 'de', locales: ['de', 'en'] },
     });
 
-    expect(build1.sidecar.keys).toEqual([]);
+    expect(build1.sidecar.keys).toEqual(['trailingSlash']);
     expect(build2.emitted.responseOverrides?.['404']).toEqual(userOverride);
-    expect(build2.sidecar.keys).toEqual([]);
+    expect(build2.sidecar.keys).toEqual(['trailingSlash']);
   });
 
   it('case 9: malformed JSON in the config throws a SyntaxError naming the config path', async () => {
@@ -501,8 +585,8 @@ describe('easyWebNotFound merge algorithm', () => {
       Object.keys(build1.emitted).every((key) => LEGAL_ROOT_KEYS.includes(key)),
     ).toBe(true);
     expect(fs.existsSync(build1.sidecarPath)).toBe(true);
-    expect(build1.sidecar.version).toBe('0.2.0');
-    expect(build1.sidecar.keys).toEqual([]);
+    expect(build1.sidecar.version).toBe('1.2.0');
+    expect(build1.sidecar.keys).toEqual(['trailingSlash']);
     expect(build1.emitted.responseOverrides?.['404']).toEqual(legacyManaged404);
     expect(build1.emitted.routes).toEqual([legacyLocaleRoute]);
     expect(build1.emitted.globalHeaders).toEqual({ 'X-Frame-Options': 'DENY' });
@@ -545,7 +629,7 @@ describe('easyWebNotFound merge algorithm', () => {
       exclude: ['/api/*'],
     });
     expect(fs.existsSync(sidecarPath)).toBe(true);
-    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+    expect(sidecar.keys).toEqual(['responseOverrides.404', 'trailingSlash']);
   });
 
   it('case 16: stale route claims in the sidecar are ignored and dropped', async () => {
@@ -567,7 +651,7 @@ describe('easyWebNotFound merge algorithm', () => {
 
     expect(emitted.routes).toEqual(userRoutes);
     expect(emitted.responseOverrides?.['404']).toEqual(MANAGED_404);
-    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+    expect(sidecar.keys).toEqual(['responseOverrides.404', 'trailingSlash']);
   });
 
   it('case 17: a sidecar claiming only stale route keys leaves an existing 404 user-owned', async () => {
@@ -587,7 +671,7 @@ describe('easyWebNotFound merge algorithm', () => {
       expect.stringContaining('user override wins'),
     );
     expect(emitted.responseOverrides?.['404']).toEqual(userOverride);
-    expect(sidecar.keys).toEqual([]);
+    expect(sidecar.keys).toEqual(['trailingSlash']);
   });
 
   it('case 18: auth, globalHeaders and navigationFallback are value-preserved (formatting normalises)', async () => {
@@ -656,7 +740,7 @@ describe('easyWebNotFound merge algorithm', () => {
     fs.writeFileSync(configPath, nonCanonicalRawFixture, 'utf-8');
     writeJson(sidecarPath, {
       keys: ['responseOverrides.404'],
-      version: '0.2.0',
+      version: '1.2.0',
       docs: DOCS_URL,
     });
 
@@ -707,7 +791,7 @@ describe('easyWebNotFound merge algorithm', () => {
     expect(infoSpy).toHaveBeenCalledWith(
       expect.stringContaining('single-locale mode'),
     );
-    expect(sidecar.keys).toEqual(['responseOverrides.404']);
+    expect(sidecar.keys).toEqual(['responseOverrides.404', 'trailingSlash']);
     expect(sidecar.keys.some((key) => key.startsWith('routes'))).toBe(false);
     expect(emitted.routes).toEqual(userRoutes);
   });

@@ -40,11 +40,27 @@ function localeIdsOf(config: AstroConfig): string[] {
   )
 }
 
-function resolveTrailingSlash(config: AstroConfig): TrailingSlash {
-  const usesDirectoryFormat =
-    config.trailingSlash !== 'never' && config.build.format === 'directory'
+function resolveTrailingSlash(
+  config: AstroConfig,
+  logger?: { warn: (msg: string) => void },
+): TrailingSlash {
+  // An explicit astro `trailingSlash` is a statement of intent about the served
+  // URL, so it outranks the output shape. Only when it is left at 'ignore' does
+  // `build.format` decide.
+  if (config.trailingSlash === 'always') return 'always'
+  if (config.trailingSlash === 'never') return 'never'
 
-  return usesDirectoryFormat ? 'always' : 'never'
+  if (config.build.format === 'file') return 'never'
+  if (config.build.format === 'directory') return 'always'
+
+  // 'preserve' mirrors the source tree, so some routes emit as files and others
+  // as directories. No single form is correct for the whole site.
+  logger?.warn(
+    '@easy-web/seo: `build.format: "preserve"` emits a mix of file and directory routes, ' +
+    'so no single canonical URL form is correct. Assuming trailing slashes; ' +
+    'set `trailingSlash` in astro.config.mjs to state the intent explicitly.'
+  )
+  return 'always'
 }
 
 function toOutputUrl(path: string, config: AstroConfig): string {
@@ -207,7 +223,7 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
         // <SeoHead> is a component and cannot read astro.config, so the style
         // the sitemap uses is published here for it to reuse. Both surfaces
         // therefore derive the canonical URL form from one resolver.
-        process.env.EASY_WEB_SEO_TRAILING_SLASH = resolveTrailingSlash(config)
+        process.env.EASY_WEB_SEO_TRAILING_SLASH = resolveTrailingSlash(config, logger)
 
         injectRoute({
           pattern: '/robots.txt',

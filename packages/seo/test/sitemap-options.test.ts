@@ -84,6 +84,26 @@ describe('trailing-slash style resolution', () => {
     expect(process.env.EASY_WEB_SEO_TRAILING_SLASH).toBe('never')
   })
 
+  it('lets an explicit trailingSlash outrank the output shape', () => {
+    run(easyWebSeo({ sitemapLocales: { de: 'de-DE', en: 'en-US' } }), {
+      ...baseConfig(),
+      build: { format: 'file' },
+      trailingSlash: 'always',
+    })
+
+    expect(process.env.EASY_WEB_SEO_TRAILING_SLASH).toBe('always')
+  })
+
+  it('warns and assumes slashes for build.format "preserve", which emits both shapes', () => {
+    const { logger } = run(easyWebSeo({ sitemapLocales: { de: 'de-DE', en: 'en-US' } }), {
+      ...baseConfig(),
+      build: { format: 'preserve' },
+    })
+
+    expect(process.env.EASY_WEB_SEO_TRAILING_SLASH).toBe('always')
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('preserve'))
+  })
+
   it('emits sitemap URLs in the same form it publishes for the canonical', () => {
     run(
       easyWebSeo({
