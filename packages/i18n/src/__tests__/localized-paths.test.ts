@@ -190,6 +190,50 @@ describe('createI18n localizedPaths threading', () => {
       href: `${BASE}/en/datenschutz/`,
     })
   })
+
+  it('inherits the URL form resolved by @easy-web/seo when none is given', () => {
+    const previous = process.env.EASY_WEB_SEO_TRAILING_SLASH
+    process.env.EASY_WEB_SEO_TRAILING_SLASH = 'never'
+
+    try {
+      const i18n = createI18n({
+        locales: LOCALES,
+        defaultLocale: 'de',
+        baseUrl: BASE,
+        localizedPaths: GROUPS,
+      })
+
+      expect(i18n.trailingSlash).toBe('never')
+      expect(i18n.getCanonicalUrl('/datenschutz', 'de')).toBe(`${BASE}/datenschutz`)
+      expect(i18n.getAlternateLinks('/datenschutz')).toEqual([
+        { hreflang: 'de', href: `${BASE}/datenschutz` },
+        { hreflang: 'en', href: `${BASE}/en/privacy` },
+        { hreflang: 'x-default', href: `${BASE}/datenschutz` },
+      ])
+    } finally {
+      if (previous === undefined) delete process.env.EASY_WEB_SEO_TRAILING_SLASH
+      else process.env.EASY_WEB_SEO_TRAILING_SLASH = previous
+    }
+  })
+
+  it('lets an explicit trailingSlash outrank the inherited one', () => {
+    const previous = process.env.EASY_WEB_SEO_TRAILING_SLASH
+    process.env.EASY_WEB_SEO_TRAILING_SLASH = 'never'
+
+    try {
+      const i18n = createI18n({
+        locales: LOCALES,
+        defaultLocale: 'de',
+        baseUrl: BASE,
+        trailingSlash: 'always',
+      })
+
+      expect(i18n.trailingSlash).toBe('always')
+    } finally {
+      if (previous === undefined) delete process.env.EASY_WEB_SEO_TRAILING_SLASH
+      else process.env.EASY_WEB_SEO_TRAILING_SLASH = previous
+    }
+  })
 })
 
 describe('validateLocalizedPaths', () => {

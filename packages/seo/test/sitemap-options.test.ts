@@ -234,6 +234,41 @@ describe('localizedPaths serialization', () => {
 
     expect(serialize({ url: `${SITE}/admin/` })).toBeDefined()
   })
+
+  it('re-renders every <loc> into the served form so it matches the canonical', () => {
+    run(
+      easyWebSeo({
+        sitemapLocales: { de: 'de-DE', en: 'en-US' },
+        localizedPaths: [{ de: '/datenschutz/', en: '/en/privacy/' }],
+      }),
+      { ...baseConfig(), trailingSlash: 'never' },
+    )
+
+    const { serialize } = sitemapOptions()
+
+    expect(serialize({ url: `${SITE}/about/` }).url).toBe(`${SITE}/about`)
+    expect(serialize({ url: `${SITE}/about` }).url).toBe(`${SITE}/about`)
+  })
+
+  it('normalises auto-paired alternates too, not just the loc', () => {
+    run(easyWebSeo({ sitemapLocales: { de: 'de-DE', en: 'en-US' } }), {
+      ...baseConfig(),
+      trailingSlash: 'never',
+    })
+
+    const serialized = sitemapOptions().serialize({
+      url: `${SITE}/impressum/`,
+      links: [
+        { lang: 'de-DE', url: `${SITE}/impressum/` },
+        { lang: 'en-US', url: `${SITE}/en/impressum/` },
+      ],
+    })
+
+    expect(serialized.links?.map((l) => l.url)).toEqual([
+      `${SITE}/impressum`,
+      `${SITE}/en/impressum`,
+    ])
+  })
 })
 
 describe('localizedPaths validation', () => {

@@ -11,8 +11,27 @@ export interface I18nConfig<L extends string> {
   trailingSlash?: TrailingSlash
 }
 
+/**
+ * Falls back to the URL form `@easy-web/seo` resolved from `astro.config.mjs`.
+ *
+ * `createI18n` is called from instance code, not from an Astro integration, so
+ * it cannot read the Astro config itself. Without this the alternates would
+ * default to trailing slashes while the canonical followed the real config, and
+ * a self-referencing hreflang that disagrees with the canonical invalidates the
+ * whole cluster. Pass `trailingSlash` explicitly to override.
+ */
+function detectTrailingSlash(): TrailingSlash {
+  const runtime = globalThis as {
+    process?: { env?: Record<string, string | undefined> }
+  }
+
+  return runtime.process?.env?.['EASY_WEB_SEO_TRAILING_SLASH'] === 'never'
+    ? 'never'
+    : 'always'
+}
+
 export function createI18n<L extends string>(cfg: I18nConfig<L>) {
-  const trailingSlash = cfg.trailingSlash ?? 'always'
+  const trailingSlash = cfg.trailingSlash ?? detectTrailingSlash()
 
   return {
     locales: cfg.locales,

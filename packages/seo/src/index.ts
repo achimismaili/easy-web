@@ -170,24 +170,40 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
               !isDisallowedPath(pathnameOf(page, config), policy) &&
               (options.filter?.(page) ?? true),
             serialize: (item: SitemapItem): SitemapItem => {
-              const declared = linksByUrl.get(item.url)
+              // Re-render every <loc> through the same helper that produces the
+              // canonical, so the two agree byte-for-byte. @astrojs/sitemap
+              // renders the site root as a bare origin with no path, which the
+              // canonical never does.
+              const url = toOutputUrl(pathnameOf(item.url, config), config)
+              const declared = linksByUrl.get(url)
 
               if (declared) {
-                seenUrls.add(item.url)
+                seenUrls.add(url)
                 // Replace, never merge: every member of a group must carry the
                 // same complete, reciprocal set or Google rejects the cluster.
-                return { ...item, links: [...declared] }
+                return { ...item, url, links: [...declared] }
               }
 
               for (const link of item.links ?? []) {
                 if (linksByUrl.has(link.url)) {
                   conflicts.push(
-                    `${item.url} was auto-paired with ${link.url}, which is already claimed by a localizedPaths group.`
+                    `${url} was auto-paired with ${link.url}, which is already claimed by a localizedPaths group.`
                   )
                 }
               }
 
-              return item
+              return {
+                ...item,
+                url,
+                ...(item.links
+                  ? {
+                      links: item.links.map((link) => ({
+                        ...link,
+                        url: toOutputUrl(pathnameOf(link.url, config), config),
+                      })),
+                    }
+                  : {}),
+              }
             },
           })
 
