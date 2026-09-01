@@ -1,5 +1,7 @@
 # @achimismaili/easy-web-i18n
 
+## 1.2.3
+
 ## 1.2.2
 
 ### Patch Changes

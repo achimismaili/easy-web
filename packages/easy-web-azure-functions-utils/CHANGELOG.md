@@ -1,5 +1,7 @@
 # @easy-web/azure-functions-utils
 
+## 1.2.3
+
 ## 1.2.2
 
 ## 1.2.1

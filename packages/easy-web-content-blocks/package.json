@@ -1,6 +1,6 @@
 {
   "name": "@easy-web/content-blocks",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "packageManager": "pnpm@10.34.4",
   "type": "module",
   "description": "Reusable Astro content-block components for the easy-web ecosystem.",
