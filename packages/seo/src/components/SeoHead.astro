@@ -54,7 +54,16 @@ if (!site) {
 // the easyWebSeo() integration.
 const servedStyle: TrailingSlash =
   trailingSlash ?? (process.env.EASY_WEB_SEO_TRAILING_SLASH === 'never' ? 'never' : 'always');
-const canonical = new URL(toServedPath(pathname, servedStyle), site).href;
+const servedPath = toServedPath(pathname, servedStyle);
+
+// The built 404 documents answer 200 when requested directly, so without this
+// they are ordinary indexable pages whose content happens to say "not found".
+// A self-referencing canonical is omitted for the same reason: it would assert
+// the page is a canonical destination while the body says the opposite.
+const isNotFoundRoute = servedPath.split('/').filter(Boolean).pop() === '404';
+const shouldNoIndex = noIndex || isNotFoundRoute;
+
+const canonical = new URL(servedPath, site).href;
 const absoluteOgImage = ogImage ? new URL(ogImage, site).href : undefined;
 // Map locale to OG locale format: 'de' → 'de_DE', 'en' → 'en_US'
 const ogLocale = locale === 'en' ? 'en_US' : locale === 'de' ? 'de_DE' : locale.replace('-', '_');
@@ -62,8 +71,8 @@ const ogLocaleAlternate = locale === 'en' ? 'de_DE' : 'en_US';
 ---
 <title>{title}</title>
 {description && <meta name="description" content={description} />}
-<link rel="canonical" href={canonical} />
-{noIndex && <meta name="robots" content="noindex, nofollow" />}
+{!isNotFoundRoute && <link rel="canonical" href={canonical} />}
+{shouldNoIndex && <meta name="robots" content="noindex, nofollow" />}
 {themeColor && <meta name="theme-color" content={themeColor} />}
 {manifest && <link rel="manifest" href={manifest} />}
 <!-- Open Graph -->
