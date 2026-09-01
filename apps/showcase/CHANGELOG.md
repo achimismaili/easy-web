@@ -1,5 +1,13 @@
 # showcase
 
+## 0.0.10
+
+### Patch Changes
+
+- @easy-web/content-blocks@1.2.3
+- @easy-web/i18n@1.2.3
+- @easy-web/theme-core@1.2.3
+
 ## 0.0.9
 
 ### Patch Changes

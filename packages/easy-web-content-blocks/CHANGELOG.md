@@ -1,5 +1,12 @@
 # @itci/easy-web-content-blocks
 
+## 1.2.3
+
+### Patch Changes
+
+- @easy-web/i18n@1.2.3
+- @easy-web/theme-core@1.2.3
+
 ## 1.2.2
 
 ### Patch Changes
