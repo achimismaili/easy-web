@@ -1,4 +1,5 @@
 // Components are exported as raw .astro files via package.json exports map:
+// import PageShell from '@easy-web/content-blocks/components/PageShell';
 // import Header from '@easy-web/content-blocks/components/Header';
 // import ThemeToggle from '@easy-web/content-blocks/components/ThemeToggle';
 // import LanguageSwitch from '@easy-web/content-blocks/components/LanguageSwitch';

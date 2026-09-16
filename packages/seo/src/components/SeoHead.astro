@@ -33,7 +33,7 @@ const {
   ogImage,
   themeColor,
   manifest,
-  noIndex = false,
+  noIndex,
   twitterCard = 'summary',
   twitterSite,
   alternates = [],
@@ -61,7 +61,16 @@ const servedPath = toServedPath(pathname, servedStyle);
 // A self-referencing canonical is omitted for the same reason: it would assert
 // the page is a canonical destination while the body says the opposite.
 const isNotFoundRoute = servedPath.split('/').filter(Boolean).pop() === '404';
-const shouldNoIndex = noIndex || isNotFoundRoute;
+
+// The crawl policy is resolved once by easyWebSeo() and published to the
+// environment, exactly like the trailing-slash style above. Defaulting the prop
+// to `false` instead of reading that value meant `easyWebSeo({ noIndex: true })`
+// suppressed the sitemap and wrote a disallow-all robots.txt while every page
+// still shipped without a robots meta tag — the integration and the document
+// disagreeing about the same policy. An explicit prop still wins, so a single
+// page can opt out of a site-wide setting.
+const policyNoIndex = process.env.EASY_WEB_SEO_NO_INDEX === 'true';
+const shouldNoIndex = (noIndex ?? policyNoIndex) || isNotFoundRoute;
 
 const canonical = new URL(servedPath, site).href;
 const absoluteOgImage = ogImage ? new URL(ogImage, site).href : undefined;

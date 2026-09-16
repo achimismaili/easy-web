@@ -24,9 +24,17 @@ interface Props {
    * Override only when rendering more than one of this header variant on a single page.
    */
   navId?: string;
+  /**
+   * Locales this site actually serves. When it holds a single entry the
+   * language switch is omitted, because on a one-locale site it is a control
+   * that navigates to a route the site does not build. Omit the prop to keep
+   * the switch rendering unconditionally.
+   */
+  locales?: readonly string[];
 }
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo, navId = 'ew-header-flyout-nav' } = Astro.props;
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo, navId = 'ew-header-flyout-nav', locales } = Astro.props;
+const showLanguageSwitch = !locales || locales.length > 1;
 const dropdownIdPrefix = `${navId}-dropdown`;
 ---
 
@@ -109,7 +117,7 @@ const dropdownIdPrefix = `${navId}-dropdown`;
       <div class="ew-header-flyout__actions">
         <slot name="actions">
           <ThemeToggle />
-          <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />
+          {showLanguageSwitch && <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />}
         </slot>
       </div>
     </nav>

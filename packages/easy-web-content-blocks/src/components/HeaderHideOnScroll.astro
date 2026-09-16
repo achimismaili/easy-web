@@ -19,9 +19,17 @@ interface Props {
    * more than one of this header variant on a single page.
    */
   navId?: string;
+  /**
+   * Locales this site actually serves. When it holds a single entry the
+   * language switch is omitted, because on a one-locale site it is a control
+   * that navigates to a route the site does not build. Omit the prop to keep
+   * the switch rendering unconditionally.
+   */
+  locales?: readonly string[];
 }
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo, navId = 'ew-header-hos-nav' } = Astro.props;
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo, navId = 'ew-header-hos-nav', locales } = Astro.props;
+const showLanguageSwitch = !locales || locales.length > 1;
 ---
 
 <header class="ew-header-hide-on-scroll" data-testid="header-hide-on-scroll">
@@ -62,7 +70,7 @@ const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'T
       <div class="ew-header-hide-on-scroll__actions">
         <slot name="actions">
           <ThemeToggle />
-          <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />
+          {showLanguageSwitch && <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />}
         </slot>
       </div>
     </nav>
