@@ -1,5 +1,15 @@
 # showcase
 
+## 0.0.11
+
+### Patch Changes
+
+- Updated dependencies [08cb136]
+- Updated dependencies [914872c]
+  - @easy-web/content-blocks@1.3.0
+  - @easy-web/i18n@1.3.0
+  - @easy-web/theme-core@1.3.0
+
 ## 0.0.10
 
 ### Patch Changes

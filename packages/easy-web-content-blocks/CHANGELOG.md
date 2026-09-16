@@ -1,5 +1,67 @@
 # @itci/easy-web-content-blocks
 
+## 1.3.0
+
+### Minor Changes
+
+- 08cb136: Ship a `<PageShell>` landmark scaffold, make the crawl policy reach the page, and let single-locale sites drop the language switch
+
+  **`<PageShell>` (new, content-blocks)** — a layout that renders
+  `<Header /> <slot /> <Footer />` produces a document with no `<main>`
+  landmark and no way to bypass the navigation, failing WCAG 2.1 SC 2.4.1
+  "Bypass Blocks" (Level A) on every route whose content does not open with
+  a heading. axe-core reports this via its `bypass` rule, which carries
+  `reviewOnFail` — so it surfaces as _incomplete_, not a violation, and a
+  gate asserting `violations.length === 0` stays green while the failure
+  ships. `PageShell` owns the skip link, the `<main>` landmark, and the DOM
+  order between them, because the skip link must precede the header to be
+  the first focusable element — which a caller cannot arrange if it renders
+  the header itself.
+
+  **Crawl policy now reaches the document (seo)** — `easyWebSeo()` resolves
+  the policy once and publishes it to `EASY_WEB_SEO_NO_INDEX`, which
+  `robots.txt` generation consumed but `<SeoHead>` did not: its `noIndex`
+  prop defaulted to `false`. The result was an integration and a document
+  disagreeing about the same policy — sitemap suppressed and robots.txt
+  disallowing everything, while every page still shipped without a robots
+  meta tag. `<SeoHead>` now defaults the prop from the published policy.
+  An explicit prop still wins, so a single page can opt out of a site-wide
+  setting, and 404 routes remain unconditionally noindexed.
+
+  **Optional `locales` prop on all four header variants (content-blocks)** —
+  the language switch rendered unconditionally, so a single-locale site
+  shipped a control that navigates to a route it does not build. Pass the
+  locales the site actually serves and the switch is omitted when there is
+  only one. Omitting the prop keeps the previous behaviour, so existing
+  consumers are unaffected.
+
+### Patch Changes
+
+- 914872c: Make header `navId` stable so consuming builds are reproducible
+
+  All four header variants (`Header`, `HeaderCentered`, `HeaderFlyout`,
+  `HeaderHideOnScroll`) derived their nav element's DOM id from
+  `Math.random()`. The id is only used to pair the menu button's
+  `aria-controls` with the `<nav>`'s `id` — the component's own script
+  resolves both by class, scoped to the header element, so nothing reads
+  the id from JS. The randomness therefore bought nothing and made every
+  consuming site's build output differ byte-for-byte between two
+  consecutive runs, defeating build reproducibility checks and producing
+  noisy diffs in any pipeline that compares build artefacts.
+
+  Each variant now uses a stable default id (`ew-header-nav`,
+  `ew-header-centered-nav`, `ew-header-flyout-nav`, `ew-header-hos-nav`)
+  and accepts an optional `navId` prop to override it — needed only when
+  rendering more than one of the same header variant on a single page.
+  The per-variant prefixes mean different variants cannot collide even
+  when rendered together.
+
+  Verified against the in-repo showcase app: two consecutive builds
+  produced 12 of 12 HTML files byte-identical after the change, versus
+  12 of 12 differing before it.
+  - @easy-web/i18n@1.3.0
+  - @easy-web/theme-core@1.3.0
+
 ## 1.2.3
 
 ### Patch Changes
