@@ -6,7 +6,7 @@
 ## Project identity
 
 - **Purpose**: Shared package family for the ismaili.de web ecosystem — theme tokens, i18n primitives, content blocks, CMS adapters, MSAL auth components, and the scaffold CLI for new instances.
-- **Type**: pnpm + Turborepo monorepo. Node 22.12.0 via Volta, pnpm 9.15.4.
+- **Type**: pnpm + Turborepo monorepo. Node is pinned via Volta and pnpm via `packageManager`, both in the root `package.json` — read the values there rather than from this file.
 - **Publishes to**: npm public registry. Packages namespaced `@easy-web/*`.
 - **Consumed by**: every instance repo (`dev.ismaili.de`, `harleyrentflorida.de`, future sites).
 
@@ -39,24 +39,28 @@ When changing anything in `packages/auth/`:
 
 ## Workspace layout
 
-| Path | Purpose | Status |
-| :--- | :--- | :--- |
-| `packages/seo/` | `@easy-web/seo` — shared SEO primitives: `easyWebSeo()` AstroIntegration (wraps `@astrojs/sitemap` with i18n hreflang, injects a dynamic `robots.txt` route with `noIndex` mode, supports `localizedPaths` for per-locale slugs) and the `<SeoHead>` component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest). See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md). | Real at v1.1.0 |
-| `packages/theme-core/` | `@easy-web/theme-core` — CSS design tokens, light/dark theme, no-flash script | Real at v1.1.0 |
-| `packages/i18n/` | `@easy-web/i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers, `createI18n` with `localizedPaths` and `trailingSlash` | Real at v1.1.0 |
-| `packages/easy-web-content-blocks/` | `@easy-web/content-blocks` — Hero, Section, CardGrid, Card, `<NotFound>`, and other reusable page blocks | Real at v1.1.0 |
-| `packages/auth/` | `@easy-web/auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). | Real at v1.1.0 — fully wired and published to npm. Both instances consume it at `^1.1.0`. |
-| `packages/easy-web-brand/` | `@easy-web/brand` — brand asset generation (favicons, icons) plus the `easy-web-brand` CLI | Real at v1.1.0 |
-| `packages/easy-web-markdown/` | `@easy-web/markdown` — remark plugin normalising markdown-body image URLs to paths Astro's built-in image resolver accepts | Real at v1.1.0 |
-| `packages/easy-web-swa/` | `@easy-web/swa` — AstroIntegration merging a sentinel-marked `staticwebapp.config.json` slice for shared 404 handling on Azure Static Web Apps | Real at v1.1.0 |
-| `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` — Decap CMS integration per ADR 0006: `AdminPage` component, frontmatter types, config scaffold | Real at v1.1.0 |
-| `packages/easy-web-azure-functions-utils/` | `@easy-web/azure-functions-utils` — placeholder for server-side Azure Functions helpers | Stub (versioned 1.1.0, no `src/`) |
-| `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline | Stub (versioned 1.1.0, no `src/`) |
-| `examples/` | Reference instances consuming the packages locally for development | Empty (placeholder) |
-| `scripts/` | Workspace-level tooling (release, validation) | — |
-| `docs/` | Repo-local notes; canonical docs live in `websites/docs/` | — |
+| Path | Purpose |
+| :--- | :--- |
+| `packages/seo/` | `@easy-web/seo` — shared SEO primitives: `easyWebSeo()` AstroIntegration (wraps `@astrojs/sitemap` with i18n hreflang, injects a dynamic `robots.txt` route with `noIndex` mode, supports `localizedPaths` for per-locale slugs) and the `<SeoHead>` component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest). See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md). |
+| `packages/theme-core/` | `@easy-web/theme-core` — CSS design tokens, light/dark theme, no-flash script |
+| `packages/i18n/` | `@easy-web/i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers, `createI18n` with `localizedPaths` and `trailingSlash` |
+| `packages/easy-web-content-blocks/` | `@easy-web/content-blocks` — `PageShell`, header variants, Hero, Section, CardGrid, Card, `<NotFound>`, and other reusable page blocks |
+| `packages/auth/` | `@easy-web/auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). |
+| `packages/easy-web-brand/` | `@easy-web/brand` — brand asset generation (favicons, icons) plus the `easy-web-brand` CLI |
+| `packages/easy-web-markdown/` | `@easy-web/markdown` — remark plugin normalising markdown-body image URLs to paths Astro's built-in image resolver accepts |
+| `packages/easy-web-swa/` | `@easy-web/swa` — AstroIntegration merging a sentinel-marked `staticwebapp.config.json` slice for shared 404 handling on Azure Static Web Apps |
+| `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` — Decap CMS integration per ADR 0006: `AdminPage` component, frontmatter types, config scaffold |
+| `packages/easy-web-azure-functions-utils/` | `@easy-web/azure-functions-utils` — **reserved placeholder**, ships no `src/` |
+| `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline. **Reserved placeholder**, ships no `src/` |
+| `examples/` | Reference instances consuming the packages locally for development (empty placeholder) |
+| `scripts/` | Workspace-level tooling (release, validation) |
+| `docs/` | Repo-local notes; canonical docs live in `websites/docs/` |
 
-The exact version status of each package may have drifted since this file was written. Verify via `cat packages/<name>/package.json` before assuming.
+Package versions are deliberately not listed here. All `@easy-web/*` packages are a
+fixed version group released together, so there is exactly one current version for the
+whole family — read it from the npm badge in `README.md`, or from any
+`packages/<name>/package.json`. A hand-maintained version column in this file drifted
+for several releases before it was removed.
 
 ## Pilot-first workflow
 
@@ -163,7 +167,7 @@ Bootstrap procedure (done once per new package):
 ### Publishing coordinates
 - Registry: npm public registry (`https://registry.npmjs.org/`)
 - All packages are namespaced `@easy-web/*`
-- pnpm pinned via `packageManager: "pnpm@10.34.4"` in every workspace `package.json`, and `version: 10.34.4` in both workflows. Bumping pnpm requires updating all locations in sync (the action rejects mismatch with `ERR_PNPM_BAD_PM_VERSION`).
+- pnpm is pinned in three places that must agree: `packageManager` in every workspace `package.json`, and the `version:` input of the pnpm setup step in **both** workflows. Bumping pnpm means updating all of them in the same commit — the action rejects a mismatch with `ERR_PNPM_BAD_PM_VERSION`. The current value lives in those files; it is deliberately not repeated here.
 
 ## What to change here
 
