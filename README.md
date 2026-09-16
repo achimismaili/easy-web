@@ -1,5 +1,9 @@
 # easy-web
 
+[![CI](https://github.com/achimismaili/easy-web/actions/workflows/ci.yml/badge.svg)](https://github.com/achimismaili/easy-web/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@easy-web/content-blocks?label=%40easy-web%2F%2A)](https://www.npmjs.com/package/@easy-web/content-blocks)
+[![License: MIT](https://img.shields.io/github/license/achimismaili/easy-web)](LICENSE)
+
 Baseline `@easy-web/*` package family — a shared Astro component and integration library for building multilingual, themeable, statically-hosted sites. Every site instance consumes these packages from public npm.
 
 - **Showcase** (live component gallery): [achim.ismaili.de/easy-web](https://achim.ismaili.de/easy-web/)
@@ -8,21 +12,21 @@ Baseline `@easy-web/*` package family — a shared Astro component and integrati
 
 ## Packages
 
-All packages are released together as a fixed version group, so their version numbers always match.
+All packages are released together as a fixed version group, so their version numbers always match — the npm badge above shows the current release for all of them.
 
-| Package | Version | Description |
-| :--- | :--- | :--- |
-| `@easy-web/theme-core` | `1.2.3` | CSS design tokens, light/dark theme, no-flash script |
-| `@easy-web/i18n` | `1.2.3` | `localizedHref`, `getLocaleFromPath`, alternate-link helpers, `localizedPaths` and `trailingSlash` support |
-| `@easy-web/content-blocks` | `1.2.3` | Page chrome (`PageShell`, header variants, footer, theme toggle, language switch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system, plus `<NotFound>` and `notFoundSchema` |
-| `@easy-web/auth` | `1.2.3` | MSAL.js auth, Microsoft Graph, SharePoint components |
-| `@easy-web/brand` | `1.2.3` | Brand asset generation (favicons, icons) plus the `easy-web-brand` CLI |
-| `@easy-web/markdown` | `1.2.3` | Remark plugin normalising markdown-body image URLs for Astro's image resolver |
-| `@easy-web/seo` | `1.2.3` | `easyWebSeo()` integration (sitemap, hreflang, robots.txt) and `<SeoHead>` |
-| `@easy-web/swa` | `1.2.3` | Astro integration for sentinel-safe Azure Static Web Apps 404 config |
-| `@easy-web/cms-adapters` | `1.2.3` | Admin page mounting, config scaffolding, and frontmatter types for Decap CMS |
-| `@easy-web/azure-functions-utils` | `1.2.3` | **Reserved placeholder** — no implementation yet |
-| `@easy-web/create` | `1.2.3` | **Reserved placeholder** — future scaffold CLI for new site instances |
+| Package | Description |
+| :--- | :--- |
+| `@easy-web/theme-core` | CSS design tokens, light/dark theme, no-flash script |
+| `@easy-web/i18n` | `localizedHref`, `getLocaleFromPath`, alternate-link helpers, `localizedPaths` and `trailingSlash` support |
+| `@easy-web/content-blocks` | Page chrome (`PageShell`, header variants, footer, theme toggle, language switch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system, plus `<NotFound>` and `notFoundSchema` |
+| `@easy-web/auth` | MSAL.js auth, Microsoft Graph, SharePoint components |
+| `@easy-web/brand` | Brand asset generation (favicons, icons) plus the `easy-web-brand` CLI |
+| `@easy-web/markdown` | Remark plugin normalising markdown-body image URLs for Astro's image resolver |
+| `@easy-web/seo` | `easyWebSeo()` integration (sitemap, hreflang, robots.txt) and `<SeoHead>` |
+| `@easy-web/swa` | Astro integration for sentinel-safe Azure Static Web Apps 404 config |
+| `@easy-web/cms-adapters` | Admin page mounting, config scaffolding, and frontmatter types for Decap CMS |
+| `@easy-web/azure-functions-utils` | **Reserved placeholder** — no implementation yet |
+| `@easy-web/create` | **Reserved placeholder** — future scaffold CLI for new site instances |
 
 > The two placeholders are published to reserve the names. They ship no source; do not add them as dependencies.
 
