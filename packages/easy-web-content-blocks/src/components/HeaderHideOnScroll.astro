@@ -13,10 +13,15 @@ interface Props {
   menuLabel?: string;
   /** Optional logo URL. When provided, renders an <img> in the brand area instead of site name text. */
   logo?: string;
+  /**
+   * DOM id linking the menu button's `aria-controls` to the `<nav>`.
+   * Stable by default so builds are reproducible. Override only when rendering
+   * more than one of this header variant on a single page.
+   */
+  navId?: string;
 }
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo } = Astro.props;
-const navId = `ew-header-hos-nav-${Math.random().toString(36).slice(2, 9)}`;
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo, navId = 'ew-header-hos-nav' } = Astro.props;
 ---
 
 <header class="ew-header-hide-on-scroll" data-testid="header-hide-on-scroll">
