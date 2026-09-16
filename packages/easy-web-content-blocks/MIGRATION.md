@@ -2,7 +2,7 @@
 
 Upgrade paths for consuming instances. Every section provides an **Automated** path (recommended), a **Manual** checklist (for auditing what the script does), and a **Rollback** procedure.
 
-The shared 404 architecture is documented in [ADR 0013 — Shared Not-Found Primitives](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md). This guide does not repeat that rationale — read the ADR first if you need the "why".
+The shared 404 architecture spans two packages: the `<NotFound>` component and its per-locale content model here, and the `staticwebapp.config.json` slice managed by [`@easy-web/swa`](https://github.com/achimismaili/easy-web/blob/main/packages/easy-web-swa/README.md). Read the `@easy-web/swa` README first if you need the "why" behind the sidecar ownership model.
 
 ---
 
@@ -171,7 +171,7 @@ pnpm build
 
 ## See also
 
-- [ADR 0013 — Shared Not-Found Primitives](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md) — architecture rationale for the shared 404 pattern.
+- [`@easy-web/swa` README](https://github.com/achimismaili/easy-web/blob/main/packages/easy-web-swa/README.md) — the sidecar ownership model behind the shared 404 pattern.
 - [`@easy-web/swa` MIGRATION.md](../easy-web-swa/MIGRATION.md) — companion package that manages the `staticwebapp.config.json` slice.
 - [`CHANGELOG.md`](./CHANGELOG.md) — chronological release notes.
 - [`README.md`](./README.md) — component reference and quick-start.

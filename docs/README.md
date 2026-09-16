@@ -1,13 +1,9 @@
 # easy-web — Local Docs
 
-Canonical architecture and decision records live in the index repository. What is kept here is limited to this repo's internals.
+What is kept here is limited to this repo's internals.
 
 - **[`architecture.md`](architecture.md)** - diagrams of the package graph, the propagation path from a changeset to every site, the release flow, and the single-source SEO model.
 
-Pointers into the index repo:
+The ecosystem-level records — this repo's role and integration map, the decision records behind the shared primitives, and the repo topology — are maintained in a private index repository and are not linkable from here. Anything a package consumer needs in order to use a package belongs in that package's own README instead.
 
-- Full repo role and integration map: [`websites/docs/repos/easy-web.md`](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/repos/easy-web.md)
-- Architectural decisions affecting this repo: [`websites/docs/decisions/`](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions)
-- Repo topology: [`websites/docs/architecture/repo-topology.md`](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/architecture/repo-topology.md)
-
-Keep code-level notes here only when they would be noise inside `websites/`.
+Keep code-level notes here only when they would be noise in the index repository.

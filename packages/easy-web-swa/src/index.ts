@@ -15,8 +15,10 @@ export type Options = {
 };
 
 const SENTINEL_VERSION = '1.2.0';
+// This string is written into every consuming site's repository, so it must
+// stay resolvable for someone outside this organisation.
 const SENTINEL_DOCS =
-  'https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md';
+  'https://github.com/achimismaili/easy-web/blob/main/packages/easy-web-swa/README.md';
 const KEY_RESPONSE_OVERRIDES_404 = 'responseOverrides.404';
 const KEY_TRAILING_SLASH = 'trailingSlash';
 const SIDECAR_SUFFIX = '.easy-web-managed.json';

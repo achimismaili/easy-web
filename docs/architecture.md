@@ -3,9 +3,9 @@
 Visual reference for how the `@easy-web/*` family is wired, released and consumed.
 Diagrams are Mermaid and render inline on GitHub.
 
-> Canonical ecosystem docs (ADRs, repo topology, adoption matrix) live in the
-> [`websites` meta-repo](https://dev.azure.com/it-ci/websites/_git/websites).
-> This file covers only what is internal to `easy-web`.
+> Ecosystem-level records (decision records, repo topology, adoption matrix) are
+> maintained in a private index repository. This file covers only what is
+> internal to `easy-web`.
 
 ## Package graph
 
@@ -65,8 +65,7 @@ Changesets `fixed` grouping, an intra-workspace *peer* dependency forces every
 release to be a major. They are pure functions and CSS custom properties, so a
 duplicate copy costs bundle size rather than correctness. `auth` keeps its React
 peer declaration because two MSAL instances corrupt the shared token cache —
-there, duplication *is* a bug. See
-[ADR 0016](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0016-intra-workspace-dependencies-over-peer-dependencies.md).
+there, duplication *is* a bug.
 
 ## Propagation: one fix reaches every site
 
@@ -167,4 +166,4 @@ disallowed in one and advertised in the other.
 
 * [`AGENTS.md`](../AGENTS.md) — repo orientation, workspace layout, publishing workflow
 * [`README.md`](../README.md) — package inventory
-* [ADR index](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions) — ecosystem decision records
+* Per-package READMEs under [`packages/`](../packages) — the API reference for each `@easy-web/*` package

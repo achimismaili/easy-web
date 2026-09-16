@@ -39,7 +39,7 @@ SWA's `staticwebapp.config.json` schema uses `additionalProperties: false` at th
 {
   "keys": ["responseOverrides.404", "trailingSlash"],
   "version": "1.2.0",
-  "docs": "https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md"
+  "docs": "https://github.com/achimismaili/easy-web/blob/main/packages/easy-web-swa/README.md"
 }
 ```
 
@@ -53,7 +53,7 @@ Azure Static Web Apps supports only **one global 404 response override**. This i
 - Per-locale 404 content is **not supported** by this integration
 - If you need locale-specific 404 pages, you must implement them outside this integration (e.g., via Astro routing or a custom SWA configuration)
 
-See [ADR 0013 — Shared Not-Found Primitives](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md) for the full rationale.
+The wider not-found pattern this integration belongs to — the shared `<NotFound>` component and its per-locale, CMS-editable content model — is documented in [`@easy-web/content-blocks`](https://github.com/achimismaili/easy-web/blob/main/packages/easy-web-content-blocks/MIGRATION.md).
 
 ### Trailing slash
 

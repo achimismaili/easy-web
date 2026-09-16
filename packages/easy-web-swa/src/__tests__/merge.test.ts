@@ -36,7 +36,7 @@ type RunOpts = {
 const tempDirectories: string[] = [];
 const MANAGED_404 = { rewrite: '/404.html', statusCode: 404 };
 const DOCS_URL =
-  'https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/decisions/0013-shared-not-found-primitives.md';
+  'https://github.com/achimismaili/easy-web/blob/main/packages/easy-web-swa/README.md';
 const LEGAL_ROOT_KEYS: readonly string[] = [
   '$schema',
   'routes',

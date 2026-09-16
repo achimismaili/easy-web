@@ -48,4 +48,4 @@
 
 ### Documented constraints
 
-- All auth-consuming React components on a given page MUST live inside a single React island wrapping `<AuthProvider>`. React Context does not cross Astro island boundaries. See [ADR 0010](https://dev.azure.com/IT-CI/WebSites/_git/WebSites?path=/docs/decisions/0010-react-auth-single-island.md).
+- All auth-consuming React components on a given page MUST live inside a single React island wrapping `<AuthProvider>`. React Context does not cross Astro island boundaries.

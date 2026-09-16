@@ -1,6 +1,6 @@
 # @easy-web/content-blocks
 
-Reusable Astro content-block components for the IT-CI ismaili.de web ecosystem. Twenty-two pure-Astro components covering page chrome (Header, Footer, ThemeToggle, LanguageSwitch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system with six variants, blog post cards, legal-page layouts, banners, and styled prose. All components use the `--ew-*` design tokens from `@easy-web/theme-core`; no styling system of their own.
+Reusable Astro content-block components for the ismaili.de web ecosystem. Twenty-eight pure-Astro components covering page chrome (`PageShell`, Header, Footer, ThemeToggle, LanguageSwitch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system with six variants, blog post cards, legal-page layouts, banners, and styled prose. All components use the `--ew-*` design tokens from `@easy-web/theme-core`; no styling system of their own.
 
 ## Installation
 
@@ -43,9 +43,11 @@ The package's `package.json` exports map declares `./components/*` → `./src/co
 // src/layouts/Base.astro
 import '@easy-web/theme-core/tokens.css';
 import { noFlashScript } from '@easy-web/theme-core';
+import PageShell from '@easy-web/content-blocks/components/PageShell';
 import Header from '@easy-web/content-blocks/components/Header';
 import Footer from '@easy-web/content-blocks/components/Footer';
 import { siteConfig } from '../config';
+import { i18n } from '../lib/i18n';
 
 interface Props {
   lang: string;
@@ -63,18 +65,24 @@ const legalLinks = siteConfig.legalLinks[lang];
     <title>{title}</title>
   </head>
   <body>
-    <Header
-      siteName={siteConfig.siteName}
-      navItems={navItems}
-      currentLang={lang}
-      pathname={pathname}
-      alternateHref={alternateHref}
-    />
-    <slot />
-    <Footer siteName={siteConfig.siteName} legalLinks={legalLinks} />
+    <PageShell skipLabel={siteConfig.skipLabel[lang]}>
+      <Header
+        slot="header"
+        siteName={siteConfig.siteName}
+        navItems={navItems}
+        currentLang={lang}
+        pathname={pathname}
+        alternateHref={alternateHref}
+        locales={i18n.locales}
+      />
+      <slot />
+      <Footer slot="footer" siteName={siteConfig.siteName} legalLinks={legalLinks} />
+    </PageShell>
   </body>
 </html>
 ```
+
+`PageShell` supplies the skip link and the `<main>` landmark; without it this layout ships a WCAG 2.1 SC 2.4.1 failure that an axe gate does not catch. `locales` suppresses the language switch on single-locale sites. Both are explained under [Site chrome](#site-chrome).
 
 ### Page — compose Hero + Section + CardGrid + Card
 
@@ -116,13 +124,48 @@ All components use the `--ew-*` design tokens from `@easy-web/theme-core`. None 
 
 | Component | Required props | Optional props | Notes |
 | :--- | :--- | :--- | :--- |
-| `Header` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Sticky responsive header with `actions` slot. Mobile hamburger menu (scoped vanilla JS). Default slot fallback renders `ThemeToggle` + `LanguageSwitch`. `data-testid="header-classic"`. |
-| `HeaderCentered` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Variant: brand centered, nav links split left/right. Same `actions` slot and mobile hamburger. `data-testid="header-centered"`. |
-| `HeaderHideOnScroll` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Variant: `position: fixed` header that slides off screen on scroll-down, reappears on scroll-up. Compensates body padding via JS. `data-testid="header-hide-on-scroll"`. |
-| `HeaderFlyout` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string` | Variant: items with `children[]` show a flyout dropdown (hover/focus desktop, click mobile, keyboard accessible). `data-testid="header-flyout"`. |
+| `PageShell` | — | `mainId?: string`, `skipLabel?: string`, `class?: string` | Document landmark scaffold: skip link → `header` slot → `<main>` → `footer` slot. Owns that DOM order. `mainId` defaults to `main-content`, `skipLabel` to `'Skip to main content'` — **set it per locale**. |
+| `Header` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `brandHref?: string`, `alternateHref?: string`, `menuLabel?: string`, `logo?: string`, `navId?: string`, `locales?: readonly string[]` | Sticky responsive header with `actions` slot. Mobile hamburger menu (scoped vanilla JS). Default slot fallback renders `ThemeToggle` + `LanguageSwitch` — the switch is omitted when `locales` holds a single entry. `navId` defaults to `ew-header-nav`. `data-testid="header-classic"`. |
+| `HeaderCentered` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string`, `logo?: string`, `navId?: string`, `locales?: readonly string[]` | Variant: brand centered, nav links split left/right. Same `actions` slot and mobile hamburger. `navId` defaults to `ew-header-centered-nav`. `data-testid="header-centered"`. |
+| `HeaderHideOnScroll` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string`, `logo?: string`, `navId?: string`, `locales?: readonly string[]` | Variant: `position: fixed` header that slides off screen on scroll-down, reappears on scroll-up. Compensates body padding via JS. `navId` defaults to `ew-header-hos-nav`. `data-testid="header-hide-on-scroll"`. |
+| `HeaderFlyout` | `siteName: string`, `navItems: NavItem[]`, `currentLang: string`, `pathname: string` | `alternateHref?: string`, `menuLabel?: string`, `logo?: string`, `navId?: string`, `locales?: readonly string[]` | Variant: items with `children[]` show a flyout dropdown (hover/focus desktop, click mobile, keyboard accessible). `navId` defaults to `ew-header-flyout-nav` and also prefixes each dropdown's id. `data-testid="header-flyout"`. |
 | `Footer` | `siteName: string`, `legalLinks: Array<{ label: string; href: string }>` | — | Simple copyright + legal-link footer. |
 | `ThemeToggle` | — | — | Light / dark / system trio button. Talks to `@easy-web/theme-core` via `data-theme` on `<html>` and `localStorage`. |
-| `LanguageSwitch` | `currentLang: string`, `pathname: string` | `alternateHref?: string` | DE ↔ EN switcher. If `alternateHref` is provided, links there directly; otherwise infers the alternate path from `pathname`. |
+| `LanguageSwitch` | `currentLang: string`, `pathname: string` | `alternateHref?: string` | DE ↔ EN switcher. If `alternateHref` is provided, links there directly; otherwise infers the alternate path from `pathname`. Always renders when used directly — it has no concept of how many locales the site serves; the header variants gate it on their `locales` prop. |
+
+#### `PageShell` — skip link and `<main>` landmark
+
+A layout that renders `<Header /> <slot /> <Footer />` produces a document with no `<main>` landmark and no way to bypass the navigation. That fails WCAG 2.1 SC 2.4.1 "Bypass Blocks" (Level A) on every route whose content does not open with a heading.
+
+It fails quietly: axe-core reports this through its `bypass` rule, which carries `reviewOnFail`, so it lands in `incomplete` rather than `violations` — an accessibility gate asserting `violations.length === 0` stays green while the failure ships.
+
+`PageShell` owns the document order, because the skip link has to be the first focusable element and a caller that renders its own header cannot arrange that. Header and footer therefore arrive as named slots:
+
+```astro
+---
+// src/layouts/Base.astro
+import PageShell from '@easy-web/content-blocks/components/PageShell';
+import Header from '@easy-web/content-blocks/components/Header';
+import Footer from '@easy-web/content-blocks/components/Footer';
+import { m } from '../paraglide/messages';
+---
+<body>
+  <PageShell skipLabel={m.skip_to_main()}>
+    <Header slot="header" siteName={siteConfig.siteName} navItems={navItems} currentLang={locale} pathname={pathname} locales={i18n.locales} />
+    <slot />
+    <Footer slot="footer" siteName={siteConfig.siteName} legalLinks={legalLinks} />
+  </PageShell>
+</body>
+```
+
+Rendered order is skip link → `header` slot → `<main>` → `footer` slot.
+
+`skipLabel` defaults to English (`'Skip to main content'`). **Source it from your message catalogue, not a literal** — it is visible text, and on a non-English site a hardcoded default is the one string on the page that is not translated.
+
+Two details are load-bearing and should survive any re-implementation:
+
+* `<main>` carries `tabindex="-1"` so activating the skip link moves focus, not just scroll position. Without it some browsers scroll the viewport but leave focus in the nav, so the next Tab returns to the menu — the control looks like it works while bypassing nothing.
+* The skip link is positioned off-screen rather than `display: none`, because a hidden element leaves the focus order entirely and would be unreachable by exactly the keyboard users it exists for.
 
 #### Header `actions` slot
 
@@ -149,6 +192,30 @@ import HeaderFlyout from '@easy-web/content-blocks/components/HeaderFlyout';
 <!-- Flyout: navItems may include children[] for dropdown panels -->
 <HeaderFlyout siteName="My Site" navItems={navItemsWithChildren} currentLang="de" pathname={pathname} />
 ```
+
+#### Single-locale sites — the `locales` prop
+
+`LanguageSwitch` derives its target as "the other locale" (`de` ↔ `en`). On a site that serves one locale that target is a route the site never builds, so the header shipped a control leading to a 404.
+
+Pass the locales the site actually serves and the switch is omitted when there is only one:
+
+```astro
+---
+// src/layouts/Base.astro
+import { i18n } from '../lib/i18n';   // createI18n({ locales: ['de'] as const, … })
+---
+<Header
+  siteName={siteConfig.siteName}
+  navItems={navItems}
+  currentLang={locale}
+  pathname={pathname}
+  locales={i18n.locales}
+/>
+```
+
+Feed it from the instance's `createI18n()` call rather than a hand-written array or a boolean flag — that keeps one declaration of the locale set behind the header, the hreflang links and the sitemap alternates, so they cannot drift apart.
+
+Omitting the prop keeps the switch rendering unconditionally, so existing bilingual consumers are unaffected. Suppressing the switch via the `actions` slot also works, but it replaces the whole control group — you then have to re-supply `ThemeToggle` yourself.
 
 Selecting the header variant in a Base layout via a `headerVariant` prop:
 
@@ -321,9 +388,9 @@ Components use BEM-style class names prefixed with `ew-` (e.g., `.ew-hero`, `.ew
 
 ## Adoption status
 
-The published version is `1.1.0`. Both active instances — `dev.ismaili.de` (pilot) and `harleyrentflorida.de` (customer) — consume this package at `^1.1.0`.
+The published version is `1.2.3`. Three site instances consume this package at `^1.2.3`: a pilot that validates every release first, and two customer sites.
 
-The [package adoption matrix](https://dev.azure.com/it-ci/websites/_git/websites?path=/docs/architecture/package-adoption.md) in the `websites` meta-repo is the canonical per-instance record.
+The per-instance adoption matrix is maintained in the ecosystem's index repository, which is not public.
 
 ## See also
 
