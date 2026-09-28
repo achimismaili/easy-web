@@ -1,5 +1,7 @@
 # @achimismaili/easy-web-swa
 
+## 1.3.1
+
 ## 1.3.0
 
 ### Patch Changes
