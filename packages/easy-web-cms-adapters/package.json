@@ -11,6 +11,7 @@
       "import": "./dist/index.js"
     },
     "./components/*": "./src/components/*.astro",
+    "./components/*.astro": "./src/components/*.astro",
     "./src/components/*.astro": "./src/components/*.astro"
   },
   "files": [

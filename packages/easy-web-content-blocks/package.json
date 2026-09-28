@@ -10,6 +10,7 @@
       "import": "./dist/index.js"
     },
     "./components/*": "./src/components/*.astro",
+    "./components/*.astro": "./src/components/*.astro",
     "./schemas/*": "./src/schemas/*.ts"
   },
   "files": [
