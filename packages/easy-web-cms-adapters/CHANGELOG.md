@@ -1,5 +1,7 @@
 # Changelog — @itci/easy-web-cms-adapters
 
+## 1.3.3
+
 ## 1.3.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @achimismaili/easy-web-seo
 
+## 1.3.3
+
+### Patch Changes
+
+- @easy-web/i18n@1.3.3
+
 ## 1.3.2
 
 ### Patch Changes
