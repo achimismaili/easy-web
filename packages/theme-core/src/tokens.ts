@@ -10,6 +10,7 @@ export const tokens = {
     danger: 'var(--ew-danger)',
     onDanger: 'var(--ew-on-danger)',
     accent: 'var(--ew-accent)',
+    link: 'var(--ew-link)',
     neutral: {
       50: 'var(--ew-neutral-50)',
       100: 'var(--ew-neutral-100)',

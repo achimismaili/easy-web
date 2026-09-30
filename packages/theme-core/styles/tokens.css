@@ -10,6 +10,11 @@
   --ew-on-danger: #ffffff;
   --ew-accent: #f59e0b;
 
+  /* Resolved at computed-value time, so this single declaration tracks --ew-primary
+     per theme — do not duplicate it into the dark blocks. Instances whose brand
+     primary misses AA 4.5:1 on --ew-surface override --ew-link, not link styling. */
+  --ew-link: var(--ew-primary);
+
   --ew-neutral-50: #f9fafb;
   --ew-neutral-100: #f3f4f6;
   --ew-neutral-200: #e5e7eb;

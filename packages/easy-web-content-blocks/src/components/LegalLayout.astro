@@ -50,4 +50,13 @@ const { title, lastUpdated } = Astro.props;
     color: var(--ew-on-surface);
     line-height: var(--ew-leading-loose);
   }
+  /* Slotted markdown carries no scope hash — :global() is required to match it. */
+  .ew-legal__content :global(a) {
+    color: var(--ew-link, var(--ew-primary));
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  .ew-legal__content :global(a:hover) {
+    text-decoration-thickness: 2px;
+  }
 </style>
