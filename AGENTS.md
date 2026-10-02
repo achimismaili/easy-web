@@ -50,7 +50,6 @@ When changing anything in `packages/auth/`:
 | `packages/easy-web-markdown/` | `@easy-web/markdown` — remark plugin normalising markdown-body image URLs to paths Astro's built-in image resolver accepts |
 | `packages/easy-web-swa/` | `@easy-web/swa` — AstroIntegration merging a sentinel-marked `staticwebapp.config.json` slice for shared 404 handling on Azure Static Web Apps |
 | `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` — Decap CMS integration per ADR 0006: `AdminPage` component, frontmatter types, config scaffold |
-| `packages/easy-web-azure-functions-utils/` | `@easy-web/azure-functions-utils` — **reserved placeholder**, ships no `src/` |
 | `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline. **Reserved placeholder**, ships no `src/` |
 | `examples/` | Reference instances consuming the packages locally for development (empty placeholder) |
 | `scripts/` | Workspace-level tooling (release, validation) |

@@ -25,10 +25,9 @@ All packages are released together as a fixed version group, so their version nu
 | `@easy-web/seo` | `easyWebSeo()` integration (sitemap, hreflang, robots.txt) and `<SeoHead>` |
 | `@easy-web/swa` | Astro integration for sentinel-safe Azure Static Web Apps 404 config |
 | `@easy-web/cms-adapters` | Admin page mounting, config scaffolding, and frontmatter types for Decap CMS |
-| `@easy-web/azure-functions-utils` | **Reserved placeholder** — no implementation yet |
 | `@easy-web/create` | **Reserved placeholder** — future scaffold CLI for new site instances |
 
-> The two placeholders are published to reserve the names. They ship no source; do not add them as dependencies.
+> The remaining placeholder is published to reserve the name. It ships no source; do not add it as a dependency.
 
 Three site instances currently consume these packages: a pilot that validates every release first, and two customer sites. New releases land on the pilot before any customer site is bumped.
 

@@ -115,8 +115,6 @@ importers:
 
   packages/create-easy-web: {}
 
-  packages/easy-web-azure-functions-utils: {}
-
   packages/easy-web-brand:
     dependencies:
       mri:
