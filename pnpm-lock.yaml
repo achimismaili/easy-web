@@ -112,15 +112,9 @@ importers:
 
   apps/showcase:
     dependencies:
-      '@easy-web/content-blocks':
+      '@easy-web/core':
         specifier: workspace:*
-        version: link:../../packages/easy-web-content-blocks
-      '@easy-web/i18n':
-        specifier: workspace:*
-        version: link:../../packages/i18n
-      '@easy-web/theme-core':
-        specifier: workspace:*
-        version: link:../../packages/theme-core
+        version: link:../../packages/core
       astro:
         specifier: ^7.3.5
         version: 7.3.5(@astrojs/markdown-remark@7.3.2)(@types/node@25.9.4)(yaml@2.9.1)
@@ -131,9 +125,15 @@ importers:
       '@inlang/paraglide-js':
         specifier: ^2.0.0
         version: 2.18.1(typescript@5.9.3)
+      sharp:
+        specifier: ^0.35.4
+        version: 0.35.5(@types/node@25.9.4)
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.13)(@types/node@25.9.4)(jsdom@29.1.1)(lightningcss@1.33.0)(yaml@2.9.1)
 
   packages/auth:
     dependencies:
@@ -9559,7 +9559,6 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.5
       '@img/sharp-win32-x64': 0.35.5
       '@types/node': 25.9.4
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:

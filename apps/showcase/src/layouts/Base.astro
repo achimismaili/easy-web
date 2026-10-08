@@ -1,10 +1,11 @@
 ---
-import { noFlashScript } from '@easy-web/theme-core';
-import '../../../../packages/theme-core/styles/tokens.css';
+import { noFlashScript } from '@easy-web/core/theme';
+import '@easy-web/core/styles/tokens.css';
 import '../styles/showcase.css';
 
-import Header from '../../../../packages/easy-web-content-blocks/src/components/Header.astro';
-import Footer from '../../../../packages/easy-web-content-blocks/src/components/Footer.astro';
+import PageShell from '@easy-web/core/components/PageShell.astro';
+import Header from '@easy-web/core/components/Header.astro';
+import Footer from '@easy-web/core/components/Footer.astro';
 
 interface Props {
   title: string;
@@ -73,17 +74,20 @@ const legalLinks: Array<{ label: string; href: string }> = [];
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
   </head>
   <body>
-    <Header
-      siteName="easy-web"
-      navItems={navItems}
-      currentLang={currentLang}
-      pathname={pathname}
-      brandHref={brandHref}
-      alternateHref={alternateHref}
-    />
-    <main>
+    {/* lang localizes the built-in strings: skip link, navigation, theme toggle, language switch. */}
+    <PageShell lang={lang}>
+      <Header
+        slot="header"
+        lang={lang}
+        siteName="easy-web"
+        navItems={navItems}
+        currentLang={currentLang}
+        pathname={pathname}
+        brandHref={brandHref}
+        alternateHref={alternateHref}
+      />
       <slot />
-    </main>
-    <Footer siteName="easy-web" legalLinks={legalLinks} />
+      <Footer slot="footer" lang={lang} siteName="easy-web" legalLinks={legalLinks} />
+    </PageShell>
   </body>
 </html>

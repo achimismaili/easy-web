@@ -1,0 +1,80 @@
+---
+/**
+ * One component specimen: its name, what it is for, a live preview (the
+ * default slot, optional) and the code that renders it.
+ */
+interface Props {
+  id: string;
+  name: string;
+  description: string;
+  code: string;
+  /**
+   * Previews of page-level chrome (headers, footer, 404 body) are visual
+   * specimens only. `inert` keeps them out of the focus order and the
+   * accessibility tree, so the page keeps exactly one working banner,
+   * navigation, content info and h1 for keyboard and screen reader users.
+   */
+  inert?: boolean;
+}
+
+const { id, name, description, code, inert = false } = Astro.props;
+const hasPreview = Astro.slots.has('default');
+---
+
+<article class="demo" id={id}>
+  <h3 class="demo__name"><code>{name}</code></h3>
+  <p class="demo__description">{description}</p>
+  {hasPreview && (
+    <div class="demo__preview" inert={inert}>
+      <slot />
+    </div>
+  )}
+  <pre class="demo__code" tabindex="0"><code>{code}</code></pre>
+</article>
+
+<style>
+  .demo {
+    margin-block: var(--ew-space-5);
+    background: var(--ew-surface);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-lg);
+    overflow: hidden;
+    /* Anchored specimens land below the sticky site header. */
+    scroll-margin-top: var(--ew-space-9);
+  }
+  .demo__name {
+    margin: 0;
+    padding: var(--ew-space-3) var(--ew-space-4);
+    background: var(--ew-surface-muted);
+    font-size: var(--ew-text-base);
+    line-height: var(--ew-leading-tight);
+  }
+  .demo__name code {
+    font-family: var(--ew-font-mono);
+  }
+  .demo__description {
+    margin: 0;
+    padding: var(--ew-space-3) var(--ew-space-4);
+    color: var(--ew-on-surface);
+    font-size: var(--ew-text-sm);
+    line-height: var(--ew-leading-normal);
+  }
+  .demo__preview {
+    padding: var(--ew-space-5) var(--ew-space-4);
+    border-top: 1px solid var(--ew-border);
+  }
+  .demo__code {
+    margin: 0;
+    padding: var(--ew-space-4);
+    background: var(--ew-surface-muted);
+    border-top: 1px solid var(--ew-border);
+    font-family: var(--ew-font-mono);
+    font-size: var(--ew-text-xs);
+    line-height: var(--ew-leading-normal);
+    overflow-x: auto;
+  }
+  .demo__code:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: -2px;
+  }
+</style>

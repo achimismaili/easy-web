@@ -1,8 +1,8 @@
 ---
 import Base from '../../../layouts/Base.astro';
-import Section from '@easy-web/content-blocks/components/Section';
-import Card from '@easy-web/content-blocks/components/Card';
-import CardGrid from '@easy-web/content-blocks/components/CardGrid';
+import Section from '@easy-web/core/components/Section.astro';
+import Card from '@easy-web/core/components/Card.astro';
+import CardGrid from '@easy-web/core/components/CardGrid.astro';
 ---
 
 <Base 
@@ -31,14 +31,12 @@ pnpm --version</code></pre>
     </Section>
 
     <Section title="2. Pakete installieren" id="installation">
-      <p>Installiere die Kernpakete von easy-web in deinem Projekt. Diese bieten Design-Tokens, i18n-Helfer und UI-Komponenten.</p>
-      <pre><code>pnpm add @easy-web/theme-core
-pnpm add @easy-web/i18n
-pnpm add @easy-web/content-blocks</code></pre>
+      <p>Installiere das Kernpaket von easy-web in deinem Projekt. Es bietet Design-Tokens, i18n-Helfer und UI-Komponenten.</p>
+      <pre><code>pnpm add @easy-web/core</code></pre>
       <ul>
-        <li><strong>theme-core</strong>: CSS-Variablen, Dark-Mode-Logik und Typografie.</li>
+        <li><strong>styles</strong> und <strong>theme</strong>: CSS-Variablen, Dark-Mode-Logik und Typografie.</li>
         <li><strong>i18n</strong>: Bilinguales Routing und Übersetzungs-Utilities.</li>
-        <li><strong>content-blocks</strong>: Barrierefreie, thematisierte Astro-Komponenten.</li>
+        <li><strong>components</strong>: Barrierefreie, thematisierte Astro-Komponenten.</li>
       </ul>
     </Section>
 
@@ -46,12 +44,12 @@ pnpm add @easy-web/content-blocks</code></pre>
       <p>Importiere die globalen Design-Tokens in deinem Haupt-Layout und füge das <code>noFlashScript</code> hinzu, um ein Flackern des Dark-Modes beim Laden der Seite zu verhindern.</p>
       <pre><code>
 // Tokens importieren
-import '@easy-web/theme-core/tokens.css';
-import &amp;#123; noFlashScript &amp;#125; from '@easy-web/theme-core';
+import '@easy-web/core/styles/tokens.css';
+import &#123; noFlashScript &#125; from '@easy-web/core/theme';
 
 &lt;html&gt;
   &lt;head&gt;
-    &lt;script is:inline set:html=&amp;#123;noFlashScript&amp;#125;&gt;&lt;/script&gt;
+    &lt;script is:inline set:html=&#123;noFlashScript&#125;&gt;&lt;/script&gt;
   &lt;/head&gt;
 &lt;/html&gt;</code></pre>
     </Section>
@@ -60,8 +58,8 @@ import &amp;#123; noFlashScript &amp;#125; from '@easy-web/theme-core';
       <p>Beginne damit, deine Seiten mit den bereitgestellten Inhaltsblöcken aufzubauen. Diese Komponenten nutzen automatisch deine Theme-Tokens.</p>
       <pre><code>
 // Komponenten nutzen
-import Hero from '@easy-web/content-blocks/components/Hero';
-import ThemeToggle from '@easy-web/content-blocks/components/ThemeToggle';
+import Hero from '@easy-web/core/components/Hero.astro';
+import ThemeToggle from '@easy-web/core/components/ThemeToggle.astro';
 
 &lt;Hero
   title="Meine Seite"

@@ -1,0 +1,211 @@
+---
+/** Gallery specimens: all six gallery components, two lightboxes (one per media kind) and the CMS dispatcher. */
+import GalleryCarousel from '@easy-web/core/components/GalleryCarousel.astro';
+import GalleryFeatureHighlight from '@easy-web/core/components/GalleryFeatureHighlight.astro';
+import GalleryHeroSlider from '@easy-web/core/components/GalleryHeroSlider.astro';
+import GalleryImageGrid from '@easy-web/core/components/GalleryImageGrid.astro';
+import GalleryLightboxGrid from '@easy-web/core/components/GalleryLightboxGrid.astro';
+import GalleryMasonryGrid from '@easy-web/core/components/GalleryMasonryGrid.astro';
+import GallerySection from '@easy-web/core/components/GallerySection.astro';
+import type { GalleryItem } from '@easy-web/core/contracts';
+import { base, href, showcaseMedia, type ShowcaseLang } from '../../lib/showcase';
+import Demo from './Demo.astro';
+
+interface Props {
+  lang: ShowcaseLang;
+}
+
+const { lang } = Astro.props;
+const { assets, paths } = showcaseMedia(lang);
+
+const en = {
+  imageGrid: 'A grid of gallery items. Local assets and public paths mix freely in one list.',
+  heroSlider: 'Full-width slides with title, subtitle and an optional call to action.',
+  carousel: 'An image carousel with arrows, dots and optional captions.',
+  masonry: 'Columns that keep each image at its own aspect ratio.',
+  featureHighlight: 'Alternating image and text rows.',
+  lightboxAssets: 'Thumbnails that open a full-size view. These items are local assets: the modal shows the source the thumbnail loaded.',
+  lightboxPaths: 'The same lightbox with public paths as sources.',
+  gallerySection: 'Renders a CMS gallery entry: its kind picks the component.',
+  captions: { hills: 'Dawn over the hills', dunes: 'Midday in the dunes', lake: 'Evening at the lake' },
+  slides: {
+    hills: { title: 'Reach new heights', subtitle: 'Every component reads the same content contracts.', cta: 'Read the guide' },
+    aurora: { title: 'Bring your own images', subtitle: 'A local asset or a public path, both render.' },
+  },
+  features: {
+    coast: { title: 'Design tokens', description: 'Change colours, spacing and type through CSS custom properties.', cta: 'Explore themes' },
+    meadow: { title: 'Content contracts', description: 'Cards, galleries and structured data read one shared shape.' },
+  },
+  lightbox: {
+    hills: { title: 'Hills', description: 'Layered ridges at dawn' },
+    dunes: { title: 'Dunes', description: 'Warm sand under a pale sun' },
+    coast: { title: 'Coast', description: 'Waves rolling onto the beach' },
+    lake: { title: 'Lake', description: 'A violet sunset on still water' },
+    meadow: { title: 'Meadow', description: 'Flowers under a summer sky' },
+    aurora: { title: 'Aurora', description: 'Green light above the ridge' },
+  },
+};
+
+const de: typeof en = {
+  imageGrid: 'Ein Raster aus Galerie-Einträgen. Lokale Assets und öffentliche Pfade lassen sich in einer Liste mischen.',
+  heroSlider: 'Folien in voller Breite mit Titel, Untertitel und optionalem Call-to-Action.',
+  carousel: 'Ein Bilderkarussell mit Pfeilen, Punkten und optionalen Bildunterschriften.',
+  masonry: 'Spalten, in denen jedes Bild sein eigenes Seitenverhältnis behält.',
+  featureHighlight: 'Abwechselnde Zeilen aus Bild und Text.',
+  lightboxAssets: 'Vorschaubilder, die eine große Ansicht öffnen. Diese Einträge sind lokale Assets: Das Modal zeigt die Quelle, die das Vorschaubild geladen hat.',
+  lightboxPaths: 'Dieselbe Lightbox mit öffentlichen Pfaden als Quellen.',
+  gallerySection: 'Rendert einen Galerie-Eintrag aus dem CMS: Seine Art wählt die Komponente.',
+  captions: { hills: 'Morgen über den Hügeln', dunes: 'Mittag in den Dünen', lake: 'Abend am See' },
+  slides: {
+    hills: { title: 'Hoch hinaus', subtitle: 'Jede Komponente liest dieselben Inhaltsverträge.', cta: 'Zur Anleitung' },
+    aurora: { title: 'Eigene Bilder', subtitle: 'Ein lokales Asset oder ein öffentlicher Pfad, beides wird gerendert.' },
+  },
+  features: {
+    coast: { title: 'Design-Tokens', description: 'Farben, Abstände und Schrift über CSS Custom Properties ändern.', cta: 'Themes ansehen' },
+    meadow: { title: 'Inhaltsverträge', description: 'Karten, Galerien und strukturierte Daten lesen eine gemeinsame Form.' },
+  },
+  lightbox: {
+    hills: { title: 'Hügel', description: 'Gestaffelte Kämme im Morgenlicht' },
+    dunes: { title: 'Dünen', description: 'Warmer Sand unter blasser Sonne' },
+    coast: { title: 'Küste', description: 'Wellen rollen auf den Strand' },
+    lake: { title: 'See', description: 'Ein violetter Sonnenuntergang auf stillem Wasser' },
+    meadow: { title: 'Wiese', description: 'Blumen unter einem Sommerhimmel' },
+    aurora: { title: 'Polarlicht', description: 'Grünes Licht über dem Bergkamm' },
+  },
+};
+
+const t = { en, de }[lang];
+const l = lang === 'en' ? '' : ` lang="${lang}"`;
+
+const gridItems: GalleryItem[] = [
+  { ...assets.hills, caption: t.captions.hills },
+  { ...assets.dunes, caption: t.captions.dunes },
+  { ...paths.lake, caption: t.captions.lake },
+];
+const slides: GalleryItem[] = [
+  { ...assets.hills, ...t.slides.hills, href: href(lang, 'guide/') },
+  { ...paths.aurora, ...t.slides.aurora },
+];
+const carouselSlides: GalleryItem[] = [
+  { ...assets.coast, caption: t.lightbox.coast.description },
+  { ...paths.lake, caption: t.lightbox.lake.description },
+  { ...assets.dunes, caption: t.lightbox.dunes.description },
+];
+const masonryItems: GalleryItem[] = [assets.peaks, paths.lake, assets.hills, paths.meadow, assets.coast, paths.aurora];
+const featureItems: GalleryItem[] = [
+  { ...assets.coast, ...t.features.coast, href: `${base}themes/`, imagePosition: 'left' },
+  { ...paths.meadow, ...t.features.meadow, imagePosition: 'right' },
+];
+const assetLightbox: GalleryItem[] = [
+  { ...assets.hills, ...t.lightbox.hills },
+  { ...assets.dunes, ...t.lightbox.dunes },
+  { ...assets.coast, ...t.lightbox.coast },
+];
+const pathLightbox: GalleryItem[] = [
+  { ...paths.lake, ...t.lightbox.lake },
+  { ...paths.meadow, ...t.lightbox.meadow },
+  { ...paths.aurora, ...t.lightbox.aurora },
+];
+// One aspect-ratio family (3:2 and 16:10) keeps the row even: the ratio classes
+// GalleryImageGrid emits currently have no matching rule in its stylesheet.
+const sectionItems: GalleryItem[] = [assets.hills, paths.aurora, assets.dunes, paths.lake];
+
+// The gallery Props types make every option with a schema default required,
+// so the specimens and their samples spell those options out.
+const code = {
+  imageGrid: `import GalleryImageGrid from '@easy-web/core/components/GalleryImageGrid.astro';
+import hills from '../assets/hills.jpg';
+
+<GalleryImageGrid${l}
+  columns={3}
+  gap="md"
+  aspectRatio="4/3"
+  items={[
+    { src: hills, alt: '${assets.hills.alt}', caption: '${t.captions.hills}' },
+    { src: '/images/lake.jpg', alt: '${paths.lake.alt}', caption: '${t.captions.lake}' },
+  ]}
+/>`,
+  heroSlider: `import GalleryHeroSlider from '@easy-web/core/components/GalleryHeroSlider.astro';
+
+<GalleryHeroSlider${l}
+  autoplay={false}
+  interval={5000}
+  height="sm"
+  slides={[
+    { src: hills, alt, title: '${t.slides.hills.title}', subtitle, cta: '${t.slides.hills.cta}', href: '/guide/' },
+    { src: '/images/aurora.jpg', alt, title: '${t.slides.aurora.title}', subtitle },
+  ]}
+/>`,
+  carousel: `import GalleryCarousel from '@easy-web/core/components/GalleryCarousel.astro';
+
+<GalleryCarousel${l}
+  autoplay={false}
+  interval={4000}
+  showDots={true}
+  showArrows={true}
+  slides={[{ src: coast, alt, caption }, { src: '/images/lake.jpg', alt, caption }]}
+/>`,
+  masonry: `import GalleryMasonryGrid from '@easy-web/core/components/GalleryMasonryGrid.astro';
+
+<GalleryMasonryGrid${l} columns={3} gap="md" items={[{ src: peaks, alt }, { src: '/images/lake.jpg', alt }]} />`,
+  featureHighlight: `import GalleryFeatureHighlight from '@easy-web/core/components/GalleryFeatureHighlight.astro';
+
+<GalleryFeatureHighlight${l}
+  gap="lg"
+  items={[
+    { src: coast, alt, title: '${t.features.coast.title}', description, cta: '${t.features.coast.cta}', href: '/themes/', imagePosition: 'left' },
+    { src: '/images/meadow.jpg', alt, title: '${t.features.meadow.title}', description, imagePosition: 'right' },
+  ]}
+/>`,
+  lightboxAssets: `import GalleryLightboxGrid from '@easy-web/core/components/GalleryLightboxGrid.astro';
+import hills from '../assets/hills.jpg';
+
+<GalleryLightboxGrid${l}
+  columns={3}
+  gap="md"
+  aspectRatio="square"
+  items={[{ src: hills, alt: '${assets.hills.alt}', title: '${t.lightbox.hills.title}', description: '${t.lightbox.hills.description}' }]}
+/>`,
+  lightboxPaths: `<GalleryLightboxGrid${l}
+  columns={3}
+  gap="md"
+  aspectRatio="square"
+  items={[{ src: '/images/lake.jpg', alt: '${paths.lake.alt}', title: '${t.lightbox.lake.title}', description: '${t.lightbox.lake.description}' }]}
+/>`,
+  gallerySection: `import GallerySection from '@easy-web/core/components/GallerySection.astro';
+
+<GallerySection${l} gallery={{ kind: 'image-grid', columns: 4, items: [{ src: hills, alt }, { src: '/images/aurora.jpg', alt }] }} />`,
+};
+---
+
+<Demo id="gallery-image-grid" name="GalleryImageGrid" description={t.imageGrid} code={code.imageGrid}>
+  <GalleryImageGrid lang={lang} columns={3} gap="md" aspectRatio="4/3" items={gridItems} />
+</Demo>
+
+<Demo id="gallery-hero-slider" name="GalleryHeroSlider" description={t.heroSlider} code={code.heroSlider}>
+  <GalleryHeroSlider lang={lang} autoplay={false} interval={5000} height="sm" slides={slides} />
+</Demo>
+
+<Demo id="gallery-carousel" name="GalleryCarousel" description={t.carousel} code={code.carousel}>
+  <GalleryCarousel lang={lang} autoplay={false} interval={4000} showDots={true} showArrows={true} slides={carouselSlides} />
+</Demo>
+
+<Demo id="gallery-masonry-grid" name="GalleryMasonryGrid" description={t.masonry} code={code.masonry}>
+  <GalleryMasonryGrid lang={lang} columns={3} gap="md" items={masonryItems} />
+</Demo>
+
+<Demo id="gallery-feature-highlight" name="GalleryFeatureHighlight" description={t.featureHighlight} code={code.featureHighlight}>
+  <GalleryFeatureHighlight lang={lang} gap="lg" items={featureItems} />
+</Demo>
+
+<Demo id="gallery-lightbox-assets" name="GalleryLightboxGrid" description={t.lightboxAssets} code={code.lightboxAssets}>
+  <GalleryLightboxGrid lang={lang} columns={3} gap="md" aspectRatio="square" items={assetLightbox} />
+</Demo>
+
+<Demo id="gallery-lightbox-paths" name="GalleryLightboxGrid" description={t.lightboxPaths} code={code.lightboxPaths}>
+  <GalleryLightboxGrid lang={lang} columns={3} gap="md" aspectRatio="square" items={pathLightbox} />
+</Demo>
+
+<Demo id="gallery-section" name="GallerySection" description={t.gallerySection} code={code.gallerySection}>
+  <GallerySection lang={lang} gallery={{ kind: 'image-grid', columns: 4, aspectRatio: 'square', items: sectionItems }} />
+</Demo>

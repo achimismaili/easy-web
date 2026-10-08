@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="40" viewBox="0 0 140 40">
+  <rect x="2" y="4" width="32" height="32" rx="9" fill="#6b46c1"/>
+  <path d="M25.5 23.2H12.4c.5 3 2.7 4.8 5.8 4.8 2 0 3.6-.7 4.8-2l2.1 2.1c-1.7 1.9-4.1 2.9-7 2.9-5.3 0-8.9-3.6-8.9-8.6 0-5 3.5-8.6 8.5-8.6 4.9 0 7.9 3.4 7.9 8.4v1zm-13-2.6h9.6c-.4-2.6-2.2-4.2-4.8-4.2-2.5 0-4.3 1.6-4.8 4.2z" fill="#ffffff"/>
+  <text x="44" y="27.5" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="20" font-weight="700" letter-spacing="-0.3" fill="#8b5cf6">easy-web</text>
+</svg>
