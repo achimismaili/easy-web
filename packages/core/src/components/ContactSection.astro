@@ -3,17 +3,15 @@
  * ContactSection – centered mailto-only contact call to action.
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  heading: string;
-  body?: string;
-  email: string;
-  buttonLabel: string;
-}
+import type { ContactSectionProps } from '../contracts/props.js';
+import { scopeAttributes } from './scope-attributes.js';
 
-const { heading, body, email, buttonLabel } = Astro.props;
+export type Props = ContactSectionProps;
+
+const { heading, body, email, buttonLabel, class: className } = Astro.props;
 ---
 
-<section class="ew-contact">
+<section class:list={['ew-contact', className]} {...scopeAttributes(className, Astro.props)}>
   <div class="ew-contact__inner">
     <h2 class="ew-contact__heading">{heading}</h2>
     {body && <p class="ew-contact__body">{body}</p>}

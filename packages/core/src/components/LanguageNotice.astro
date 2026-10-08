@@ -3,14 +3,15 @@
  * LanguageNotice – subtle info box for language/binding disclaimers.
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  message: string;
-}
+import type { LanguageNoticeProps } from '../contracts/props.js';
+import { scopeAttributes } from './scope-attributes.js';
 
-const { message } = Astro.props;
+export type Props = LanguageNoticeProps;
+
+const { message, class: className } = Astro.props;
 ---
 
-<div class="ew-language-notice">
+<div class:list={['ew-language-notice', className]} {...scopeAttributes(className, Astro.props)}>
   <p class="ew-language-notice__text">{message}</p>
 </div>
 

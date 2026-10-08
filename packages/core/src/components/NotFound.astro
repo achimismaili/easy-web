@@ -11,23 +11,10 @@
  * not ship a UI-string dictionary — inline LABELS is the source of truth for
  * uncustomised sites).
  */
+import Media from './Media.astro';
+import type { NotFoundProps } from '../contracts/props.js';
 
-interface Props {
-  /** Current page locale (e.g. `"de"`, `"en"`). */
-  currentLang: string;
-  /** Site default locale — used for `rootHref` auto-compute and LABELS fallback. */
-  defaultLocale: string;
-  /** Explicit back-home link. Auto-computed from `currentLang` vs `defaultLocale` when omitted. */
-  rootHref?: string;
-  /** Alternate locale URL. When present, renders a language switcher link. */
-  alternateHref?: string;
-  /** CMS override for the `<h1>` heading (falls back to LABELS). */
-  heading?: string;
-  /** CMS override for the paragraph message (falls back to LABELS). */
-  message?: string;
-  /** Optional illustration URL. When present, renders `<img>` above the heading. */
-  image?: string;
-}
+export type Props = NotFoundProps;
 
 const LABELS: Record<
   string,
@@ -56,7 +43,11 @@ const resolvedMessage = message ?? t.notFoundMessage;
 ---
 
 <section class="ew-not-found" data-testid="not-found">
-  {image ? <img src={image} alt="" class="ew-not-found__image" loading="lazy" /> : null}
+  {typeof image === 'string' ? (
+    image ? <img src={image} alt="" class="ew-not-found__image" loading="lazy" /> : null
+  ) : image ? (
+    <Media image={image} class="ew-not-found__image" loading="lazy" />
+  ) : null}
   <h1 class="ew-not-found__heading">{resolvedHeading}</h1>
   <p class="ew-not-found__message">{resolvedMessage}</p>
   <p class="ew-not-found__actions">

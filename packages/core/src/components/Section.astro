@@ -3,15 +3,15 @@
  * Section – semantic wrapper with optional heading, constrained width, and slot.
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  title?: string;
-  id?: string;
-}
+import type { SectionProps } from '../contracts/props.js';
+import { scopeAttributes } from './scope-attributes.js';
 
-const { title, id } = Astro.props;
+export type Props = SectionProps;
+
+const { title, id, class: className } = Astro.props;
 ---
 
-<section class="ew-section" id={id}>
+<section class:list={['ew-section', className]} id={id} {...scopeAttributes(className, Astro.props)}>
   <div class="ew-section__inner">
     {title && <h2 class="ew-section__title">{title}</h2>}
     <slot />

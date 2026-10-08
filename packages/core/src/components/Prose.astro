@@ -1,7 +1,13 @@
 ---
+import type { ProseProps } from '../contracts/props.js';
+import { scopeAttributes } from './scope-attributes.js';
+
+export type Props = ProseProps;
+
+const { class: className } = Astro.props;
 ---
 
-<div class="ew-prose">
+<div class:list={['ew-prose', className]} {...scopeAttributes(className, Astro.props)}>
   <div class="ew-prose__inner">
     <slot />
   </div>

@@ -3,15 +3,15 @@
  * LegalLayout – narrow content wrapper for legal pages (privacy, imprint, etc.).
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  title: string;
-  lastUpdated?: string;
-}
+import type { LegalLayoutProps } from '../contracts/props.js';
+import { scopeAttributes } from './scope-attributes.js';
 
-const { title, lastUpdated } = Astro.props;
+export type Props = LegalLayoutProps;
+
+const { title, lastUpdated, class: className } = Astro.props;
 ---
 
-<article class="ew-legal">
+<article class:list={['ew-legal', className]} {...scopeAttributes(className, Astro.props)}>
   <div class="ew-legal__inner">
     <h1 class="ew-legal__title">{title}</h1>
     {lastUpdated && <p class="ew-legal__updated">{lastUpdated}</p>}

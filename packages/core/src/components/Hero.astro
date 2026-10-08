@@ -3,18 +3,15 @@
  * Hero – prominent page banner with title, optional subtitle, and optional CTA.
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  title: string;
-  subtitle?: string;
-  ctaLabel?: string;
-  ctaHref?: string;
-  variant?: 'centered' | 'left-aligned';
-}
+import type { HeroProps } from '../contracts/props.js';
+import { scopeAttributes } from './scope-attributes.js';
 
-const { title, subtitle, ctaLabel, ctaHref, variant = 'centered' } = Astro.props;
+export type Props = HeroProps;
+
+const { title, subtitle, ctaLabel, ctaHref, variant = 'centered', class: className } = Astro.props;
 ---
 
-<section class:list={['ew-hero', `ew-hero--${variant}`]}>
+<section class:list={['ew-hero', `ew-hero--${variant}`, className]} {...scopeAttributes(className, Astro.props)}>
   <div class="ew-hero__inner">
     <h1 class="ew-hero__title">{title}</h1>
     {subtitle && <p class="ew-hero__subtitle">{subtitle}</p>}

@@ -1,0 +1,17 @@
+---
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+
+interface Props {
+  component: AstroComponentFactory;
+  props: Record<string, unknown>;
+}
+
+const { component: Component, props } = Astro.props;
+---
+<div class="scope-host"><Component {...props}><p>Slot content</p></Component></div>
+
+<style>
+  .scope-host {
+    display: block;
+  }
+</style>

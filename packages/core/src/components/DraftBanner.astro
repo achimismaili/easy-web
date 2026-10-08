@@ -3,14 +3,15 @@
  * DraftBanner – warning banner for draft/unfinished legal content.
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  message: string;
-}
+import type { DraftBannerProps } from '../contracts/props.js';
+import { scopeAttributes } from './scope-attributes.js';
 
-const { message } = Astro.props;
+export type Props = DraftBannerProps;
+
+const { message, class: className } = Astro.props;
 ---
 
-<div class="ew-draft-banner" role="status">
+<div class:list={['ew-draft-banner', className]} role="status" {...scopeAttributes(className, Astro.props)}>
   <p class="ew-draft-banner__text">{message}</p>
 </div>
 

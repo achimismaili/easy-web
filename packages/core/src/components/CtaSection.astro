@@ -3,18 +3,15 @@
  * CtaSection – call-to-action banner with heading, optional body, and button.
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  heading: string;
-  body?: string;
-  buttonLabel: string;
-  buttonHref: string;
-  variant?: 'default' | 'muted' | 'primary';
-}
+import type { CtaSectionProps } from '../contracts/props.js';
+import { scopeAttributes } from './scope-attributes.js';
 
-const { heading, body, buttonLabel, buttonHref, variant = 'default' } = Astro.props;
+export type Props = CtaSectionProps;
+
+const { heading, body, buttonLabel, buttonHref, variant = 'default', class: className } = Astro.props;
 ---
 
-<section class:list={['ew-cta', `ew-cta--${variant}`]}>
+<section class:list={['ew-cta', `ew-cta--${variant}`, className]} {...scopeAttributes(className, Astro.props)}>
   <div class="ew-cta__inner">
     <h2 class="ew-cta__heading">{heading}</h2>
     {body && <p class="ew-cta__body">{body}</p>}
