@@ -113,6 +113,18 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  packages/core:
+    devDependencies:
+      astro:
+        specifier: ^7.3.5
+        version: 7.3.5(@types/node@25.9.4)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.13)(@types/node@25.9.4)(jsdom@29.1.1)(lightningcss@1.33.0)(yaml@2.9.0)
+
   packages/create-easy-web: {}
 
   packages/easy-web-brand:
