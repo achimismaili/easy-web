@@ -1,0 +1,26 @@
+{
+  "name": "compat-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Builds every legacy @easy-web/* import path the live sites use, against the compatibility packages.",
+  "scripts": {
+    "build": "astro build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@easy-web/cms-adapters": "workspace:*",
+    "@easy-web/content-blocks": "workspace:*",
+    "@easy-web/i18n": "workspace:*",
+    "@easy-web/markdown": "workspace:*",
+    "@easy-web/seo": "workspace:*",
+    "@easy-web/theme-core": "workspace:*",
+    "astro": "^7.3.5"
+  },
+  "devDependencies": {
+    "@astrojs/markdown-remark": "^7.3.0",
+    "@inlang/paraglide-js": "^2.0.0",
+    "vitest": "^3.2.4",
+    "zod": "^4.0.0"
+  }
+}

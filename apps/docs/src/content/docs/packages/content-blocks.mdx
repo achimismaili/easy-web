@@ -1,7 +1,13 @@
 ---
 title: easy-web-content-blocks
-description: Twenty-two pure-Astro components for page chrome, hero sections, cards, galleries, blog, and legal layouts.
+description: Deprecated compatibility package. Its 28 Astro components for page chrome, sections, cards, galleries, blog and legal layouts now live in @easy-web/core.
 ---
+
+:::caution[Deprecated: use @easy-web/core/components]
+`@easy-web/content-blocks` is a compatibility package. Its 28 components now live in [`@easy-web/core`](../core/#components), together with three new ones (`Media`, `SeoHead`, `StructuredData`), for 31 in total. Replace `@easy-web/content-blocks/components/X` with `@easy-web/core/components/X` and `@easy-web/content-blocks/schemas/*` with `@easy-web/core/schemas/*`. The core versions add content-contract props (`item` on `Card` and `BlogPostCard`), `lang` and `labels` for German or English UI text, and `actions` slots on headers and the footer. This package stays available as a re-export for all of 1.x and is removed in 2.0. See [Migrating to core](../../guides/migrating-to-core/).
+:::
+
+The reference below describes the legacy props, which still work.
 
 ## Installation
 
@@ -11,7 +17,7 @@ pnpm add @easy-web/content-blocks
 
 ## Overview
 
-`@easy-web/content-blocks` ships twenty-two pure-Astro components covering every standard page section: four header variants with responsive mobile menus, a footer, a theme toggle, a language switcher, hero/CTA/contact sections, structural helpers (Section, CardGrid, Card), a CMS-driven gallery system with six rendering variants, blog post cards, legal prose layouts, and notice banners. All components use the `--ew-*` design tokens from `@easy-web/theme-core` and carry no styling system of their own.
+`@easy-web/content-blocks` ships 28 pure-Astro components covering every standard page section: four header variants with responsive mobile menus, a footer, a theme toggle, a language switcher, hero/CTA/contact sections, structural helpers (Section, CardGrid, Card), a CMS-driven gallery system with six rendering variants, blog post cards, legal prose layouts, and notice banners. All components use the `--ew-*` design tokens from `@easy-web/theme-core` and carry no styling system of their own.
 
 **Components are not exported from a JavaScript barrel.** Import each one from its component path using the `./components/*` exports map:
 

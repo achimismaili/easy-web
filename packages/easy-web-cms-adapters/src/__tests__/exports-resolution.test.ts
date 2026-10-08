@@ -82,6 +82,13 @@ const probes = subpathEntries.flatMap(([key, target]) =>
 );
 
 describe('@easy-web/cms-adapters subpath exports', () => {
+  it('loads the compiled root without resolving an Astro component from dist', async () => {
+    // Given / When
+    const root = await import('../../dist/index.js');
+    // Then
+    expect(root.buildDecapConfig).toBeTypeOf('function');
+  });
+
   it('declares the subpath exports its README documents', () => {
     expect(Object.keys(pkg.exports)).toEqual(
       expect.arrayContaining([

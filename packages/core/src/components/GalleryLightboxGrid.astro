@@ -1,0 +1,350 @@
+---
+import type { GalleryLightboxGridData } from '../schemas/galleries';
+import type { GalleryItem } from '../contracts/props.js';
+import { resolveLabels, type GalleryLabelProps } from './labels.js';
+import Media from './Media.astro';
+
+// allow: SIZE_OK - preserve the legacy lightbox CSS alongside its conditional inline controller.
+export type Props = Omit<GalleryLightboxGridData, 'kind' | 'locale' | 'translationKey' | 'items'> & GalleryLabelProps & {
+  readonly items: (GalleryItem | string)[];
+};
+
+const {
+  title,
+  columns = 3,
+  gap = 'md',
+  aspectRatio = 'square',
+  items: inputItems,
+} = Astro.props;
+const items: GalleryItem[] = inputItems.map(item => typeof item === 'string' ? { src: item, alt: '' } : item);
+const labels = resolveLabels(Astro.props.lang, Astro.props.labels);
+
+const gridClass = [
+  'ew-lightbox-grid',
+  `ew-lightbox-grid--cols-${columns}`,
+  `ew-lightbox-grid--gap-${gap}`,
+].join(' ');
+
+const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')}`;
+---
+
+{items.length > 0 && (
+  <section class="ew-lightbox-wrap" data-lightbox-root>
+    <div class="ew-lightbox-wrap__inner">
+      {title && <h2 class="ew-lightbox-wrap__title">{title}</h2>}
+      <div class={gridClass}>
+        {items.map((item, i) => (
+          <button
+            type="button"
+            class="ew-lightbox-grid__item"
+            data-index={i}
+            data-title={item.title}
+            data-description={item.description}
+            aria-label={labels.openImage.replace('{alt}', item.alt)}
+          >
+            <Media
+              image={item}
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              class={`ew-lightbox-grid__img ${ratioClass}`}
+              loading="lazy"
+            />
+          </button>
+        ))}
+      </div>
+      <div
+        class="ew-lightbox"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title ?? labels.imageLightbox}
+        data-open="false"
+        hidden
+      >
+        <button
+          type="button"
+          class="ew-lightbox__close"
+          aria-label={labels.closeLightbox}
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="ew-lightbox__arrow ew-lightbox__arrow--prev"
+          aria-label={labels.previousImage}
+        >
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="ew-lightbox__arrow ew-lightbox__arrow--next"
+          aria-label={labels.nextImage}
+        >
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+        <figure class="ew-lightbox__figure">
+          <Media image={{ src: '', alt: '' }} class="ew-lightbox__img" />
+          <figcaption class="ew-lightbox__caption">
+            <h3 class="ew-lightbox__caption-title"></h3>
+            <p class="ew-lightbox__caption-description"></p>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+)}
+
+{items.length > 0 && <script is:inline>
+(() => {
+  const initLightbox = (root) => {
+    if (root.dataset.lightboxInitialized) return;
+    root.dataset.lightboxInitialized = 'true';
+    const modal = root.querySelector('.ew-lightbox');
+    const img = modal.querySelector('.ew-lightbox__img');
+    const captionTitle = modal.querySelector('.ew-lightbox__caption-title');
+    const captionDesc = modal.querySelector('.ew-lightbox__caption-description');
+    const closeBtn = modal.querySelector('.ew-lightbox__close');
+    const prevBtn = modal.querySelector('.ew-lightbox__arrow--prev');
+    const nextBtn = modal.querySelector('.ew-lightbox__arrow--next');
+    const triggers = Array.from(root.querySelectorAll('.ew-lightbox-grid__item'));
+
+    let current = 0;
+    let lastTrigger = null;
+
+    const render = (idx) => {
+      const next = ((idx % triggers.length) + triggers.length) % triggers.length;
+      current = next;
+      const trigger = triggers[current];
+      const thumbnail = trigger.querySelector('img');
+      img.src = thumbnail.currentSrc || thumbnail.src;
+      img.alt = thumbnail.alt;
+      captionTitle.textContent = trigger.dataset.title ?? '';
+      captionTitle.hidden = !trigger.dataset.title;
+      captionDesc.textContent = trigger.dataset.description ?? '';
+      captionDesc.hidden = !trigger.dataset.description;
+    };
+
+    const open = (idx, trigger) => {
+      lastTrigger = trigger;
+      render(idx);
+      modal.hidden = false;
+      modal.dataset.open = 'true';
+      document.body.style.overflow = 'hidden';
+      closeBtn.focus();
+    };
+
+    const close = () => {
+      modal.dataset.open = 'false';
+      modal.hidden = true;
+      document.body.style.overflow = '';
+      lastTrigger?.focus();
+    };
+
+    triggers.forEach((trigger, i) => {
+      trigger.addEventListener('click', (event) => open(i, event.currentTarget));
+    });
+
+    closeBtn.addEventListener('click', close);
+    prevBtn?.addEventListener('click', () => render(current - 1));
+    nextBtn?.addEventListener('click', () => render(current + 1));
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (modal.dataset.open !== 'true') return;
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); render(current - 1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); render(current + 1); }
+    });
+  };
+
+  document.querySelectorAll('[data-lightbox-root]').forEach(initLightbox);
+})();
+</script>}
+
+<style>
+  .ew-lightbox-wrap {
+    padding: var(--ew-space-8) var(--ew-space-5);
+  }
+  .ew-lightbox-wrap__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+  .ew-lightbox-wrap__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-5);
+    line-height: var(--ew-leading-tight);
+  }
+
+  .ew-lightbox-grid {
+    display: grid;
+    gap: var(--ew-space-4);
+  }
+  .ew-lightbox-grid--cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .ew-lightbox-grid--cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .ew-lightbox-grid--cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .ew-lightbox-grid--gap-sm { gap: var(--ew-space-2); }
+  .ew-lightbox-grid--gap-md { gap: var(--ew-space-4); }
+  .ew-lightbox-grid--gap-lg { gap: var(--ew-space-6); }
+
+  @media (max-width: 768px) {
+    .ew-lightbox-grid--cols-3,
+    .ew-lightbox-grid--cols-4 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .ew-lightbox-grid--cols-2,
+    .ew-lightbox-grid--cols-3,
+    .ew-lightbox-grid--cols-4 { grid-template-columns: 1fr; }
+  }
+
+  .ew-lightbox-grid__item {
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: block;
+    border-radius: var(--ew-radius-md);
+    overflow: hidden;
+    transition: transform 0.15s ease;
+  }
+  .ew-lightbox-grid__item:hover,
+  .ew-lightbox-grid__item:focus-visible {
+    transform: scale(1.02);
+  }
+  .ew-lightbox-grid__item:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+
+  .ew-lightbox-grid__img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+  }
+  .ew-lightbox-grid__img--ratio-square { aspect-ratio: 1 / 1; }
+  .ew-lightbox-grid__img--ratio-4-3 { aspect-ratio: 4 / 3; }
+  .ew-lightbox-grid__img--ratio-auto { aspect-ratio: auto; }
+
+  .ew-lightbox {
+    position: fixed;
+    inset: 0;
+    background: var(--ew-overlay-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--ew-space-5);
+  }
+  .ew-lightbox[data-open='false'] {
+    display: none;
+  }
+
+  .ew-lightbox__figure {
+    margin: 0;
+    max-width: min(90vw, 60rem);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--ew-space-3);
+  }
+
+  .ew-lightbox__img {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: var(--ew-radius-md);
+  }
+
+  .ew-lightbox__caption {
+    color: var(--ew-overlay-fg);
+    text-align: center;
+    font-family: var(--ew-font-sans);
+    max-width: 40rem;
+  }
+  .ew-lightbox__caption-title {
+    font-size: var(--ew-text-lg);
+    font-weight: 600;
+    margin: 0 0 var(--ew-space-2);
+  }
+  .ew-lightbox__caption-description {
+    font-size: var(--ew-text-sm);
+    margin: 0;
+    opacity: 0.85;
+    line-height: var(--ew-leading-normal);
+  }
+
+  .ew-lightbox__close {
+    position: absolute;
+    top: var(--ew-space-4);
+    right: var(--ew-space-4);
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--ew-radius-full);
+    border: none;
+    background: var(--ew-control-bg-inverse);
+    color: var(--ew-control-fg);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  .ew-lightbox__close:hover,
+  .ew-lightbox__close:focus-visible {
+    background: var(--ew-control-bg-inverse-hover);
+  }
+  .ew-lightbox__close:focus-visible {
+    outline: 2px solid var(--ew-control-fg);
+    outline-offset: 2px;
+  }
+
+  .ew-lightbox__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--ew-radius-full);
+    border: none;
+    background: var(--ew-control-bg-inverse);
+    color: var(--ew-control-fg);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  .ew-lightbox__arrow:hover,
+  .ew-lightbox__arrow:focus-visible {
+    background: var(--ew-control-bg-inverse-hover);
+  }
+  .ew-lightbox__arrow:focus-visible {
+    outline: 2px solid var(--ew-control-fg);
+    outline-offset: 2px;
+  }
+  .ew-lightbox__arrow--prev { left: var(--ew-space-4); }
+  .ew-lightbox__arrow--next { right: var(--ew-space-4); }
+
+  @media (max-width: 480px) {
+    .ew-lightbox__arrow {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+    .ew-lightbox__arrow--prev { left: var(--ew-space-2); }
+    .ew-lightbox__arrow--next { right: var(--ew-space-2); }
+  }
+</style>

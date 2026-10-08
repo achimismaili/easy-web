@@ -7,66 +7,63 @@ description: Install easy-web packages in your Astro project
 
 - **Node.js 22** or later (pin with [Volta](https://volta.sh): `volta install node@22`)
 - **pnpm 9** or later
-- An **Astro 5** project
+- An **Astro 6 or 7** project
 
-## Install Individual Packages
+## Install the base package
 
-Each package is independently installable. Add only what you need:
-
-### Theme Core — CSS tokens + light/dark theme
+`@easy-web/core` gives you a working site on its own: design tokens, theme helpers, i18n, SEO, the markdown plugin, all page components and the content contracts.
 
 ```bash
-pnpm add @easy-web/theme-core
+pnpm add @easy-web/core
 ```
 
-Import the theme stylesheet in your Astro layout:
+Import the token stylesheet in your Astro layout:
 
 ```astro
 ---
-import '@easy-web/theme-core/theme.css';
+import '@easy-web/core/styles/tokens.css';
 ---
 ```
 
-### i18n Helpers
+## Add-ons
+
+Add only what you need.
+
+### CMS Adapters: Decap CMS and typed content definitions
 
 ```bash
-pnpm add @easy-web/i18n
+pnpm add @easy-web/cms-adapters
 ```
 
-### Content Blocks — Astro UI Components
+### Static Web Apps: shared 404 handling on Azure
 
 ```bash
-pnpm add @easy-web/content-blocks
+pnpm add @easy-web/swa
 ```
 
-### Authentication — MSAL.js wrapper
+### Authentication: MSAL.js wrapper
 
 ```bash
 pnpm add @easy-web/auth
 ```
 
 :::note
-Auth components require a single React island per page. See the [auth package docs](../packages/auth/) for details.
+Auth components require a single React island per page. See the [auth package docs](../../packages/auth/) for details.
 :::
 
-### CMS Adapters — Decap CMS integration
+### Brand: favicon and icon generation
 
 ```bash
-pnpm add @easy-web/cms-adapters
+pnpm add -D @easy-web/brand
 ```
 
-## Install All Packages at Once
+## Compatibility packages
 
-```bash
-pnpm add @easy-web/theme-core \
-         @easy-web/i18n \
-         @easy-web/content-blocks \
-         @easy-web/auth \
-         @easy-web/cms-adapters
-```
+`@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo` and `@easy-web/markdown` still install and work, but they only re-export `@easy-web/core` and are removed in 2.0. Don't add them to a new site. See [Migrating to core](../../guides/migrating-to-core/).
 
 ## Next Steps
 
-- [Create a new site instance →](./create-new-site/)
-- [Browse package API reference →](../packages/theme-core/)
-- [Architecture overview →](../architecture/)
+- [Create a new site instance →](../create-new-site/)
+- [Browse the core API reference →](../../packages/core/)
+- [Write your first content type →](../../guides/content-types/)
+- [Architecture overview →](../../architecture/)

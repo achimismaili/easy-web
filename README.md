@@ -12,25 +12,44 @@ Baseline `@easy-web/*` package family — a shared Astro component and integrati
 
 ## Packages
 
-All packages are released together as a fixed version group, so their version numbers always match — the npm badge above shows the current release for all of them.
+All packages are released together as a fixed version group, so their version numbers always match. The npm badge above shows the current release for all of them.
+
+Install `@easy-web/core` for a working site. Everything else is opt-in.
+
+**Base**
 
 | Package | Description |
 | :--- | :--- |
-| `@easy-web/theme-core` | CSS design tokens, light/dark theme, no-flash script |
-| `@easy-web/i18n` | `localizedHref`, `getLocaleFromPath`, alternate-link helpers, `localizedPaths` and `trailingSlash` support |
-| `@easy-web/content-blocks` | Page chrome (`PageShell`, header variants, footer, theme toggle, language switch), hero/CTA/contact sections, cards and grids, a CMS-driven gallery system, plus `<NotFound>` and `notFoundSchema` |
+| `@easy-web/core` | Theme tokens, i18n, SEO integration, markdown plugin, 31 Astro components (page chrome, sections, cards, galleries, media, `<NotFound>`, `<SeoHead>`) and the content contracts (`Item`, `Article`, `Event`, `HasImage`, `assertImplements`, ...). Subpaths: `/contracts`, `/theme`, `/i18n`, `/seo`, `/markdown`, `/components/*`, `/schemas/*`, `/styles/*`. **Reserved on npm, pending its first publish** |
+
+**Add-ons**
+
+| Package | Description |
+| :--- | :--- |
+| `@easy-web/cms-adapters` | Decap CMS: typed content definitions (`field`, `fieldSets`, `defineContentType`) that generate both the Decap form and the Astro schema, plus the standalone `AdminPage` |
+| `@easy-web/swa` | Astro integration for sentinel-safe Azure Static Web Apps 404 config |
 | `@easy-web/auth` | MSAL.js auth, Microsoft Graph, SharePoint components |
 | `@easy-web/brand` | Brand asset generation (favicons, icons) plus the `easy-web-brand` CLI |
-| `@easy-web/markdown` | Remark plugin normalising markdown-body image URLs for Astro's image resolver |
-| `@easy-web/seo` | `easyWebSeo()` integration (sitemap, hreflang, robots.txt) and `<SeoHead>` |
-| `@easy-web/swa` | Astro integration for sentinel-safe Azure Static Web Apps 404 config |
-| `@easy-web/cms-adapters` | Admin page mounting, config scaffolding, and frontmatter types for Decap CMS |
-| `@easy-web/azure-functions-utils` | **Reserved placeholder** — no implementation yet |
-| `@easy-web/create` | **Reserved placeholder** — future scaffold CLI for new site instances |
 
-> The two placeholders are published to reserve the names. They ship no source; do not add them as dependencies.
+**Reserved**
 
-Three site instances currently consume these packages: a pilot that validates every release first, and two customer sites. New releases land on the pilot before any customer site is bumped.
+| Package | Description |
+| :--- | :--- |
+| `@easy-web/create` | **Reserved placeholder** for the future scaffold CLI. Ships no source; don't add it as a dependency |
+
+**Deprecated compatibility packages**
+
+These five were folded into `@easy-web/core`. Each one now only re-exports core with `@deprecated` markers, so existing imports keep working for the whole 1.x line. They're removed in 2.0, once every site has migrated. See the [migration guide](https://achim.ismaili.de/easy-web/docs/guides/migrating-to-core/).
+
+| Package | Replacement |
+| :--- | :--- |
+| `@easy-web/theme-core` | `@easy-web/core/theme`, `@easy-web/core/styles/tokens.css` |
+| `@easy-web/i18n` | `@easy-web/core/i18n` |
+| `@easy-web/content-blocks` | `@easy-web/core/components/*`, `@easy-web/core/schemas/*` |
+| `@easy-web/seo` | `@easy-web/core/seo`, `@easy-web/core/components/SeoHead` |
+| `@easy-web/markdown` | `@easy-web/core/markdown` |
+
+Several site instances consume these packages: a pilot that validates every release first, and the customer sites. New releases land on the pilot before any customer site is bumped.
 
 ## Structure
 
@@ -38,6 +57,8 @@ Three site instances currently consume these packages: a pilot that validates ev
 | :--- | :--- |
 | `packages/` | The `@easy-web/*` workspace packages |
 | `apps/showcase/` | Live component gallery — the reference consumer; redeployed whenever `packages/` or `apps/` change on `main` |
+| `apps/contract-fixture/` | Test site proving the per-site conformance gate fails on broken contracts |
+| `apps/compat-fixture/` | Test site proving the deprecated compatibility packages still build |
 | `apps/docs/` | Documentation site, deployed alongside the showcase under `/docs/` |
 | `docs/` | Repo-local architecture notes and diagrams |
 | `.changeset/` | Pending release notes; each one drives the next version bump |

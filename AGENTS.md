@@ -5,7 +5,7 @@
 
 ## Project identity
 
-- **Purpose**: Shared package family for the ismaili.de web ecosystem — theme tokens, i18n primitives, content blocks, CMS adapters, MSAL auth components, and the scaffold CLI for new instances.
+- **Purpose**: Shared package family for the ismaili.de web ecosystem - one base package (`@easy-web/core`: theme tokens, i18n, SEO, components and content contracts) plus add-ons for CMS, Static Web Apps, MSAL auth and brand assets, and the reserved scaffold CLI name.
 - **Type**: pnpm + Turborepo monorepo. Node is pinned via Volta and pnpm via `packageManager`, both in the root `package.json` — read the values there rather than from this file.
 - **Publishes to**: npm public registry. Packages namespaced `@easy-web/*`.
 - **Consumed by**: every instance repo (`dev.ismaili.de`, `harleyrentflorida.de`, future sites).
@@ -39,19 +39,34 @@ When changing anything in `packages/auth/`:
 
 ## Workspace layout
 
+### Base vs add-ons
+
+Since ADR 0018 the family has one **base** package and optional **add-ons**:
+
+- **Base:** `@easy-web/core`. One install gives a working site: theme tokens, i18n, SEO, the markdown plugin, all 31 Astro components, and the content contracts (`Item`, `Page`, `Article`, `Event`, `Organization`, `Person`, `Product`, the capabilities `HasImage` / `HasPhotos` / `HasBody` / `Linkable`, and `assertImplements`). New shared components, tokens and i18n helpers go here.
+- **Add-ons:** `@easy-web/cms-adapters` (Decap plus the typed field builders that generate forms and schemas), `@easy-web/swa`, `@easy-web/auth`, `@easy-web/brand`.
+- **Reserved:** `@easy-web/create`.
+- **Deprecated compatibility packages:** `@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo`, `@easy-web/markdown`. They hold no implementation any more, only `@deprecated` re-exports of core subpaths. Never add code to them. They stay for all of 1.x and are removed in 2.0, once every site (darts included) has migrated.
+
+**Core bootstrap status:** the `@easy-web/core` package exists in this workspace and the name is reserved on npm, but it is **pending its first publish** (its `package.json` still carries `"private": true`, and `npm view @easy-web/core version` does not resolve yet). Follow *Bootstrapping a brand-new package* below for the first publish; don't claim it is published until `npm view` resolves.
+
 | Path | Purpose |
 | :--- | :--- |
-| `packages/seo/` | `@easy-web/seo` — shared SEO primitives: `easyWebSeo()` AstroIntegration (wraps `@astrojs/sitemap` with i18n hreflang, injects a dynamic `robots.txt` route with `noIndex` mode, supports `localizedPaths` for per-locale slugs) and the `<SeoHead>` component (canonical, OpenGraph, Twitter Cards, hreflang, theme-color, manifest). See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md). |
-| `packages/theme-core/` | `@easy-web/theme-core` — CSS design tokens, light/dark theme, no-flash script |
-| `packages/i18n/` | `@easy-web/i18n` — `localizedHref`, `getLocaleFromPath`, `SupportedLocale`, alternate-link helpers, `createI18n` with `localizedPaths` and `trailingSlash` |
-| `packages/easy-web-content-blocks/` | `@easy-web/content-blocks` — `PageShell`, header variants, Hero, Section, CardGrid, Card, `<NotFound>`, and other reusable page blocks |
-| `packages/auth/` | `@easy-web/auth` — MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). |
-| `packages/easy-web-brand/` | `@easy-web/brand` — brand asset generation (favicons, icons) plus the `easy-web-brand` CLI |
-| `packages/easy-web-markdown/` | `@easy-web/markdown` — remark plugin normalising markdown-body image URLs to paths Astro's built-in image resolver accepts |
-| `packages/easy-web-swa/` | `@easy-web/swa` — AstroIntegration merging a sentinel-marked `staticwebapp.config.json` slice for shared 404 handling on Azure Static Web Apps |
-| `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` — Decap CMS integration per ADR 0006: `AdminPage` component, frontmatter types, config scaffold |
-| `packages/easy-web-azure-functions-utils/` | `@easy-web/azure-functions-utils` — **reserved placeholder**, ships no `src/` |
+| `packages/core/` | `@easy-web/core` - **base package**. Subpaths `./contracts` (also the root export), `./theme`, `./i18n`, `./seo`, `./markdown`, `./components/*`, `./schemas/*`, `./styles/tokens.css`, `./styles/fonts.css`. Component prop types live in `src/contracts/props.ts`, UI labels (German and English) in `src/components/labels.ts` |
+| `packages/seo/` | `@easy-web/seo` - **deprecated compatibility package**. Re-exports `@easy-web/core/seo` (the `easyWebSeo()` integration) and `@easy-web/core/components/SeoHead`. See [ADR 0012](../websites/docs/decisions/0012-shared-seo-primitives-in-easy-web.md) for the SEO model itself, which now lives in core. |
+| `packages/theme-core/` | `@easy-web/theme-core` - **deprecated compatibility package**. Re-exports `@easy-web/core/theme`; its `tokens.css` / `fonts.css` import the core stylesheets |
+| `packages/i18n/` | `@easy-web/i18n` - **deprecated compatibility package**. Re-exports `@easy-web/core/i18n` |
+| `packages/easy-web-content-blocks/` | `@easy-web/content-blocks` - **deprecated compatibility package**. Its 28 components and the `galleries` / `notFound` schemas are re-exports of `@easy-web/core/components/*` and `@easy-web/core/schemas/*` |
+| `packages/auth/` | `@easy-web/auth` — **add-on**. MSAL.js auth + Microsoft Graph + SharePoint integration. Auth: `<AuthProvider>`, `useAuth`, `<LoginButton>`, `<ProtectedContent>`, `<UserAvatar>`. SharePoint: `useGraphClient`, `useSharePointList`, `useSharePointFiles`, `<SharePointGallery>`, `<SharePointFileList>`, `<SharePointListView>`, plus low-level Graph helpers (`createGraphClient`, `getSite`, `getListItems`, `getDocumentLibraryFiles`, `getFileContent`, `getImageThumbnails`). |
+| `packages/easy-web-brand/` | `@easy-web/brand` — **add-on**. brand asset generation (favicons, icons) plus the `easy-web-brand` CLI |
+| `packages/easy-web-markdown/` | `@easy-web/markdown` - **deprecated compatibility package**. Re-exports the remark plugin from `@easy-web/core/markdown` |
+| `packages/easy-web-swa/` | `@easy-web/swa` — **add-on**. AstroIntegration merging a sentinel-marked `staticwebapp.config.json` slice for shared 404 handling on Azure Static Web Apps |
+| `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` - **add-on**. Decap CMS integration per ADR 0006: typed content definitions (`field`, `fieldSets`, `defineContentType`, `defineSingleton`), generators (`toAstroSchema`, `buildDecapConfig`, `InferData`), the `AdminPage` component (takes a generated `config`). The older `generateDecapConfig*` and frontmatter types are superseded |
 | `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline. **Reserved placeholder**, ships no `src/` |
+| `apps/showcase/` | Live component gallery on the contract-based components; reference consumer of core |
+| `apps/docs/` | Starlight documentation site (core reference, content-types guide, migration guide) |
+| `apps/contract-fixture/` | Test site for the per-site conformance gate: definitions plus `assertImplements`, must fail on broken contracts |
+| `apps/compat-fixture/` | Test site proving the deprecated compatibility packages still build unchanged |
 | `examples/` | Reference instances consuming the packages locally for development (empty placeholder) |
 | `scripts/` | Workspace-level tooling (release, validation) |
 | `docs/` | Repo-local notes; canonical docs live in `websites/docs/` |

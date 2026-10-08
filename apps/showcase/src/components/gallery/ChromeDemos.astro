@@ -1,0 +1,247 @@
+---
+/** Site chrome specimens: theme toggle, language switch, the header family, footer and page shell. */
+import Footer from '@easy-web/core/components/Footer.astro';
+import Header from '@easy-web/core/components/Header.astro';
+import HeaderCentered from '@easy-web/core/components/HeaderCentered.astro';
+import HeaderFlyout from '@easy-web/core/components/HeaderFlyout.astro';
+import LanguageSwitch from '@easy-web/core/components/LanguageSwitch.astro';
+import ThemeToggle from '@easy-web/core/components/ThemeToggle.astro';
+import type { FooterColumn, LanguageAlternate, Link, NavItem } from '@easy-web/core/contracts';
+import { base, href, showcaseMedia, type ShowcaseLang } from '../../lib/showcase';
+import Demo from './Demo.astro';
+
+interface Props {
+  lang: ShowcaseLang;
+}
+
+const { lang } = Astro.props;
+const other: ShowcaseLang = lang === 'en' ? 'de' : 'en';
+const media = showcaseMedia(lang);
+
+const en = {
+  themeToggle: 'Switches between the light and the dark theme. Its accessible name comes from the built-in labels of the page language.',
+  languageSwitch: 'Links to the translations of the current page. Each alternate names its language, its URL and an optional visible label.',
+  header: 'Navigation, theme toggle and language switch in one bar. The logo is an image contract that brings its own alt text.',
+  headerCentered: 'The brand in the middle with the navigation split to both sides. Without a logo it shows the site name.',
+  headerFlyout: 'Navigation entries with children open as dropdown flyouts.',
+  headerHideOnScroll: 'Slides away while scrolling down and returns on scroll up. It is fixed to the viewport, so it is shown as code only.',
+  footer: 'Link columns above the copyright row, the legal links, and an actions slot for controls.',
+  pageShell: 'Skip link, main landmark, and slots for the header and the footer. Every page of this site is rendered inside it.',
+  home: 'Home',
+  components: 'Components',
+  guide: 'Guide',
+  themes: 'Themes',
+  ocean: 'Ocean',
+  forest: 'Forest',
+  docs: 'Docs',
+  product: 'Product',
+  resources: 'Resources',
+  privacy: 'Privacy',
+  imprint: 'Imprint',
+  languageName: { en: 'English', de: 'Deutsch' },
+};
+
+const de: typeof en = {
+  themeToggle: 'Wechselt zwischen hellem und dunklem Design. Der zugängliche Name stammt aus den eingebauten Beschriftungen der Seitensprache.',
+  languageSwitch: 'Verlinkt die Übersetzungen der aktuellen Seite. Jede Alternative nennt ihre Sprache, ihre URL und optional einen sichtbaren Text.',
+  header: 'Navigation, Design-Umschalter und Sprachwechsel in einer Leiste. Das Logo ist ein Bild-Vertrag mit eigenem Alternativtext.',
+  headerCentered: 'Die Marke in der Mitte, die Navigation auf beide Seiten verteilt. Ohne Logo steht dort der Seitenname.',
+  headerFlyout: 'Navigationseinträge mit Unterpunkten öffnen sich als Ausklappmenü.',
+  headerHideOnScroll: 'Verschwindet beim Herunterscrollen und kehrt beim Hochscrollen zurück. Die Kopfzeile ist am Viewport fixiert und wird deshalb nur als Code gezeigt.',
+  footer: 'Linkspalten über der Copyright-Zeile, die rechtlichen Links und ein Aktions-Slot für Bedienelemente.',
+  pageShell: 'Sprunglink, Hauptbereich und Slots für Kopf- und Fußzeile. Jede Seite dieser Website wird darin gerendert.',
+  home: 'Startseite',
+  components: 'Komponenten',
+  guide: 'Anleitung',
+  themes: 'Themes',
+  ocean: 'Ozean',
+  forest: 'Wald',
+  docs: 'Doku',
+  product: 'Produkt',
+  resources: 'Ressourcen',
+  privacy: 'Datenschutz',
+  imprint: 'Impressum',
+  languageName: { en: 'English', de: 'Deutsch' },
+};
+
+const t = { en, de }[lang];
+const l = lang === 'en' ? '' : ` lang="${lang}"`;
+// Root-relative paths for the code samples, as a site without a base path writes them.
+const sample = (language: ShowcaseLang, path = '') => `${language === 'en' ? '/' : `/${language}/`}${path}`;
+
+const componentsPath = href(lang, 'components/');
+const navItems: NavItem[] = [
+  { label: t.home, href: href(lang) },
+  { label: t.components, href: componentsPath },
+  { label: t.guide, href: href(lang, 'guide/') },
+  { label: t.docs, href: `${base}docs/` },
+];
+const flyoutItems: NavItem[] = [
+  { label: t.home, href: href(lang) },
+  {
+    label: t.themes,
+    href: `${base}themes/`,
+    children: [
+      { label: t.ocean, href: `${base}themes/ocean/` },
+      { label: t.forest, href: `${base}themes/forest/` },
+    ],
+  },
+  { label: t.components, href: componentsPath },
+  { label: t.docs, href: `${base}docs/` },
+];
+const alternates: LanguageAlternate[] = [
+  { lang: other, href: href(other, 'components/'), label: t.languageName[other] },
+];
+const columns: FooterColumn[] = [
+  {
+    title: t.product,
+    links: [
+      { label: t.components, href: componentsPath },
+      { label: t.themes, href: `${base}themes/` },
+    ],
+  },
+  {
+    title: t.resources,
+    links: [
+      { label: t.guide, href: href(lang, 'guide/') },
+      { label: 'GitHub', href: 'https://github.com/achimismaili/easy-web', external: true },
+    ],
+  },
+];
+const legalLinks: Link[] = [
+  { label: t.privacy, href: '#' },
+  { label: t.imprint, href: '#' },
+];
+
+const code = {
+  themeToggle: `import ThemeToggle from '@easy-web/core/components/ThemeToggle.astro';
+
+<ThemeToggle${l} />`,
+  languageSwitch: `import LanguageSwitch from '@easy-web/core/components/LanguageSwitch.astro';
+
+<LanguageSwitch${l}
+  currentLang="${lang}"
+  pathname={Astro.url.pathname}
+  alternates={[{ lang: '${other}', href: '${sample(other, 'components/')}', label: '${t.languageName[other]}' }]}
+/>`,
+  header: `import Header from '@easy-web/core/components/Header.astro';
+
+<Header${l}
+  siteName="easy-web"
+  navItems={navItems}
+  currentLang="${lang}"
+  pathname={Astro.url.pathname}
+  logo={{ src: '/images/logo.svg', alt: 'easy-web' }}
+/>`,
+  headerCentered: `import HeaderCentered from '@easy-web/core/components/HeaderCentered.astro';
+
+<HeaderCentered${l} siteName="easy-web" navItems={navItems} currentLang="${lang}" pathname={Astro.url.pathname} />`,
+  headerFlyout: `import HeaderFlyout from '@easy-web/core/components/HeaderFlyout.astro';
+
+<HeaderFlyout${l}
+  siteName="easy-web"
+  navItems={[
+    { label: '${t.themes}', href: '/themes/', children: [
+      { label: '${t.ocean}', href: '/themes/ocean/' },
+      { label: '${t.forest}', href: '/themes/forest/' },
+    ] },
+  ]}
+  currentLang="${lang}"
+  pathname={Astro.url.pathname}
+  logo={{ src: '/images/logo.svg', alt: 'easy-web' }}
+/>`,
+  headerHideOnScroll: `import HeaderHideOnScroll from '@easy-web/core/components/HeaderHideOnScroll.astro';
+
+<HeaderHideOnScroll${l} siteName="easy-web" navItems={navItems} currentLang="${lang}" pathname={Astro.url.pathname} />`,
+  footer: `import Footer from '@easy-web/core/components/Footer.astro';
+import ThemeToggle from '@easy-web/core/components/ThemeToggle.astro';
+
+<Footer${l}
+  siteName="easy-web"
+  columns={[{ title: '${t.product}', links: [{ label: '${t.components}', href: '${sample(lang, 'components/')}' }] }]}
+  legalLinks={[{ label: '${t.privacy}', href: '${sample(lang, 'privacy/')}' }]}
+>
+  <ThemeToggle slot="actions"${l} />
+</Footer>`,
+  pageShell: `import PageShell from '@easy-web/core/components/PageShell.astro';
+
+<PageShell${l}>
+  <Header slot="header"${l} siteName="easy-web" navItems={navItems} currentLang="${lang}" pathname={Astro.url.pathname} />
+  <slot />
+  <Footer slot="footer"${l} siteName="easy-web" legalLinks={legalLinks} />
+</PageShell>`,
+};
+---
+
+<Demo id="theme-toggle" name="ThemeToggle" description={t.themeToggle} code={code.themeToggle}>
+  <ThemeToggle lang={lang} />
+</Demo>
+
+<Demo id="language-switch" name="LanguageSwitch" description={t.languageSwitch} code={code.languageSwitch}>
+  <LanguageSwitch lang={lang} currentLang={lang} pathname={componentsPath} alternates={alternates} />
+</Demo>
+
+<Demo id="header" name="Header" description={t.header} code={code.header} inert>
+  <div class="chrome-frame">
+    <Header
+      lang={lang}
+      siteName="easy-web"
+      navItems={navItems}
+      currentLang={lang}
+      pathname={componentsPath}
+      brandHref={href(lang)}
+      alternateHref={href(other, 'components/')}
+      logo={media.logo}
+      navId="demo-header-nav"
+    />
+  </div>
+</Demo>
+
+<Demo id="header-centered" name="HeaderCentered" description={t.headerCentered} code={code.headerCentered} inert>
+  <div class="chrome-frame">
+    <HeaderCentered
+      lang={lang}
+      siteName="easy-web"
+      navItems={navItems}
+      currentLang={lang}
+      pathname={componentsPath}
+      alternateHref={href(other, 'components/')}
+      navId="demo-header-centered-nav"
+    />
+  </div>
+</Demo>
+
+<Demo id="header-flyout" name="HeaderFlyout" description={t.headerFlyout} code={code.headerFlyout} inert>
+  <div class="chrome-frame">
+    <HeaderFlyout
+      lang={lang}
+      siteName="easy-web"
+      navItems={flyoutItems}
+      currentLang={lang}
+      pathname={componentsPath}
+      alternateHref={href(other, 'components/')}
+      logo={media.logo}
+      navId="demo-header-flyout-nav"
+    />
+  </div>
+</Demo>
+
+<Demo id="header-hide-on-scroll" name="HeaderHideOnScroll" description={t.headerHideOnScroll} code={code.headerHideOnScroll} />
+
+<Demo id="footer" name="Footer" description={t.footer} code={code.footer} inert>
+  <div class="chrome-frame">
+    <Footer lang={lang} siteName="easy-web" columns={columns} legalLinks={legalLinks}>
+      <ThemeToggle slot="actions" lang={lang} />
+    </Footer>
+  </div>
+</Demo>
+
+<Demo id="page-shell" name="PageShell" description={t.pageShell} code={code.pageShell} />
+
+<style>
+  .chrome-frame {
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-md);
+    overflow: hidden;
+  }
+</style>

@@ -1,0 +1,21 @@
+{
+  "mainNav": {
+    "de": [{ "label": "Veranstaltungen", "href": "/events/", "order": 1 }],
+    "en": [{ "label": "Events", "href": "/events/", "order": 1 }]
+  },
+  "legalNav": {
+    "de": [{ "label": "Impressum", "href": "/de/impressum/" }],
+    "en": [{ "label": "Legal notice", "href": "/en/legal/" }]
+  },
+  "skipLabel": {
+    "de": "Zum Inhalt",
+    "en": "Skip to content"
+  },
+  "footerNav": {
+    "de": [{ "label": "Kontakt", "href": "/de/kontakt/" }],
+    "en": [{ "label": "Contact", "href": "/en/contact/" }]
+  },
+  "socialLinks": [
+    { "network": "Example Network", "url": "https://example.com/social", "label": "Fixture profile" }
+  ]
+}

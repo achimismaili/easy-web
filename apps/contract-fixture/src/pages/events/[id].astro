@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import GallerySection from '@easy-web/core/components/GallerySection.astro';
+import StructuredData from '@easy-web/core/components/StructuredData.astro';
+import { jsonLd } from '@easy-web/core/contracts';
+
+export const getStaticPaths = (async () => {
+  const events = await getCollection('events');
+  return events.map((entry: CollectionEntry<'events'>) => ({ params: { id: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  readonly entry: CollectionEntry<'events'>;
+}
+
+const { entry } = Astro.props;
+const structuredData = jsonLd.event(entry.data, {
+  siteUrl: Astro.site?.toString() ?? 'https://fixture.example.com',
+  url: Astro.url.pathname,
+  inLanguage: 'en',
+}, { type: 'Event' });
+---
+
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>{entry.data.title}</title></head>
+  <body>
+    <main>
+      <h1>{entry.data.title}</h1>
+      <p>{entry.data.description}</p>
+      <GallerySection gallery={{ kind: 'image-grid', title: 'Photos', items: entry.data.photos }} />
+    </main>
+    <StructuredData data={structuredData} />
+  </body>
+</html>

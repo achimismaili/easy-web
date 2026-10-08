@@ -1,37 +1,13 @@
 ---
 /**
- * Section – semantic wrapper with optional heading, constrained width, and slot.
- * Pure Astro component using --ew-* design tokens.
+ * @deprecated Import `@easy-web/core/components/Section.astro` instead.
+ * Compatibility wrapper: renders the core component with the same props and slots.
  */
-interface Props {
-  title?: string;
-  id?: string;
-}
+import type { ComponentProps } from 'astro/types';
+import Section from '@easy-web/core/components/Section.astro';
 
-const { title, id } = Astro.props;
+type Props = ComponentProps<typeof Section>;
+
+const props = Astro.props;
 ---
-
-<section class="ew-section" id={id}>
-  <div class="ew-section__inner">
-    {title && <h2 class="ew-section__title">{title}</h2>}
-    <slot />
-  </div>
-</section>
-
-<style>
-  .ew-section {
-    padding: var(--ew-space-8) var(--ew-space-5);
-  }
-  .ew-section__inner {
-    max-width: 72rem;
-    margin: 0 auto;
-  }
-  .ew-section__title {
-    font-family: var(--ew-font-sans);
-    font-size: var(--ew-text-xl);
-    font-weight: 700;
-    color: var(--ew-on-surface);
-    margin: 0 0 var(--ew-space-5);
-    line-height: var(--ew-leading-tight);
-  }
-</style>
+<Section {...props}><slot /></Section>

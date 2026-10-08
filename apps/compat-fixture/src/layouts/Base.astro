@@ -1,0 +1,39 @@
+---
+import '@easy-web/theme-core/tokens.css';
+import '@easy-web/theme-core/fonts.css';
+import { noFlashScript } from '@easy-web/theme-core';
+import SeoHead from '@easy-web/seo/components/SeoHead';
+import PageShell from '@easy-web/content-blocks/components/PageShell';
+import Header from '@easy-web/content-blocks/components/Header';
+import Footer from '@easy-web/content-blocks/components/Footer';
+import ThemeToggle from '@easy-web/content-blocks/components/ThemeToggle';
+
+interface Props {
+  title: string;
+  pageId: string;
+}
+
+const { title, pageId } = Astro.props;
+const navItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Headers', href: '/headers/' },
+  { label: 'Gallery', href: '/gallery/' },
+];
+---
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline set:html={noFlashScript} />
+    <SeoHead title={title} pathname={Astro.url.pathname} locale="de" siteName="Compat Fixture" />
+  </head>
+  <body data-page={pageId}>
+    <PageShell>
+      <Header slot="header" siteName="Compat Fixture" navItems={navItems} currentLang="de" pathname={Astro.url.pathname} locales={['de']}>
+        <ThemeToggle slot="actions" label="Farbschema wechseln" />
+      </Header>
+      <slot />
+      <Footer slot="footer" siteName="Compat Fixture" legalLinks={[{ label: 'Impressum', href: '/legal/' }]} currentYear={2026} />
+    </PageShell>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "de": {
+    "image": "../../assets/fixtures/not-found.svg",
+    "heading": "Nicht gefunden",
+    "message": "Diese Fixture-Seite existiert nicht."
+  },
+  "en": {
+    "image": "../../assets/fixtures/not-found.svg",
+    "heading": "Not found",
+    "message": "This fixture page does not exist."
+  }
+}

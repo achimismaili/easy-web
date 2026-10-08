@@ -1,0 +1,137 @@
+---
+/**
+ * The component gallery: every @easy-web/core component rendered from the
+ * content contracts. Both locale pages render it; `lang` localizes the copy,
+ * the alt text and the built-in labels of every component.
+ */
+import type { Page } from '@easy-web/core/contracts';
+import type { ShowcaseLang } from '../../lib/showcase';
+import ChromeDemos from './ChromeDemos.astro';
+import ContentDemos from './ContentDemos.astro';
+import GalleryDemos from './GalleryDemos.astro';
+import SectionDemos from './SectionDemos.astro';
+import StructuredDataDemo from './StructuredDataDemo.astro';
+
+interface Props {
+  lang: ShowcaseLang;
+  page: Page;
+}
+
+const { lang, page } = Astro.props;
+
+const en = {
+  intro: 'Each specimen is imported from @easy-web/core and takes the content contracts. Images come in both kinds: local assets render with a responsive srcset, public paths as plain images.',
+  onThisPage: 'On this page',
+  groups: { chrome: 'Site chrome', content: 'Content', sections: 'Sections', galleries: 'Galleries', data: 'SEO and structured data' },
+};
+
+const de: typeof en = {
+  intro: 'Jedes Exemplar wird aus @easy-web/core importiert und nimmt die Inhaltsverträge. Bilder gibt es in beiden Arten: Lokale Assets erhalten ein responsives srcset, öffentliche Pfade bleiben einfache Bilder.',
+  onThisPage: 'Auf dieser Seite',
+  groups: { chrome: 'Seitenrahmen', content: 'Inhalt', sections: 'Abschnitte', galleries: 'Galerien', data: 'SEO und strukturierte Daten' },
+};
+
+const t = { en, de }[lang];
+const groups = [
+  { id: 'site-chrome', title: t.groups.chrome },
+  { id: 'content', title: t.groups.content },
+  { id: 'sections', title: t.groups.sections },
+  { id: 'galleries', title: t.groups.galleries },
+  { id: 'structured-data-group', title: t.groups.data },
+];
+---
+
+<div class="gallery">
+  <header class="gallery__intro">
+    <h1 class="gallery__title">{page.title}</h1>
+    <p class="gallery__lead">{page.description}</p>
+    <p class="gallery__text">{t.intro}</p>
+    <nav class="gallery__toc" aria-label={t.onThisPage}>
+      <ul class="gallery__toc-list">
+        {groups.map((group) => <li><a class="gallery__toc-link" href={`#${group.id}`}>{group.title}</a></li>)}
+      </ul>
+    </nav>
+  </header>
+
+  <section class="gallery__group" id="site-chrome">
+    <h2 class="gallery__group-title">{t.groups.chrome}</h2>
+    <ChromeDemos lang={lang} />
+  </section>
+
+  <section class="gallery__group" id="content">
+    <h2 class="gallery__group-title">{t.groups.content}</h2>
+    <ContentDemos lang={lang} />
+  </section>
+
+  <section class="gallery__group" id="sections">
+    <h2 class="gallery__group-title">{t.groups.sections}</h2>
+    <SectionDemos lang={lang} />
+  </section>
+
+  <section class="gallery__group" id="galleries">
+    <h2 class="gallery__group-title">{t.groups.galleries}</h2>
+    <GalleryDemos lang={lang} />
+  </section>
+
+  <section class="gallery__group" id="structured-data-group">
+    <h2 class="gallery__group-title">{t.groups.data}</h2>
+    <StructuredDataDemo lang={lang} page={page} />
+  </section>
+</div>
+
+<style>
+  .gallery {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: var(--ew-space-6) var(--ew-space-5) var(--ew-space-8);
+  }
+  .gallery__title {
+    margin: 0 0 var(--ew-space-3);
+    font-size: var(--ew-text-3xl);
+    line-height: var(--ew-leading-tight);
+  }
+  .gallery__lead {
+    margin: 0 0 var(--ew-space-3);
+    font-size: var(--ew-text-lg);
+    line-height: var(--ew-leading-normal);
+  }
+  .gallery__text {
+    margin: 0;
+    max-width: 45rem;
+    color: var(--ew-muted);
+    line-height: var(--ew-leading-normal);
+  }
+  .gallery__toc-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ew-space-2);
+    margin: var(--ew-space-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .gallery__toc-link {
+    display: inline-block;
+    padding: var(--ew-space-1) var(--ew-space-3);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-full);
+    color: var(--ew-on-surface);
+    font-size: var(--ew-text-sm);
+    text-decoration: none;
+  }
+  .gallery__toc-link:hover {
+    background: var(--ew-surface-muted);
+  }
+  .gallery__toc-link:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+  .gallery__group {
+    margin-top: var(--ew-space-8);
+    scroll-margin-top: var(--ew-space-9);
+  }
+  .gallery__group-title {
+    margin: 0;
+    font-size: var(--ew-text-xl);
+    line-height: var(--ew-leading-tight);
+  }
+</style>

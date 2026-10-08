@@ -1,0 +1,10 @@
+---
+import Base from '../layouts/Base.astro';
+import NotFound from '@easy-web/content-blocks/components/NotFound';
+import { notFoundSchema } from '@easy-web/content-blocks/schemas/notFound';
+
+const content = notFoundSchema.parse({ de: { heading: 'Nichts gefunden', message: 'Diese Seite gibt es nicht.' } });
+---
+<Base title="404" pageId="not-found">
+  <NotFound currentLang="de" defaultLocale="de" heading={content.de?.heading} message={content.de?.message} />
+</Base>

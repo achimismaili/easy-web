@@ -1,0 +1,90 @@
+---
+/** SEO specimens: a page contract mapped to schema.org JSON-LD, and the document head. */
+import StructuredData from '@easy-web/core/components/StructuredData.astro';
+import { jsonLd, type Page } from '@easy-web/core/contracts';
+import type { ShowcaseLang } from '../../lib/showcase';
+import Demo from './Demo.astro';
+
+interface Props {
+  lang: ShowcaseLang;
+  /** The page this specimen describes: the same contract that titles the page. */
+  page: Page;
+}
+
+const { lang, page } = Astro.props;
+const siteUrl = Astro.site?.href;
+if (!siteUrl) throw new Error('Structured data needs `site` in astro.config.mjs.');
+
+const data = jsonLd.page(page, { url: Astro.url.pathname, siteUrl, inLanguage: lang });
+
+const en = {
+  description: 'Maps a content contract to schema.org JSON-LD and emits it as a script tag. This page describes itself.',
+  emitted: 'The WebPage object in the markup of this page:',
+  seoHead: 'Title, description, canonical URL, Open Graph, Twitter and hreflang tags, plus the same structured data. It renders into the document head, so it is shown as code only.',
+};
+
+const de: typeof en = {
+  description: 'Bildet einen Inhaltsvertrag auf schema.org-JSON-LD ab und gibt es als Script-Tag aus. Diese Seite beschreibt sich selbst.',
+  emitted: 'Das WebPage-Objekt im Markup dieser Seite:',
+  seoHead: 'Titel, Beschreibung, kanonische URL, Open-Graph-, Twitter- und hreflang-Tags sowie dieselben strukturierten Daten. Die Komponente rendert in den Dokumentkopf und wird deshalb nur als Code gezeigt.',
+};
+
+const t = { en, de }[lang];
+
+// A literal fence line inside the frontmatter would read as its end to line-based tools.
+const fence = '-'.repeat(3);
+const code = {
+  structuredData: `${fence}
+import StructuredData from '@easy-web/core/components/StructuredData.astro';
+import { jsonLd } from '@easy-web/core/contracts';
+
+const data = jsonLd.page(
+  { title: '${page.title}', description },
+  { url: Astro.url.pathname, siteUrl: Astro.site!.href, inLanguage: '${lang}' },
+);
+${fence}
+<StructuredData data={data} />`,
+  seoHead: `import SeoHead from '@easy-web/core/components/SeoHead.astro';
+
+<head>
+  <SeoHead
+    title="${page.title}"
+    description={description}
+    pathname={Astro.url.pathname}
+    locale="${lang}"
+    siteName="easy-web"
+    structuredData={data}
+  />
+</head>`,
+};
+---
+
+<Demo id="structured-data" name="StructuredData" description={t.description} code={code.structuredData}>
+  <StructuredData data={data} />
+  <p class="emitted">{t.emitted}</p>
+  <pre class="emitted__json" tabindex="0"><code>{JSON.stringify(data, null, 2)}</code></pre>
+</Demo>
+
+<Demo id="seo-head" name="SeoHead" description={t.seoHead} code={code.seoHead} />
+
+<style>
+  .emitted {
+    margin: 0 0 var(--ew-space-2);
+    color: var(--ew-muted);
+    font-size: var(--ew-text-sm);
+  }
+  .emitted__json {
+    margin: 0;
+    padding: var(--ew-space-4);
+    background: var(--ew-surface-muted);
+    border-radius: var(--ew-radius-md);
+    font-family: var(--ew-font-mono);
+    font-size: var(--ew-text-xs);
+    line-height: var(--ew-leading-normal);
+    overflow-x: auto;
+  }
+  .emitted__json:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+</style>

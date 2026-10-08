@@ -1,0 +1,54 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { AnyImage, DecorativeImage } from '../contracts/types.js';
+
+export interface Props {
+  image: AnyImage;
+  widths?: number[];
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  class?: string;
+  width?: number;
+  height?: number;
+}
+
+const {
+  image,
+  widths = [400, 800, 1200],
+  sizes,
+  loading,
+  class: className,
+  width,
+  height,
+  ...attributes
+} = Astro.props;
+
+const isDecorative = (img: AnyImage): img is DecorativeImage =>
+  'decorative' in img && img.decorative;
+const alt = isDecorative(image) ? '' : image.alt;
+const isMetadata = typeof image.src !== 'string';
+---
+{isMetadata ? (
+  <Image
+    src={image.src as ImageMetadata}
+    alt={alt}
+    widths={widths}
+    sizes={sizes}
+    class={className}
+    loading={loading}
+    width={width}
+    height={height}
+    {...attributes}
+  />
+) : (
+  <img
+    src={image.src as string}
+    alt={alt}
+    class={className}
+    loading={loading}
+    width={width}
+    height={height}
+    {...attributes}
+  />
+)}

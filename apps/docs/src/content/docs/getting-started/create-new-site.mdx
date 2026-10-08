@@ -29,38 +29,60 @@ pnpm create astro@latest my-site
 cd my-site
 ```
 
-### 2. Install easy-web packages
+### 2. Install easy-web
 
 ```bash
-pnpm add @easy-web/theme-core \
-         @easy-web/i18n \
-         @easy-web/content-blocks
+pnpm add @easy-web/core
 ```
+
+`@easy-web/core` is the base package. Add-ons such as `@easy-web/cms-adapters` or `@easy-web/swa` are optional.
 
 ### 3. Add the theme to your base layout
 
 ```astro
 ---
 // src/layouts/Base.astro
-import '@easy-web/theme-core/theme.css';
-import { ThemeToggle, Header, Footer } from '@easy-web/content-blocks';
+import '@easy-web/core/styles/tokens.css';
+import { noFlashScript } from '@easy-web/core/theme';
+import PageShell from '@easy-web/core/components/PageShell';
+import Header from '@easy-web/core/components/Header';
+import Footer from '@easy-web/core/components/Footer';
+import ThemeToggle from '@easy-web/core/components/ThemeToggle';
+
+const lang = 'en';
+const { pathname } = Astro.url;
 ---
-<html>
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
+    <script is:inline set:html={noFlashScript} />
   </head>
   <body>
-    <Header>
-      <ThemeToggle slot="end" />
-    </Header>
-    <main>
+    <PageShell lang={lang}>
+      <Header
+        slot="header"
+        lang={lang}
+        siteName="My Site"
+        navItems={[{ label: 'Home', href: '/' }]}
+        currentLang={lang}
+        pathname={pathname}
+      >
+        <ThemeToggle slot="actions" lang={lang} />
+      </Header>
       <slot />
-    </main>
-    <Footer />
+      <Footer
+        slot="footer"
+        lang={lang}
+        siteName="My Site"
+        legalLinks={[{ label: 'Privacy', href: '/privacy/' }]}
+      />
+    </PageShell>
   </body>
 </html>
 ```
+
+The `actions` slot replaces the header's default controls (theme toggle plus language switch). Leave it out to keep the defaults.
 
 ### 4. Configure i18n (optional)
 
@@ -80,7 +102,7 @@ export default defineConfig({
 
 ```typescript
 // Use localizedHref for locale-aware links
-import { localizedHref } from '@easy-web/i18n';
+import { localizedHref } from '@easy-web/core/i18n';
 
 const link = localizedHref('/about', 'de'); // → '/de/about'
 const defaultLink = localizedHref('/about', 'en'); // → '/about'
@@ -93,7 +115,7 @@ my-site/
 ├── src/
 │   ├── components/        # Site-specific components
 │   ├── layouts/
-│   │   └── Base.astro     # Uses easy-web-theme-core + content-blocks
+│   │   └── Base.astro     # Uses @easy-web/core
 │   ├── pages/
 │   │   ├── index.astro
 │   │   └── [lang]/        # i18n routes
@@ -106,4 +128,5 @@ my-site/
 ## Related
 
 - [Installation →](../installation/)
+- [Writing content types →](../../guides/content-types/)
 - [Architecture overview →](../../architecture/)

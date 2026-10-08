@@ -5,39 +5,54 @@ description: How the easy-web monorepo and ecosystem are structured
 
 ## Monorepo Structure
 
-The easy-web repository is a **pnpm + Turborepo monorepo** publishing focused, independently-versioned npm packages:
+The easy-web repository is a **pnpm + Turborepo monorepo** publishing one base package, a few add-ons and five compatibility shims, all on one shared version:
 
 ```
 easy-web/
 ├── packages/
-│   ├── theme-core/                      # CSS design tokens, light/dark theme
-│   ├── i18n/                            # i18n routing and SEO helpers
-│   ├── easy-web-content-blocks/         # Astro UI components
-│   ├── auth/                            # MSAL.js authentication wrapper
-│   ├── easy-web-cms-adapters/           # Decap CMS integration
-│   ├── easy-web-azure-functions-utils/  # Server-side helpers (planned)
-│   └── create-easy-web/               # Scaffold CLI (planned)
+│   ├── core/                            # Base: tokens, i18n, SEO, markdown, components, contracts
+│   ├── easy-web-cms-adapters/           # Add-on: Decap CMS, typed content definitions
+│   ├── easy-web-swa/                    # Add-on: Azure Static Web Apps 404 config
+│   ├── auth/                            # Add-on: MSAL.js authentication wrapper
+│   ├── easy-web-brand/                  # Add-on: favicon and icon generation
+│   ├── create-easy-web/                 # Reserved: scaffold CLI (planned)
+│   ├── theme-core/                      # Deprecated shim, re-exports core/theme
+│   ├── i18n/                            # Deprecated shim, re-exports core/i18n
+│   ├── easy-web-content-blocks/         # Deprecated shim, re-exports core/components
+│   ├── seo/                             # Deprecated shim, re-exports core/seo
+│   └── easy-web-markdown/               # Deprecated shim, re-exports core/markdown
 └── apps/
-    └── docs/                            # This documentation site
+    ├── docs/                            # This documentation site
+    ├── showcase/                        # Live component gallery
+    ├── contract-fixture/                # Conformance gate test site
+    └── compat-fixture/                  # Proves the compatibility shims still build
 ```
 
 ## Package Dependency Graph
 
 ```mermaid
 graph TD
+    CORE["@easy-web/core"]
+    CMS["@easy-web/cms-adapters"]
+    SWA["@easy-web/swa"]
+    AUTH["@easy-web/auth"]
+    BRAND["@easy-web/brand"]
+    CLI["@easy-web/create"]
     TC["@easy-web/theme-core"]
     I18N["@easy-web/i18n"]
     CB["@easy-web/content-blocks"]
-    AUTH["@easy-web/auth"]
-    CMS["@easy-web/cms-adapters"]
-    AFU["@easy-web/azure-functions-utils"]
-    CLI["@easy-web/create"]
+    SEO["@easy-web/seo"]
+    MD["@easy-web/markdown"]
 
-    CB --> TC
-    AUTH --> TC
+    CMS --> CORE
+    TC -.-> CORE
+    I18N -.-> CORE
+    CB -.-> CORE
+    SEO -.-> CORE
+    MD -.-> CORE
 ```
 
-`theme-core` is the only shared dependency. All other packages are independent of each other.
+`core` is the base every site installs. `cms-adapters` depends on it for the content contracts; `swa`, `auth` and `brand` are independent. The dashed edges are the deprecated compatibility packages, which only re-export core and are removed in 2.0.
 
 ## The Consumer Pattern
 

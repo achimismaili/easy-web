@@ -1,69 +1,13 @@
 ---
-import type { GalleryEntry } from '../schemas/galleries';
-import GalleryImageGrid from './GalleryImageGrid.astro';
-import GalleryHeroSlider from './GalleryHeroSlider.astro';
-import GalleryCarousel from './GalleryCarousel.astro';
-import GalleryMasonryGrid from './GalleryMasonryGrid.astro';
-import GalleryFeatureHighlight from './GalleryFeatureHighlight.astro';
-import GalleryLightboxGrid from './GalleryLightboxGrid.astro';
+/**
+ * @deprecated Import `@easy-web/core/components/GallerySection.astro` instead.
+ * Compatibility wrapper: renders the core component with the same props and slots.
+ */
+import type { ComponentProps } from 'astro/types';
+import GallerySection from '@easy-web/core/components/GallerySection.astro';
 
-interface Props {
-  entry: { data: GalleryEntry } | undefined | null;
-}
+type Props = ComponentProps<typeof GallerySection>;
 
-const { entry } = Astro.props;
-const data = entry?.data;
+const props = Astro.props;
 ---
-
-{data?.kind === 'image-grid' && (
-  <GalleryImageGrid
-    title={data.title}
-    columns={data.columns}
-    gap={data.gap}
-    aspectRatio={data.aspectRatio}
-    items={data.items}
-  />
-)}
-{data?.kind === 'hero-slider' && (
-  <GalleryHeroSlider
-    title={data.title}
-    autoplay={data.autoplay}
-    interval={data.interval}
-    height={data.height}
-    slides={data.slides}
-  />
-)}
-{data?.kind === 'carousel' && (
-  <GalleryCarousel
-    title={data.title}
-    autoplay={data.autoplay}
-    interval={data.interval}
-    showDots={data.showDots}
-    showArrows={data.showArrows}
-    slides={data.slides}
-  />
-)}
-{data?.kind === 'masonry-grid' && (
-  <GalleryMasonryGrid
-    title={data.title}
-    columns={data.columns}
-    gap={data.gap}
-    items={data.items}
-  />
-)}
-{data?.kind === 'feature-highlight' && (
-  <GalleryFeatureHighlight
-    title={data.title}
-    gap={data.gap}
-    items={data.items}
-  />
-)}
-{data?.kind === 'lightbox-grid' && (
-  <GalleryLightboxGrid
-    title={data.title}
-    columns={data.columns}
-    gap={data.gap}
-    aspectRatio={data.aspectRatio}
-    items={data.items}
-  />
-)}
+<GallerySection {...props} />

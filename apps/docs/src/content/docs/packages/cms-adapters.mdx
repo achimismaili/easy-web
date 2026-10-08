@@ -1,6 +1,6 @@
 ---
 title: easy-web-cms-adapters
-description: Decap CMS integration — admin page component, config generator, and frontmatter TypeScript types.
+description: Decap CMS add-on. Typed content definitions that generate the Decap form and the Astro schema, plus the standalone admin page.
 ---
 
 ## Installation
@@ -11,32 +11,169 @@ pnpm add @easy-web/cms-adapters
 
 ## Overview
 
-`@easy-web/cms-adapters` integrates [Decap CMS](https://decapcms.org/) into the easy-web ecosystem. It provides three things:
+`@easy-web/cms-adapters` is the CMS add-on to [`@easy-web/core`](../core/). It integrates [Decap CMS](https://decapcms.org/) and gives you:
 
-1. **`AdminPage` Astro component** — a standalone page that loads Decap CMS from CDN. It deliberately does not use the site's main Astro layout so it cannot interfere with the MSAL-based authentication on the rest of the site.
-2. **Config generator** — `generateDecapConfigString` and `generateDecapConfig` produce the `config.yml` that Decap requires, pre-wired for the Azure DevOps backend and Entra ID OAuth.
-3. **Frontmatter TypeScript types** — `BlogFrontmatter`, `PageFrontmatter`, `SiteConfig`, and more, for type-safe Astro content collections.
+1. **Typed content definitions.** `field.*` builders, `fieldSets.*` and `defineContentType` / `defineSingleton` describe a content type once, in Decap's own field format.
+2. **Generators.** `toAstroSchema` turns a definition into the zod schema for `src/content.config.ts`; `buildDecapConfig` turns all definitions into the Decap config. `InferData` gives the TypeScript type.
+3. **`AdminPage`.** A standalone `/admin` page that loads Decap from a CDN and takes the generated config directly, so there's no hand-written `config.yml`.
+
+Because the form, the schema and the type come from one definition, they can't drift apart. Pair each definition with an `assertImplements` check against the [core contracts](../core/#content-contracts) and drift fails the build. [Writing content types](../../guides/content-types/) is the step-by-step guide.
 
 See [ADR 0006](https://github.com/achimismaili/websites/blob/main/docs/decisions/0006-cms-agnostic-adapter-pattern.md) for the adapter-pattern design rationale.
 
-## AdminPage component
+## Content definitions
 
-`AdminPage` is a standalone Astro component that renders a complete HTML admin interface. Because it deliberately avoids the site layout, it must be placed at a route that uses no shared layout (typically `/admin`).
+```ts
+// src/content/model.ts
+import { defineContentType, defineSingleton, field, fieldSets, type InferData } from '@easy-web/cms-adapters';
+import { assertImplements, type Article } from '@easy-web/core/contracts';
+
+export const news = defineContentType({
+  name: 'news',
+  label: 'Neuigkeiten',
+  folder: 'src/content/news',
+  publish: 'missing-date-means-draft',
+  mediaFolder: 'src/assets/news',
+  publicFolder: '/src/assets/news',
+  fields: [...fieldSets.article(), field.body()],
+});
+
+export const navigation = defineSingleton({
+  name: 'navigation',
+  label: 'Navigation',
+  file: 'src/content/siteConfig/navigation.json',
+  fields: fieldSets.navigation(['de', 'en']),
+});
+
+export const contentTypes = [news] as const;
+export const singletons = [navigation] as const;
+
+assertImplements<InferData<typeof news>, Article>();
+```
+
+### `defineContentType(options)`
+
+| Option | Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `name` | `string` | yes | Decap collection name |
+| `label` | `string` | yes | |
+| `labelSingular` | `string` | no | |
+| `folder` | `string` | yes | Entry folder |
+| `fields` | `FieldDef[]` | yes | `field.*` calls and spread `fieldSets.*` |
+| `format` | `'md' \| 'yml' \| 'json'` | no | |
+| `slug` | `string` | no | Decap slug template |
+| `identifierField` | `string` | no | Defaults to `title`, then `name` |
+| `create`, `delete` | `boolean` | no | |
+| `sortableFields` | `string[]` | no | |
+| `locales` | `string[]` | no | Two or more: one collection per locale plus `locale` and `translationKey` fields |
+| `publish` | `PublishRule` | no | Adds an optional `publishDate` field |
+| `variants` | `{ discriminator, label, options }` | no | One Decap form per variant, one schema as a discriminated union |
+| `mediaFolder`, `publicFolder` | `string` | no | Image locations; a `/src/` public folder makes images Astro assets |
+
+### `defineSingleton(options)`
+
+For a single data file such as navigation or site settings: `name`, `label`, `file`, `fields`, and optional `mediaFolder` / `publicFolder`.
+
+### Field builders and field sets
+
+`field` has one builder per Decap widget: `string`, `text`, `body`, `number`, `boolean`, `color`, `date`, `select`, `hidden`, `image`, `images`, `list`, `object`, `navItems`, `perLocale`. `fieldSets` has `item`, `page`, `article`, `event`, `organization`, `person`, `product`, `siteSettings`, `navigation`, `notFound` and `galleryVariants`, each matching the core contract of the same name. Both are documented in [Writing content types](../../guides/content-types/#field-builders).
+
+### Generators
+
+| Export | Returns |
+| :--- | :--- |
+| `toAstroSchema(definition)` | zod schema for `defineCollection({ schema })` |
+| `InferData<typeof definition>` | TypeScript data type (body excluded) |
+| `buildDecapConfig(options)` | Complete Decap config object |
+| `toDecapCollections(definition)` | Decap folder collections for one definition |
+| `toDecapFiles(singletons)` | Decap files collection for singletons |
+
+```ts
+// src/content.config.ts
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { toAstroSchema } from '@easy-web/cms-adapters';
+import { news } from './content/model';
+
+export const collections = {
+  news: defineCollection({
+    loader: glob({ pattern: '**/*.md', base: './src/content/news' }),
+    schema: toAstroSchema(news),
+  }),
+};
+```
+
+`buildDecapConfig` options:
+
+| Option | Type | Required |
+| :--- | :--- | :--- |
+| `backend` | `{ name: 'azure'; repo; tenant_id; app_id; branch? }` | yes |
+| `mediaFolder` | `string` | yes |
+| `publicFolder` | `string` | yes |
+| `contentTypes` | `ContentTypeDef[]` | yes |
+| `singletons` | `SingletonDef[]` | no |
+| `singletonsLabel` | `string` | no |
+| `locale` | `string` (editor UI, default `de`) | no |
+| `publishMode` | `string` | no |
+
+## Admin page from definitions
+
+`AdminPage` is a standalone Astro component that renders a complete HTML document. It deliberately avoids the site layout, so place it at a route with no shared layout (typically `/admin`).
 
 **Import:** `import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro'`
 
 ```astro
 ---
 // src/pages/admin.astro
-// No layout — AdminPage renders the full HTML document itself
+import { buildDecapConfig } from '@easy-web/cms-adapters';
+import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
+import { contentTypes, singletons } from '../content/model';
+
+const config = buildDecapConfig({
+  backend: {
+    name: 'azure',
+    repo: import.meta.env.CMS_REPO,
+    tenant_id: import.meta.env.CMS_TENANT_ID,
+    app_id: import.meta.env.CMS_APP_ID,
+  },
+  mediaFolder: 'src/assets',
+  publicFolder: '/src/assets',
+  contentTypes,
+  singletons,
+});
+---
+<AdminPage config={config} lang="de" title="Inhalte" />
+```
+
+| Prop | Type | Default |
+| :--- | :--- | :--- |
+| `config` | `object` | none; without it Decap loads `/admin/config.yml` (legacy) |
+| `decapVersion` | `string` | `3.14.0`; only honoured together with `config` |
+| `lang` | `string` | `en` |
+| `title` | `string` | `Content Manager` |
+
+Keep tenant and app ids out of the repo: read them from the environment as above.
+
+## Legacy API (deprecated)
+
+:::caution[Deprecated]
+The config generators and frontmatter types below predate content definitions. They still work in 1.x. New sites, and sites migrating to core, should use `defineContentType` with `buildDecapConfig` and `InferData` instead. See [Migrating to core](../../guides/migrating-to-core/).
+:::
+
+### AdminPage with `config.yml`
+
+```astro
+---
+// src/pages/admin.astro
+// No layout: AdminPage renders the full HTML document itself
 import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
 ---
 <AdminPage />
 ```
 
-The component loads Decap CMS from `unpkg.com/decap-cms@3.14.0` and expects `public/admin/config.yml` to be present. Generate that file using the config utilities below.
+Without `config`, the component loads Decap CMS from `unpkg.com/decap-cms@3.14.0` and expects `public/admin/config.yml` to be present.
 
-## Config generator
+## Config generator (deprecated)
 
 ### `generateDecapConfigString`
 
@@ -144,9 +281,9 @@ interface DecapConfigWriteResult {
 }
 ```
 
-## Frontmatter types
+## Frontmatter types (deprecated)
 
-These TypeScript types match the Decap CMS collection schemas generated by `generateDecapConfigString`. Import them in your Astro content collection config for type-safe frontmatter.
+Use `InferData<typeof definition>` instead. These hand-written types match the Decap CMS collection schemas generated by `generateDecapConfigString`. Import them in your Astro content collection config for type-safe frontmatter.
 
 ```typescript
 import type {

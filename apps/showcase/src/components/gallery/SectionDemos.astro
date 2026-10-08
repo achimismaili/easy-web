@@ -1,0 +1,181 @@
+---
+/** Page section specimens: hero, sections, calls to action, notices, legal layout and the 404 body. */
+import ContactSection from '@easy-web/core/components/ContactSection.astro';
+import CtaSection from '@easy-web/core/components/CtaSection.astro';
+import DraftBanner from '@easy-web/core/components/DraftBanner.astro';
+import Hero from '@easy-web/core/components/Hero.astro';
+import LanguageNotice from '@easy-web/core/components/LanguageNotice.astro';
+import LegalLayout from '@easy-web/core/components/LegalLayout.astro';
+import NotFound from '@easy-web/core/components/NotFound.astro';
+import Section from '@easy-web/core/components/Section.astro';
+import { href, showcaseMedia, type ShowcaseLang } from '../../lib/showcase';
+import Demo from './Demo.astro';
+
+interface Props {
+  lang: ShowcaseLang;
+}
+
+const { lang } = Astro.props;
+const other: ShowcaseLang = lang === 'en' ? 'de' : 'en';
+const media = showcaseMedia(lang);
+
+const en = {
+  hero: 'The opening banner of a page, with an optional call to action.',
+  heroTitle: 'Showcase your work',
+  heroSubtitle: 'Fast, multilingual and accessible websites from one set of components.',
+  heroCta: 'Get started',
+  section: 'A semantic wrapper with an optional heading and a constrained width. Every section component takes a class for local styling.',
+  sectionTitle: 'A section title',
+  sectionText: 'This content sits inside the section and uses the spacing of the design system.',
+  cta: 'A call-to-action banner with heading, optional body and one button. This one gets rounded corners from a page-scoped class.',
+  ctaHeading: 'Ready to get started?',
+  ctaBody: 'Build the next site on the shared components.',
+  ctaButton: 'Read the guide',
+  contact: 'A centered contact call to action that opens the mail client.',
+  contactHeading: 'Need a hand?',
+  contactBody: 'Write to us and describe what you are building.',
+  contactButton: 'Send an email',
+  draftBanner: 'A warning banner for unpublished content.',
+  draftMessage: 'This page is a draft and is not published yet.',
+  languageNotice: 'A subtle note about the language of the content.',
+  languageMessage: 'This page is also available in German.',
+  legal: 'A narrow layout for legal texts such as the privacy policy.',
+  legalTitle: 'Privacy policy',
+  legalUpdated: 'Last updated: June 2026',
+  legalText: 'This sample text shows the reading width and the typography of the legal layout.',
+  notFound: 'The body of a 404 page. Heading and message have built-in German and English copy; the illustration is a decorative image contract.',
+};
+
+const de: typeof en = {
+  hero: 'Das Eröffnungsbanner einer Seite, optional mit Call-to-Action.',
+  heroTitle: 'Präsentiere deine Arbeit',
+  heroSubtitle: 'Schnelle, mehrsprachige und barrierefreie Websites aus einem Satz Komponenten.',
+  heroCta: 'Jetzt starten',
+  section: 'Ein semantischer Wrapper mit optionaler Überschrift und begrenzter Breite. Jede Abschnittskomponente nimmt eine Klasse für lokales Styling.',
+  sectionTitle: 'Ein Abschnittstitel',
+  sectionText: 'Dieser Inhalt steht im Abschnitt und nutzt die Abstände des Designsystems.',
+  cta: 'Ein Call-to-Action-Banner mit Überschrift, optionalem Text und einem Button. Dieses erhält runde Ecken aus einer seitenlokalen Klasse.',
+  ctaHeading: 'Bereit loszulegen?',
+  ctaBody: 'Baue die nächste Website auf den gemeinsamen Komponenten.',
+  ctaButton: 'Zur Anleitung',
+  contact: 'Ein zentrierter Kontakt-Call-to-Action, der das Mailprogramm öffnet.',
+  contactHeading: 'Brauchst du Hilfe?',
+  contactBody: 'Schreib uns und beschreibe, was du baust.',
+  contactButton: 'E-Mail schreiben',
+  draftBanner: 'Ein Warnbanner für unveröffentlichte Inhalte.',
+  draftMessage: 'Diese Seite ist ein Entwurf und noch nicht veröffentlicht.',
+  languageNotice: 'Ein dezenter Hinweis zur Sprache des Inhalts.',
+  languageMessage: 'Diese Seite gibt es auch auf Englisch.',
+  legal: 'Ein schmales Layout für Rechtstexte wie die Datenschutzerklärung.',
+  legalTitle: 'Datenschutzerklärung',
+  legalUpdated: 'Stand: Juni 2026',
+  legalText: 'Dieser Beispieltext zeigt die Lesebreite und die Typografie des Rechtstext-Layouts.',
+  notFound: 'Der Inhalt einer 404-Seite. Überschrift und Meldung bringen deutschen und englischen Text mit; die Illustration ist ein dekorativer Bild-Vertrag.',
+};
+
+const t = { en, de }[lang];
+const sample = (path = '') => `${lang === 'en' ? '/' : `/${lang}/`}${path}`;
+
+// These components render no built-in text, so their samples carry no `lang`.
+const code = {
+  hero: `import Hero from '@easy-web/core/components/Hero.astro';
+
+<Hero title="${t.heroTitle}" subtitle="${t.heroSubtitle}" ctaLabel="${t.heroCta}" ctaHref="${sample('guide/')}" />`,
+  section: `import Section from '@easy-web/core/components/Section.astro';
+
+<Section title="${t.sectionTitle}">
+  <p>${t.sectionText}</p>
+</Section>`,
+  cta: `import CtaSection from '@easy-web/core/components/CtaSection.astro';
+
+<CtaSection
+  class="cta-rounded"
+  heading="${t.ctaHeading}"
+  body="${t.ctaBody}"
+  buttonLabel="${t.ctaButton}"
+  buttonHref="${sample('guide/')}"
+  variant="primary"
+/>
+
+<style>
+  .cta-rounded { border-radius: var(--ew-radius-xl); }
+</style>`,
+  contact: `import ContactSection from '@easy-web/core/components/ContactSection.astro';
+
+<ContactSection heading="${t.contactHeading}" body="${t.contactBody}" email="hello@example.com" buttonLabel="${t.contactButton}" />`,
+  draftBanner: `import DraftBanner from '@easy-web/core/components/DraftBanner.astro';
+
+<DraftBanner message="${t.draftMessage}" />`,
+  languageNotice: `import LanguageNotice from '@easy-web/core/components/LanguageNotice.astro';
+
+<LanguageNotice message="${t.languageMessage}" />`,
+  legal: `import LegalLayout from '@easy-web/core/components/LegalLayout.astro';
+
+<LegalLayout title="${t.legalTitle}" lastUpdated="${t.legalUpdated}">
+  <p>${t.legalText}</p>
+</LegalLayout>`,
+  notFound: `import NotFound from '@easy-web/core/components/NotFound.astro';
+
+<NotFound
+  currentLang="${lang}"
+  defaultLocale="en"
+  alternateHref="${lang === 'en' ? '/de/' : '/'}"
+  image={{ src: '/images/aurora.jpg', decorative: true }}
+/>`,
+};
+---
+
+<Demo id="hero" name="Hero" description={t.hero} code={code.hero}>
+  <Hero title={t.heroTitle} subtitle={t.heroSubtitle} ctaLabel={t.heroCta} ctaHref={href(lang, 'guide/')} />
+</Demo>
+
+<Demo id="section" name="Section" description={t.section} code={code.section}>
+  <Section title={t.sectionTitle}>
+    <p>{t.sectionText}</p>
+  </Section>
+</Demo>
+
+<Demo id="cta-section" name="CtaSection" description={t.cta} code={code.cta}>
+  <CtaSection
+    class="cta-rounded"
+    heading={t.ctaHeading}
+    body={t.ctaBody}
+    buttonLabel={t.ctaButton}
+    buttonHref={href(lang, 'guide/')}
+    variant="primary"
+  />
+</Demo>
+
+<Demo id="contact-section" name="ContactSection" description={t.contact} code={code.contact}>
+  <ContactSection heading={t.contactHeading} body={t.contactBody} email="hello@example.com" buttonLabel={t.contactButton} />
+</Demo>
+
+<Demo id="draft-banner" name="DraftBanner" description={t.draftBanner} code={code.draftBanner}>
+  <DraftBanner message={t.draftMessage} />
+</Demo>
+
+<Demo id="language-notice" name="LanguageNotice" description={t.languageNotice} code={code.languageNotice}>
+  <LanguageNotice message={t.languageMessage} />
+</Demo>
+
+<Demo id="legal-layout" name="LegalLayout" description={t.legal} code={code.legal}>
+  <LegalLayout title={t.legalTitle} lastUpdated={t.legalUpdated}>
+    <p>{t.legalText}</p>
+  </LegalLayout>
+</Demo>
+
+<Demo id="not-found" name="NotFound" description={t.notFound} code={code.notFound} inert>
+  <NotFound
+    currentLang={lang}
+    defaultLocale="en"
+    rootHref={href(lang)}
+    alternateHref={href(other)}
+    image={{ src: media.paths.aurora.src, decorative: true }}
+  />
+</Demo>
+
+<style>
+  .cta-rounded {
+    border-radius: var(--ew-radius-xl);
+  }
+</style>

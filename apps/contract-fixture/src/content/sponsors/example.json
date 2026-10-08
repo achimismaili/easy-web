@@ -1,0 +1,9 @@
+{
+  "name": "Example Sponsor",
+  "logo": {
+    "src": "../../assets/fixtures/sponsor.svg",
+    "alt": "Example Sponsor logo"
+  },
+  "url": "https://example.com/sponsor",
+  "description": "A fictional organization used only by the contract fixture."
+}

@@ -1,0 +1,37 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import type { InferData } from '@easy-web/cms-adapters';
+import StructuredData from '@easy-web/core/components/StructuredData.astro';
+import { jsonLd, type Article, type HasBody } from '@easy-web/core/contracts';
+import ArticleBody from '../../components/ArticleBody.astro';
+import { news } from '../../content/model';
+
+export const getStaticPaths = (async () => {
+  const articles = await getCollection('news');
+  return articles.map((entry: CollectionEntry<'news'>) => ({ params: { id: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  readonly entry: CollectionEntry<'news'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const articleData: InferData<typeof news> = entry.data;
+const article = { ...articleData, Content } satisfies Article & HasBody;
+const structuredData = jsonLd.article(entry.data, {
+  siteUrl: Astro.site?.toString() ?? 'https://fixture.example.com',
+  url: Astro.url.pathname,
+  inLanguage: 'en',
+}, { type: 'NewsArticle' });
+---
+
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>{entry.data.title}</title></head>
+  <body>
+    <main><ArticleBody {...article} /></main>
+    <StructuredData data={structuredData} />
+  </body>
+</html>

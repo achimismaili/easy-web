@@ -1,0 +1,162 @@
+---
+/** Content specimens: the Media primitive in both media kinds, cards and prose. */
+import BlogPostCard from '@easy-web/core/components/BlogPostCard.astro';
+import Card from '@easy-web/core/components/Card.astro';
+import CardGrid from '@easy-web/core/components/CardGrid.astro';
+import Media from '@easy-web/core/components/Media.astro';
+import Prose from '@easy-web/core/components/Prose.astro';
+import { base, href, showcaseMedia, type ShowcaseLang } from '../../lib/showcase';
+import Demo from './Demo.astro';
+
+interface Props {
+  lang: ShowcaseLang;
+}
+
+const { lang } = Astro.props;
+const media = showcaseMedia(lang);
+
+const en = {
+  media: 'Renders any image contract. A local asset becomes a responsive image with srcset and sizes; a public path stays a plain img. It replaces the deprecated UniversalMedia.',
+  assetCaption: 'Local asset (ImageMetadata): srcset and sizes',
+  pathCaption: 'Public path (string): a plain img',
+  cards: 'Cards take one item contract: title, description, an optional image of either kind and an optional link target.',
+  guideCard: { title: 'Getting started', description: 'Install the core package and render the first page.' },
+  themesCard: { title: 'Theme gallery', description: 'The same components in four colour palettes.' },
+  textCard: { title: 'No image needed', description: 'Without an image the card is text only; without href it is no link.' },
+  blogPostCard: 'An article contract: the date comes from datePublished and is formatted for the locale.',
+  article: { title: 'Building the component gallery', description: 'How this page renders every component from content contracts.' },
+  prose: 'Typographic styles for rendered Markdown and other plain HTML.',
+  proseHeading: 'Typographic styling',
+  proseText: 'Paragraphs, lists and headings get consistent spacing, without a single class.',
+  proseItems: ['Readable line length', 'Spacing from the design tokens'],
+};
+
+const de: typeof en = {
+  media: 'Rendert jeden Bild-Vertrag. Ein lokales Asset wird ein responsives Bild mit srcset und sizes, ein öffentlicher Pfad bleibt ein einfaches img. Ersetzt das veraltete UniversalMedia.',
+  assetCaption: 'Lokales Asset (ImageMetadata): srcset und sizes',
+  pathCaption: 'Öffentlicher Pfad (String): ein einfaches img',
+  cards: 'Karten nehmen einen Item-Vertrag: Titel, Beschreibung, optional ein Bild beider Arten und ein Linkziel.',
+  guideCard: { title: 'Erste Schritte', description: 'Das Kernpaket installieren und die erste Seite rendern.' },
+  themesCard: { title: 'Theme-Galerie', description: 'Dieselben Komponenten in vier Farbpaletten.' },
+  textCard: { title: 'Ganz ohne Bild', description: 'Ohne Bild ist die Karte reiner Text, ohne href kein Link.' },
+  blogPostCard: 'Ein Artikel-Vertrag: Das Datum stammt aus datePublished und wird für die Locale formatiert.',
+  article: { title: 'Aufbau der Komponenten-Galerie', description: 'Wie diese Seite jede Komponente aus Inhaltsverträgen rendert.' },
+  prose: 'Typografische Stile für gerendertes Markdown und anderes einfaches HTML.',
+  proseHeading: 'Typografisches Styling',
+  proseText: 'Absätze, Listen und Überschriften erhalten einheitliche Abstände, ganz ohne Klassen.',
+  proseItems: ['Lesbare Zeilenlänge', 'Abstände aus den Design-Tokens'],
+};
+
+const t = { en, de }[lang];
+const cardSizes = '(min-width: 1024px) 18rem, (min-width: 640px) 50vw, 100vw';
+
+// None of these components renders built-in text, so their samples carry no `lang`.
+const code = {
+  media: `import Media from '@easy-web/core/components/Media.astro';
+import hills from '../assets/hills.jpg';
+
+<Media image={{ src: hills, alt: '${media.assets.hills.alt}' }} sizes="(min-width: 768px) 26rem, 100vw" />
+<Media image={{ src: '/images/lake.jpg', alt: '${media.paths.lake.alt}' }} />`,
+  cards: `import Card from '@easy-web/core/components/Card.astro';
+import CardGrid from '@easy-web/core/components/CardGrid.astro';
+import dunes from '../assets/dunes.jpg';
+
+<CardGrid>
+  <Card
+    item={{ title, description, href, image: { src: dunes, alt } }}
+    imageSizes="${cardSizes}"
+  />
+  <Card item={{ title, description, href, image: { src: '/images/meadow.jpg', alt } }} />
+  <Card item={{ title, description }} />
+</CardGrid>`,
+  blogPostCard: `import BlogPostCard from '@easy-web/core/components/BlogPostCard.astro';
+import coast from '../assets/coast.jpg';
+
+<BlogPostCard
+  item={{ title, description, href, datePublished: new Date('2026-06-27'), image: { src: coast, alt } }}
+  imageSizes="(min-width: 640px) 25rem, 100vw"
+  locale="${lang}"
+/>`,
+  prose: `import Prose from '@easy-web/core/components/Prose.astro';
+
+<Prose>
+  <h2>${t.proseHeading}</h2>
+  <p>${t.proseText}</p>
+</Prose>`,
+};
+---
+
+<Demo id="media" name="Media" description={t.media} code={code.media}>
+  <div class="media-pair">
+    <figure class="media-pair__item">
+      <Media image={media.assets.hills} sizes="(min-width: 768px) 26rem, 100vw" class="media-pair__img" loading="lazy" />
+      <figcaption class="media-pair__caption">{t.assetCaption}</figcaption>
+    </figure>
+    <figure class="media-pair__item">
+      <Media image={media.paths.lake} class="media-pair__img" loading="lazy" />
+      <figcaption class="media-pair__caption">{t.pathCaption}</figcaption>
+    </figure>
+  </div>
+</Demo>
+
+<Demo id="card" name="Card & CardGrid" description={t.cards} code={code.cards}>
+  <CardGrid>
+    <Card item={{ ...t.guideCard, href: href(lang, 'guide/'), image: media.assets.dunes }} imageSizes={cardSizes} />
+    <Card item={{ ...t.themesCard, href: `${base}themes/`, image: media.paths.meadow }} />
+    <Card item={t.textCard} />
+  </CardGrid>
+</Demo>
+
+<Demo id="blog-post-card" name="BlogPostCard" description={t.blogPostCard} code={code.blogPostCard}>
+  <div class="single-card">
+    <BlogPostCard
+      item={{ ...t.article, href: href(lang, 'components/'), datePublished: new Date('2026-06-27'), image: media.assets.coast }}
+      imageSizes="(min-width: 640px) 25rem, 100vw"
+      locale={lang}
+    />
+  </div>
+</Demo>
+
+<Demo id="prose" name="Prose" description={t.prose} code={code.prose}>
+  <Prose>
+    <h2>{t.proseHeading}</h2>
+    <p>{t.proseText}</p>
+    <ul>
+      {t.proseItems.map((entry) => <li>{entry}</li>)}
+    </ul>
+  </Prose>
+</Demo>
+
+<style>
+  .media-pair {
+    display: grid;
+    gap: var(--ew-space-5);
+  }
+  @media (min-width: 768px) {
+    .media-pair {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .media-pair__item {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ew-space-2);
+  }
+  .media-pair__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--ew-radius-md);
+  }
+  .media-pair__caption {
+    color: var(--ew-muted);
+    font-size: var(--ew-text-xs);
+    font-family: var(--ew-font-mono);
+  }
+  .single-card {
+    max-width: 25rem;
+  }
+</style>

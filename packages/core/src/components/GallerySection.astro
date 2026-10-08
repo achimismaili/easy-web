@@ -1,0 +1,36 @@
+---
+import type { GalleryEntry } from '../schemas/galleries';
+import type { GalleryItem } from '../contracts/props.js';
+import type { GalleryLabelProps } from './labels.js';
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+import GalleryImageGrid from './GalleryImageGrid.astro';
+import GalleryHeroSlider from './GalleryHeroSlider.astro';
+import GalleryCarousel from './GalleryCarousel.astro';
+import GalleryMasonryGrid from './GalleryMasonryGrid.astro';
+import GalleryFeatureHighlight from './GalleryFeatureHighlight.astro';
+import GalleryLightboxGrid from './GalleryLightboxGrid.astro';
+
+export type Props = GalleryLabelProps & (
+  | { /** @deprecated Pass gallery directly. */ readonly entry: { data: GalleryEntry } | undefined | null }
+  | { readonly gallery: {
+      readonly kind: string;
+      readonly title?: string;
+      readonly items?: (GalleryItem | string)[];
+      readonly slides?: (GalleryItem | string)[];
+      readonly [option: string]: unknown;
+    } }
+);
+
+const data = 'gallery' in Astro.props ? Astro.props.gallery : Astro.props.entry?.data;
+const components: Readonly<Record<string, AstroComponentFactory>> = {
+  'image-grid': GalleryImageGrid,
+  'hero-slider': GalleryHeroSlider,
+  carousel: GalleryCarousel,
+  'masonry-grid': GalleryMasonryGrid,
+  'feature-highlight': GalleryFeatureHighlight,
+  'lightbox-grid': GalleryLightboxGrid,
+};
+const Component = data && Object.hasOwn(components, data.kind) ? components[data.kind] : undefined;
+---
+
+{Component && <Component {...data} lang={Astro.props.lang} labels={Astro.props.labels} />}

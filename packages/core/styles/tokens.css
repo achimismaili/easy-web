@@ -1,0 +1,198 @@
+:root {
+  --ew-surface: #ffffff;
+  --ew-on-surface: #111827;
+  --ew-surface-muted: #f3f4f6;
+  --ew-primary: #2563eb;
+  --ew-on-primary: #ffffff;
+  --ew-border: #d1d5db;
+  --ew-muted: #6b7280;
+  --ew-danger: #dc2626;
+  --ew-on-danger: #ffffff;
+  --ew-accent: #f59e0b;
+
+  /* Resolved at computed-value time, so this single declaration tracks --ew-primary
+     per theme — do not duplicate it into the dark blocks. Instances whose brand
+     primary misses AA 4.5:1 on --ew-surface override --ew-link, not link styling. */
+  --ew-link: var(--ew-primary);
+
+  --ew-neutral-50: #f9fafb;
+  --ew-neutral-100: #f3f4f6;
+  --ew-neutral-200: #e5e7eb;
+  --ew-neutral-300: #d1d5db;
+  --ew-neutral-400: #9ca3af;
+  --ew-neutral-500: #6b7280;
+  --ew-neutral-600: #4b5563;
+  --ew-neutral-700: #374151;
+  --ew-neutral-800: #1f2937;
+  --ew-neutral-900: #111827;
+  --ew-neutral-950: #030712;
+
+  --ew-primary-50: #eff6ff;
+  --ew-primary-100: #dbeafe;
+  --ew-primary-200: #bfdbfe;
+  --ew-primary-300: #93c5fd;
+  --ew-primary-400: #60a5fa;
+  --ew-primary-500: #3b82f6;
+  --ew-primary-600: #2563eb;
+  --ew-primary-700: #1d4ed8;
+  --ew-primary-800: #1e40af;
+  --ew-primary-900: #1e3a8a;
+  --ew-primary-950: #172554;
+
+  --ew-font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ew-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  --ew-text-xs: clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem);
+  --ew-text-sm: clamp(0.875rem, 0.84rem + 0.14vw, 0.9375rem);
+  --ew-text-base: clamp(1rem, 0.96rem + 0.16vw, 1.0625rem);
+  --ew-text-lg: clamp(1.125rem, 1.08rem + 0.2vw, 1.25rem);
+  --ew-text-xl: clamp(1.25rem, 1.18rem + 0.28vw, 1.5rem);
+  --ew-text-3xl: clamp(1.875rem, 1.72rem + 0.62vw, 2.5rem);
+
+  --ew-leading-tight: 1.25;
+  --ew-leading-normal: 1.5;
+  --ew-leading-loose: 1.75;
+
+  --ew-space-0: 0rem;
+  --ew-space-1: 0.25rem;
+  --ew-space-2: 0.5rem;
+  --ew-space-3: 0.75rem;
+  --ew-space-4: 1rem;
+  --ew-space-5: 1.5rem;
+  --ew-space-6: 2rem;
+  --ew-space-7: 3rem;
+  --ew-space-8: 4rem;
+  --ew-space-9: 6rem;
+  --ew-space-10: 8rem;
+  --ew-space-11: 12rem;
+  --ew-space-12: 16rem;
+
+  --ew-radius-none: 0;
+  --ew-radius-sm: 0.125rem;
+  --ew-radius-md: 0.375rem;
+  --ew-radius-lg: 0.5rem;
+  --ew-radius-xl: 0.75rem;
+  --ew-radius-full: 9999px;
+
+  /* Shadows */
+  --ew-shadow-color: 0 0 0;
+  --ew-shadow-xs:   0 1px 2px rgb(var(--ew-shadow-color) / 0.05);
+  --ew-shadow-sm:   0 1px 3px rgb(var(--ew-shadow-color) / 0.10), 0 1px 2px rgb(var(--ew-shadow-color) / 0.06);
+  --ew-shadow-md:   0 4px 6px rgb(var(--ew-shadow-color) / 0.07), 0 2px 4px rgb(var(--ew-shadow-color) / 0.06);
+  --ew-shadow-lg:   0 10px 15px rgb(var(--ew-shadow-color) / 0.10), 0 4px 6px rgb(var(--ew-shadow-color) / 0.05);
+  --ew-shadow-xl:   0 20px 25px rgb(var(--ew-shadow-color) / 0.10), 0 8px 10px rgb(var(--ew-shadow-color) / 0.04);
+  --ew-shadow-2xl:  0 25px 50px rgb(var(--ew-shadow-color) / 0.25);
+  --ew-shadow-inner: inset 0 2px 4px rgb(var(--ew-shadow-color) / 0.06);
+
+  /* Motion — Durations */
+  --ew-duration-instant:  0ms;
+  --ew-duration-fast:     100ms;
+  --ew-duration-normal:   200ms;
+  --ew-duration-moderate: 300ms;
+  --ew-duration-slow:     500ms;
+  --ew-duration-slower:   700ms;
+
+  /* Motion — Easings */
+  --ew-ease-default:  cubic-bezier(0.4, 0, 0.2, 1);
+  --ew-ease-in:       cubic-bezier(0.4, 0, 1, 1);
+  --ew-ease-out:      cubic-bezier(0, 0, 0.2, 1);
+  --ew-ease-in-out:   cubic-bezier(0.4, 0, 0.6, 1);
+  --ew-ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Breakpoints (Tailwind-compatible — note: CSS vars cannot be used in @media queries; use as reference values) */
+  --ew-bp-sm:  640px;
+  --ew-bp-md:  768px;
+  --ew-bp-lg:  1024px;
+  --ew-bp-xl:  1280px;
+  --ew-bp-2xl: 1536px;
+
+  /* Z-Index Scale */
+  --ew-z-hide:     -1;
+  --ew-z-base:      0;
+  --ew-z-raised:    1;
+  --ew-z-dropdown:  1000;
+  --ew-z-sticky:    1100;
+  --ew-z-overlay:   1200;
+  --ew-z-modal:     1300;
+  --ew-z-popover:   1400;
+  --ew-z-toast:     1500;
+
+  /* Gallery overlay & control tokens (todo 11) — literal values preserved
+     exactly from GalleryCarousel/GalleryHeroSlider/GalleryLightboxGrid/
+     GalleryFeatureHighlight; "-strong"/"-inverse" variants exist because the
+     4 files use genuinely different opacities for the same visual role. */
+  --ew-overlay-bg: rgba(0, 0, 0, 0.92);
+  --ew-overlay-fg: #fff;
+  --ew-overlay-gradient: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+  --ew-caption-gradient: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0));
+  --ew-control-fg: #fff;
+  --ew-control-bg: rgba(0, 0, 0, 0.45);
+  --ew-control-bg-hover: rgba(0, 0, 0, 0.7);
+  --ew-control-bg-strong: rgba(0, 0, 0, 0.5);
+  --ew-control-bg-strong-hover: rgba(0, 0, 0, 0.75);
+  --ew-control-bg-inverse: rgba(255, 255, 255, 0.15);
+  --ew-control-bg-inverse-hover: rgba(255, 255, 255, 0.3);
+  --ew-indicator-bg: rgba(255, 255, 255, 0.5);
+  --ew-indicator-bg-hover: rgba(255, 255, 255, 0.85);
+  --ew-shadow-image: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --ew-shadow-image-strong: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] {
+  --ew-surface: #111827;
+  --ew-on-surface: #f9fafb;
+  --ew-surface-muted: #1f2937;
+  --ew-primary: #60a5fa;
+  --ew-on-primary: #08111f;
+  --ew-border: #374151;
+  --ew-muted: #9ca3af;
+  --ew-danger: #f87171;
+  --ew-on-danger: #190404;
+  --ew-accent: #fbbf24;
+
+  /* Shadow color — brighter in dark mode so shadows remain visible */
+  --ew-shadow-color: 0 0 0;
+  --ew-shadow-xs:   0 1px 2px rgb(var(--ew-shadow-color) / 0.30);
+  --ew-shadow-sm:   0 1px 3px rgb(var(--ew-shadow-color) / 0.40), 0 1px 2px rgb(var(--ew-shadow-color) / 0.30);
+  --ew-shadow-md:   0 4px 6px rgb(var(--ew-shadow-color) / 0.35), 0 2px 4px rgb(var(--ew-shadow-color) / 0.30);
+  --ew-shadow-lg:   0 10px 15px rgb(var(--ew-shadow-color) / 0.40), 0 4px 6px rgb(var(--ew-shadow-color) / 0.25);
+  --ew-shadow-xl:   0 20px 25px rgb(var(--ew-shadow-color) / 0.40), 0 8px 10px rgb(var(--ew-shadow-color) / 0.20);
+  --ew-shadow-2xl:  0 25px 50px rgb(var(--ew-shadow-color) / 0.55);
+  --ew-shadow-inner: inset 0 2px 4px rgb(var(--ew-shadow-color) / 0.30);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ew-surface: #111827;
+    --ew-on-surface: #f9fafb;
+    --ew-surface-muted: #1f2937;
+    --ew-primary: #60a5fa;
+    --ew-on-primary: #08111f;
+    --ew-border: #374151;
+    --ew-muted: #9ca3af;
+    --ew-danger: #f87171;
+    --ew-on-danger: #190404;
+    --ew-accent: #fbbf24;
+
+    /* Shadow color — brighter in dark mode so shadows remain visible */
+    --ew-shadow-color: 0 0 0;
+    --ew-shadow-xs:   0 1px 2px rgb(var(--ew-shadow-color) / 0.30);
+    --ew-shadow-sm:   0 1px 3px rgb(var(--ew-shadow-color) / 0.40), 0 1px 2px rgb(var(--ew-shadow-color) / 0.30);
+    --ew-shadow-md:   0 4px 6px rgb(var(--ew-shadow-color) / 0.35), 0 2px 4px rgb(var(--ew-shadow-color) / 0.30);
+    --ew-shadow-lg:   0 10px 15px rgb(var(--ew-shadow-color) / 0.40), 0 4px 6px rgb(var(--ew-shadow-color) / 0.25);
+    --ew-shadow-xl:   0 20px 25px rgb(var(--ew-shadow-color) / 0.40), 0 8px 10px rgb(var(--ew-shadow-color) / 0.20);
+    --ew-shadow-2xl:  0 25px 50px rgb(var(--ew-shadow-color) / 0.55);
+    --ew-shadow-inner: inset 0 2px 4px rgb(var(--ew-shadow-color) / 0.30);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ew-duration-instant:  0ms;
+    --ew-duration-fast:     0ms;
+    --ew-duration-normal:   0ms;
+    --ew-duration-moderate: 0ms;
+    --ew-duration-slow:     0ms;
+    --ew-duration-slower:   0ms;
+  }
+}

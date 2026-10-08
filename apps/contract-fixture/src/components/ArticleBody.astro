@@ -1,0 +1,12 @@
+---
+import type { Article, HasBody } from '@easy-web/core/contracts';
+
+export type Props = Article & HasBody;
+
+const { title, Content } = Astro.props;
+---
+
+<article>
+  <h1>{title}</h1>
+  <Content />
+</article>

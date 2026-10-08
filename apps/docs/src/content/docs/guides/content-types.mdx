@@ -1,0 +1,219 @@
+---
+title: Writing content types
+description: Define a content type once, get the Decap form, the Astro schema and the TypeScript type from it, and prove it fits the core contracts.
+---
+
+A content type in an easy-web site is one TypeScript definition. From it you get the Decap CMS form for `/admin`, the zod schema for `src/content.config.ts`, and the data type your pages read. Because all three come from the same source, they can't drift apart.
+
+The builders live in [`@easy-web/cms-adapters`](../../packages/cms-adapters/). The contracts they're checked against live in [`@easy-web/core/contracts`](../../packages/core/#content-contracts).
+
+## A first definition
+
+```ts
+// src/content/model.ts
+import { defineContentType, field, fieldSets } from '@easy-web/cms-adapters';
+
+export const events = defineContentType({
+  name: 'events',
+  label: 'Veranstaltungen',
+  folder: 'src/content/events',
+  mediaFolder: 'src/assets/events',
+  publicFolder: '/src/assets/events',
+  fields: [
+    ...fieldSets.event(),
+    field.string('organizer', { label: 'Veranstalter', required: false }),
+    field.body(),
+  ],
+});
+```
+
+Wire it into Astro with `toAstroSchema`:
+
+```ts
+// src/content.config.ts
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { toAstroSchema } from '@easy-web/cms-adapters';
+import { events } from './content/model';
+
+export const collections = {
+  events: defineCollection({
+    loader: glob({ pattern: '**/*.md', base: './src/content/events' }),
+    schema: toAstroSchema(events),
+  }),
+};
+```
+
+And into Decap with `buildDecapConfig`, which `AdminPage` takes as its `config` prop. See [cms-adapters](../../packages/cms-adapters/#admin-page-from-definitions).
+
+### Field builders
+
+Each `field.*` call mirrors one Decap widget. Fields are required unless you pass `required: false`.
+
+| Builder | Data type |
+| :--- | :--- |
+| `field.string`, `field.text` | `string` (required text must contain more than whitespace) |
+| `field.number` | `number` |
+| `field.boolean` | `boolean` |
+| `field.color` | `string` |
+| `field.date` | `Date` |
+| `field.select` | union of the option values |
+| `field.hidden` | the literal default value |
+| `field.image` | `Image`, `DecorativeImage` or `Image` with derived alt (see below) |
+| `field.images` | `Image[]` with optional extra fields per photo |
+| `field.list` | array of objects (`fields`) or of scalars (`field`) |
+| `field.object` | nested object |
+| `field.navItems` | `NavItem[]`, optionally nested |
+| `field.perLocale` | one sub-field per locale, keyed by locale |
+| `field.body()` | the markdown body; not part of the data type |
+
+### Field sets
+
+`fieldSets.*` returns ready-made field tuples that match a core contract. Every set takes `{ uiLocale: 'de' | 'en' }` for the editor labels (German by default).
+
+| Field set | Matches |
+| :--- | :--- |
+| `fieldSets.item()` | `Item` |
+| `fieldSets.page()` | `Page` |
+| `fieldSets.article()` | `Article` |
+| `fieldSets.event()` | `Event` |
+| `fieldSets.organization()` | `Organization` |
+| `fieldSets.person()` | `Person` |
+| `fieldSets.product()` | `Product` |
+| `fieldSets.siteSettings()` | `SiteSettings` |
+| `fieldSets.navigation(locales, options?)` | `Navigation` |
+| `fieldSets.notFound(locales)` | `NotFoundContent` |
+| `fieldSets.galleryVariants()` | the six gallery kinds, as `variants` |
+
+Field sets are tuples, so you can spread them, destructure them, and swap a single field:
+
+```ts
+const [title, description, , order, ...dates] = fieldSets.event();
+
+fields: [title, description, field.image('image', { label: 'Bild', alt: 'required' }), order, ...dates];
+```
+
+## The 80/20 rule
+
+Most of a content type, roughly 80 percent, should come straight from a shared field set. Those fields already match a core contract, so every shared block (cards, JSON-LD, galleries) can render them without any glue code.
+
+The remaining 20 percent is what makes your site yours: an organizer, a ticket link, a sponsor tier. Don't fork the field set to get it. Add the extra fields next to it and follow the same four steps every time.
+
+### 1. Add the site fields
+
+Append them after the field set, as in the `organizer` example above. Keep the field-set fields as they are, so the contract still holds.
+
+### 2. Write one typed mapping function
+
+Pages and blocks shouldn't read raw entries. Write one function per content type that turns an entry into the contract a block expects:
+
+```ts
+// src/content/events.ts
+import type { CollectionEntry } from 'astro:content';
+import type { Event, Linkable } from '@easy-web/core/contracts';
+
+export function toEvent(entry: CollectionEntry<'events'>): Event & Linkable {
+  const { title, description, image, order, startDate, endDate, location } = entry.data;
+  return { title, description, image, order, startDate, endDate, location, href: `/events/${entry.id}/` };
+}
+```
+
+The return type is the contract, so TypeScript checks the mapping for you. Site fields like `organizer` stay on `entry.data` for the pages that need them.
+
+### 3. Call `assertImplements`
+
+Next to the definition, state which contracts it must satisfy:
+
+```ts
+import { assertImplements, type Event, type HasImage } from '@easy-web/core/contracts';
+import type { InferData } from '@easy-web/cms-adapters';
+
+assertImplements<InferData<typeof events>, Event & HasImage>();
+```
+
+This is the per-site conformance gate. If someone renames `startDate`, makes `image` optional, or changes a type, this line fails and the error names the field.
+
+### 4. Run `pnpm typecheck`
+
+```bash
+pnpm typecheck
+```
+
+`astro check` and the build fail on the same error, so drift turns into a red pipeline instead of a broken editor.
+
+## Images and alt text
+
+Every image has exactly one alt source. There's never a placeholder fallback.
+
+| Rule | Builder option | Data |
+| :--- | :--- | :--- |
+| The editor writes the alt text | `alt: 'required'` | `Image` |
+| Alt is taken from another field | `alt: { from: 'title' }` | `Image` |
+| Decorative, no alt | `alt: 'decorative'` | `DecorativeImage`, rendered with `alt=""` |
+
+```ts
+field.image('image', { label: 'Bild', alt: 'required' });
+field.image('cover', { label: 'Titelbild', alt: { from: 'title' } });
+field.image('pattern', { label: 'Hintergrund', alt: 'decorative' });
+```
+
+**Optional images** take `required: false`. The alt rule still applies whenever an image is set, so the data type is `Image | undefined`, never an image without alt text. A cleared image becomes `undefined`, never an empty string.
+
+```ts
+field.image('image', { label: 'Bild', required: false, alt: 'required' });
+```
+
+`field.images` always pairs each photo with a required alt text. `fieldSets.item()` and the sets built on it use an optional image with required alt.
+
+Where images live is set by `mediaFolder` and `publicFolder` on the definition, or per field. A `publicFolder` under `/src/` makes them Astro image assets with responsive `srcset`; a public path keeps them plain strings.
+
+## Publish rules
+
+Publishing is explicit. Set `publish` on the definition and an optional `publishDate` field is added to the form and the schema:
+
+| `publish` | Entry without `publishDate` | Entry with a future `publishDate` |
+| :--- | :--- | :--- |
+| `missing-date-means-published` | visible | hidden until that date |
+| `missing-date-means-draft` | hidden | hidden until that date |
+
+Apply the rule wherever you list entries:
+
+```ts
+import { isPublished } from '@easy-web/core/contracts';
+
+const visible = (await getCollection('news')).filter((entry) =>
+  isPublished(entry.data, 'missing-date-means-draft'),
+);
+```
+
+Without `publish`, no date field is added and every entry is visible. Since the rule is checked at build time, a site that relies on future dates needs a scheduled rebuild.
+
+## Per-locale content
+
+Set `locales` to the languages a content type is written in:
+
+```ts
+export const pages = defineContentType({
+  name: 'pages',
+  label: 'Seiten',
+  folder: 'src/content/pages',
+  locales: ['de', 'en'],
+  fields: [...fieldSets.page(), field.body()],
+});
+```
+
+With two or more locales:
+
+- Decap gets one collection per locale, named `pages_de` and `pages_en`, labelled `Seiten (DE)` and `Seiten (EN)`, writing to `src/content/pages/de` and `src/content/pages/en`.
+- Each entry gets a hidden `locale` field, prefilled per collection, and a `translationKey` field that links the translations of one page.
+- The Astro schema and `InferData` include both fields.
+
+With one locale, or no `locales` at all, there's a single collection and no extra fields. A single-language site doesn't pay for translation plumbing.
+
+Write `locales` inline as a literal list. That way TypeScript knows the exact locales and can prove a multi-locale contract.
+
+## Related
+
+- [`@easy-web/core` contracts](../../packages/core/#content-contracts)
+- [`@easy-web/cms-adapters`](../../packages/cms-adapters/)
+- [Migrating to core](../migrating-to-core/)
