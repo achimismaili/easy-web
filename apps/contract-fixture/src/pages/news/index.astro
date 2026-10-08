@@ -1,0 +1,17 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Card from '@easy-web/core/components/Card.astro';
+
+const articles = await getCollection('news');
+---
+
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>Fixture News</title></head>
+  <body>
+    <main>
+      <h1>Fixture News</h1>
+      {articles.map((entry: CollectionEntry<'news'>) => <Card item={{ ...entry.data, href: `/news/${entry.id}/` }} />)}
+    </main>
+  </body>
+</html>

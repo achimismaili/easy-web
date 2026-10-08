@@ -1,0 +1,20 @@
+---
+import { buildDecapConfig } from '@easy-web/cms-adapters';
+import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
+import { contentTypes, singletons } from '../content/model';
+
+const config = buildDecapConfig({
+  backend: {
+    name: 'azure',
+    repo: 'example-org/example-project/example-repo',
+    tenant_id: '00000000-0000-0000-0000-000000000000',
+    app_id: '00000000-0000-0000-0000-000000000000',
+  },
+  mediaFolder: 'src/assets/fixtures',
+  publicFolder: '/src/assets/fixtures',
+  contentTypes,
+  singletons,
+});
+---
+
+<AdminPage config={config} lang="en" title="Contract Fixture CMS" />
