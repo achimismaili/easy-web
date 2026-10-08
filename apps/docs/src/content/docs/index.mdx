@@ -16,16 +16,18 @@ hero:
 
 ## Packages
 
-The easy-web library consists of several focused packages:
+easy-web is one base package plus optional add-ons:
 
-| Package | Description |
-| ------- | ----------- |
-| `@easy-web/theme-core` | CSS design tokens, light/dark theme, no-flash script |
-| `@easy-web/i18n` | i18n helpers for Astro sites |
-| `@easy-web/content-blocks` | Hero, Section, CardGrid, Card, Header, Footer, ThemeToggle |
-| `@easy-web/auth` | MSAL.js authentication, Microsoft Graph integration |
-| `@easy-web/cms-adapters` | Decap CMS integration for content management |
-| `@easy-web/create` | Scaffold CLI for creating new site instances |
+| Package | Role | Description |
+| ------- | ---- | ----------- |
+| `@easy-web/core` | Base | Theme tokens, i18n, SEO, markdown, 31 Astro components and the content contracts |
+| `@easy-web/cms-adapters` | Add-on | Decap CMS: typed content definitions and the admin page |
+| `@easy-web/swa` | Add-on | Azure Static Web Apps 404 integration |
+| `@easy-web/auth` | Add-on | MSAL.js authentication, Microsoft Graph integration |
+| `@easy-web/brand` | Add-on | Favicon and icon generation |
+| `@easy-web/create` | Reserved | Future scaffold CLI |
+
+`@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo` and `@easy-web/markdown` are deprecated compatibility packages that re-export core. See [Migrating to core](./guides/migrating-to-core/).
 
 ## Why easy-web?
 
@@ -34,11 +36,11 @@ The ismaili.de web ecosystem runs multiple site instances for different organisa
 ## Quick Start
 
 ```bash
-# Install the theme and core UI components
-pnpm add @easy-web/theme-core @easy-web/content-blocks
+# Install the base package
+pnpm add @easy-web/core
 
-# Import the theme in your Astro layout
-# import '@easy-web/theme-core/theme.css';
+# Import the tokens in your Astro layout
+# import '@easy-web/core/styles/tokens.css';
 ```
 
 See [Installation →](./getting-started/installation/) for the complete setup guide.

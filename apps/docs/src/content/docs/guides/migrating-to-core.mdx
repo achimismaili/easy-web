@@ -1,0 +1,93 @@
+---
+title: Migrating to core
+description: Move a site from the five compatibility packages to @easy-web/core. Import table, deprecated APIs and the 2.0 removal policy.
+---
+
+`@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo` and `@easy-web/markdown` were folded into [`@easy-web/core`](../../packages/core/). The old packages still work: each one is now a thin re-export of core, and every symbol is marked `@deprecated`, so your editor strikes through the old import and tells you where to go.
+
+Nothing breaks if you do nothing. Migrating is a search-and-replace on import paths, and you can do it one file at a time.
+
+## 1. Swap the dependency
+
+```bash
+pnpm add @easy-web/core
+pnpm remove @easy-web/theme-core @easy-web/i18n @easy-web/content-blocks @easy-web/seo @easy-web/markdown
+```
+
+Remove a compatibility package only after every import of it is gone. The add-ons (`cms-adapters`, `swa`, `auth`, `brand`) stay as they are.
+
+## 2. Replace imports
+
+| Old import | New import |
+| :--- | :--- |
+| `@easy-web/theme-core` | `@easy-web/core/theme` |
+| `@easy-web/theme-core/tokens.css` | `@easy-web/core/styles/tokens.css` |
+| `@easy-web/theme-core/fonts.css` | `@easy-web/core/styles/fonts.css` |
+| `@easy-web/i18n` | `@easy-web/core/i18n` |
+| `@easy-web/content-blocks/components/X` | `@easy-web/core/components/X` |
+| `@easy-web/content-blocks/schemas/galleries` | `@easy-web/core/schemas/galleries` |
+| `@easy-web/content-blocks/schemas/notFound` | `@easy-web/core/schemas/notFound` |
+| `@easy-web/seo` (default `easyWebSeo`) | `@easy-web/core/seo` |
+| `@easy-web/seo/components/SeoHead` | `@easy-web/core/components/SeoHead` |
+| `@easy-web/markdown` (default remark plugin) | `@easy-web/core/markdown` |
+
+Symbol names don't change. `noFlashScript`, `createI18n`, `localizedHref`, `formatDate`, `easyWebSeo` and the rest keep their names and signatures; only the path moves.
+
+```astro
+---
+// Before
+import '@easy-web/theme-core/tokens.css';
+import { noFlashScript } from '@easy-web/theme-core';
+import { localizedHref } from '@easy-web/i18n';
+import Header from '@easy-web/content-blocks/components/Header';
+import SeoHead from '@easy-web/seo/components/SeoHead';
+
+// After
+import '@easy-web/core/styles/tokens.css';
+import { noFlashScript } from '@easy-web/core/theme';
+import { localizedHref } from '@easy-web/core/i18n';
+import Header from '@easy-web/core/components/Header';
+import SeoHead from '@easy-web/core/components/SeoHead';
+---
+```
+
+```js
+// astro.config.mjs
+import easyWebSeo from '@easy-web/core/seo';
+import easyWebMarkdown from '@easy-web/core/markdown';
+```
+
+On Astro 7 the markdown plugin also needs `@astrojs/markdown-remark` installed, because Astro only runs `markdown.remarkPlugins` when that package is present.
+
+## 3. Move off deprecated props and APIs
+
+These still work in 1.x and show a deprecation hint in the editor.
+
+| Deprecated | Replacement |
+| :--- | :--- |
+| `Card` props `title`, `description`, `href`, `image`, `imageAlt` | `item: Item & Partial<Linkable>`. Alt text comes only from `item.image.alt`; the title is no longer a fallback |
+| `BlogPostCard` props `title`, `description`, `href`, `pubDate`, `heroImage`, `heroImageAlt` | `item: Article & Linkable`. The date comes from `item.datePublished` |
+| `GallerySection` prop `entry` | `gallery`, the entry's data |
+| `generateDecapConfigString`, `generateDecapConfig` and the hand-written `config.yml` | `defineContentType` / `defineSingleton` plus `buildDecapConfig`. See [cms-adapters](../../packages/cms-adapters/) |
+| Frontmatter types `BlogFrontmatter`, `PageFrontmatter`, `EventFrontmatter`, `PersonFrontmatter`, `SiteConfig`, `NavigationConfig`, `LinkItem` | `InferData<typeof definition>`, checked against core contracts with `assertImplements` |
+| Hand-kept zod schemas in `src/content.config.ts` | `toAstroSchema(definition)` |
+
+Two behaviour notes for the header family:
+
+- Pass `lang` to get German labels: `<Header lang="de" ...>`. Without it the components render English, exactly as before.
+- Custom header controls go in the named `actions` slot, which replaces the default theme toggle and language switch. `Footer` has an `actions` slot as well, rendered after the legal links.
+
+## 4. Adopt the contracts
+
+Once the imports are moved, the next step is the one that pays off: write your content types as definitions and assert the contracts. [Writing content types](../content-types/) walks through it.
+
+## The 2.0 policy
+
+- The five compatibility packages stay published as deprecated re-export shims for the **entire 1.x line**. Existing imports keep working unchanged.
+- A **2.0** release removes them. That removal is gated on **every** site having migrated to `@easy-web/core`, explicitly including `darts.tv-1927.de`. The current rollout only verifies that darts keeps building unchanged on the shims; it doesn't migrate it, so 2.0 waits until it has.
+- Until then, every family release keeps the shims building. If you maintain a site, migrating early costs nothing and makes 2.0 a no-op for you.
+
+## Related
+
+- [`@easy-web/core`](../../packages/core/)
+- [Writing content types](../content-types/)

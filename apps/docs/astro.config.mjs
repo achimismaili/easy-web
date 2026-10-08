@@ -30,6 +30,13 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Guides',
+          items: [
+            { label: 'Writing Content Types', slug: 'guides/content-types' },
+            { label: 'Migrating to Core', slug: 'guides/migrating-to-core' },
+          ],
+        },
+        {
           label: 'Packages',
           items: [{ autogenerate: { directory: 'packages' } }],
         },

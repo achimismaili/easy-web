@@ -9,63 +9,75 @@ Diagrams are Mermaid and render inline on GitHub.
 
 ## Package graph
 
-Nine shipping packages, two reserved stubs. There are only **three** runtime
-edges between them — everything else is independent.
+One base package, four add-ons, one reserved name, and five deprecated
+compatibility packages (ADR 0018). A site installs `core` and gets a working
+site; everything else is opt-in.
 
 ```mermaid
 graph TD
-  subgraph composers["compose other packages"]
-    blocks["content-blocks<br/><i>Astro components</i>"]
-    seo["seo<br/><i>sitemap, canonical, robots</i>"]
+  subgraph base["base"]
+    core["core<br/><i>tokens, i18n, SEO, markdown,<br/>components, contracts</i>"]
   end
 
-  subgraph shared["shared primitives"]
-    theme["theme-core<br/><i>CSS tokens, theming</i>"]
-    i18n["i18n<br/><i>locale routing, hreflang</i>"]
-  end
-
-  subgraph standalone["independent of the others"]
+  subgraph addons["add-ons"]
+    cms["cms-adapters<br/><i>Decap, typed definitions</i>"]
     swa["swa<br/><i>SWA 404 config</i>"]
-    cms["cms-adapters<br/><i>Decap mounting</i>"]
-    md["markdown<br/><i>remark plugin</i>"]
     auth["auth<br/><i>MSAL, Graph</i>"]
     brand["brand<br/><i>favicon CLI</i>"]
   end
 
-  subgraph stubs["reserved names, no src/"]
-    create["create"]
-    afu["azure-functions-utils"]
+  subgraph shims["deprecated re-export shims, removed in 2.0"]
+    theme["theme-core"]
+    i18n["i18n"]
+    blocks["content-blocks"]
+    seo["seo"]
+    md["markdown"]
   end
 
-  blocks --> theme
-  blocks --> i18n
-  seo --> i18n
+  subgraph stubs["reserved name, no src/"]
+    create["create"]
+  end
 
-  classDef ship fill:#2d4a8b,color:#fff,stroke:#1a2d54
+  cms --> core
+  theme -.-> core
+  i18n -.-> core
+  blocks -.-> core
+  seo -.-> core
+  md -.-> core
+
   classDef prim fill:#7b2d8b,color:#fff,stroke:#4a1a54
+  classDef ship fill:#2d4a8b,color:#fff,stroke:#1a2d54
+  classDef shim fill:#8b5a2d,color:#fff,stroke:#54341a,stroke-dasharray:4 3
   classDef stub fill:#555,color:#fff,stroke:#333,stroke-dasharray:4 3
-  class blocks,seo,swa,cms,md,auth,brand ship
-  class theme,i18n prim
-  class create,afu stub
+  class core prim
+  class cms,swa,auth,brand ship
+  class theme,i18n,blocks,seo,md shim
+  class create stub
 ```
+
+`cms-adapters` depends on `core` for the content contracts its definitions are
+checked against. `swa`, `auth` and `brand` stand alone. Each shim is a regular
+dependency on `core` that re-exports one subpath with `@deprecated` markers, so
+existing imports keep working through 1.x. 2.0 removes the shims once every site
+has migrated.
 
 Everything else each package needs is supplied by the consuming instance as a
 peer dependency:
 
 | Package | Peer dependencies |
 | :--- | :--- |
+| `core`, `swa`, `cms-adapters`, `seo`, `markdown` | `astro` |
 | `content-blocks` | `astro`, `zod` |
 | `i18n` | `astro`, `@inlang/paraglide-js` |
-| `seo`, `swa`, `cms-adapters`, `markdown` | `astro` |
 | `auth` | `react`, `react-dom` |
 | `theme-core`, `brand` | none |
 
-**Why `i18n` and `theme-core` are dependencies rather than peers.** Under
-Changesets `fixed` grouping, an intra-workspace *peer* dependency forces every
-release to be a major. They are pure functions and CSS custom properties, so a
-duplicate copy costs bundle size rather than correctness. `auth` keeps its React
-peer declaration because two MSAL instances corrupt the shared token cache —
-there, duplication *is* a bug.
+**Why `core` is a dependency rather than a peer.** Under Changesets `fixed`
+grouping, an intra-workspace *peer* dependency forces every release to be a
+major (ADR 0016). Core's helpers are pure functions, CSS custom properties and
+Astro components, so a duplicate copy costs bundle size rather than
+correctness. `auth` keeps its React peer declaration because two MSAL instances
+corrupt the shared token cache. There, duplication *is* a bug.
 
 ## Propagation: one fix reaches every site
 

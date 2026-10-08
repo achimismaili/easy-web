@@ -1,0 +1,281 @@
+---
+title: '@easy-web/core'
+description: The base package. Theme tokens, i18n, SEO, markdown, 31 Astro components and the content contracts every block types against.
+sidebar:
+  order: 0
+---
+
+`@easy-web/core` is the base of the `@easy-web/*` family. One install gives a working site: design tokens, theme helpers, i18n routing and formatting, the SEO integration, the markdown image plugin, every page component, and the content contracts those components accept.
+
+Everything else is an add-on: [`@easy-web/cms-adapters`](../cms-adapters/) for Decap CMS and typed content definitions, `@easy-web/swa` for Azure Static Web Apps, [`@easy-web/auth`](../auth/) for MSAL sign-in, and `@easy-web/brand` for favicons. `@easy-web/create` is a reserved name for the future scaffold CLI.
+
+:::caution[Pending first publish]
+`@easy-web/core` is reserved on npm and pending its first publish. Until it's released, the five compatibility packages (`theme-core`, `i18n`, `content-blocks`, `seo`, `markdown`) are the installable form of the same code. See [Migrating to core](../../guides/migrating-to-core/).
+:::
+
+## Installation
+
+```bash
+pnpm add @easy-web/core
+```
+
+`astro` (6 or 7) is the only peer dependency.
+
+## Subpath exports
+
+Import from the subpath that matches what you need. The root export is the contracts module, so `@easy-web/core` and `@easy-web/core/contracts` are interchangeable.
+
+| Subpath | Contents |
+| :--- | :--- |
+| `@easy-web/core` | Same as `./contracts` |
+| `@easy-web/core/contracts` | Content contracts, capabilities, component prop types, `assertImplements`, `isPublished`, `jsonLd` |
+| `@easy-web/core/theme` | `applyTheme`, `getPreferredTheme`, `noFlashScript`, `subscribeToSystem`, `tokens`, `breakpoints` and the `Theme`, `Tokens`, `Breakpoint` types |
+| `@easy-web/core/i18n` | `createI18n`, `localizedHref`, `getLocaleFromPath`, `getAlternateLinks`, `getCanonicalUrl`, the `format*` helpers, `toServedPath` and the `localizedPaths` helpers |
+| `@easy-web/core/seo` | `easyWebSeo()` integration (default export), `createCrawlPolicy`, `isDisallowedPath` |
+| `@easy-web/core/markdown` | Remark plugin (default export) that normalises markdown-body image URLs |
+| `@easy-web/core/components/*` | The 31 Astro components, e.g. `@easy-web/core/components/Header` |
+| `@easy-web/core/schemas/*` | zod schemas: `galleries` (`gallerySchema`, `GALLERY_KINDS`) and `notFound` (`notFoundSchema`) |
+| `@easy-web/core/styles/*` | `tokens.css` (the `--ew-*` custom properties) and `fonts.css` |
+
+```astro
+---
+import '@easy-web/core/styles/tokens.css';
+import { noFlashScript } from '@easy-web/core/theme';
+import Header from '@easy-web/core/components/Header';
+import type { Event, Linkable } from '@easy-web/core/contracts';
+---
+```
+
+## Content contracts
+
+Contracts are small structural types. They describe what a block needs, not how a site stores it. Content types use schema.org names, so `jsonLd` can turn any data that satisfies a contract into structured data.
+
+### Value types
+
+| Type | Field | Type | Required |
+| :--- | :--- | :--- | :--- |
+| `Image` | `src` | `ImageMetadata \| string` | yes |
+| | `alt` | `string` | yes |
+| | `caption` | `string` | no |
+| `DecorativeImage` | `src` | `ImageMetadata \| string` | yes |
+| | `decorative` | `true` | yes |
+| | `caption` | `string` | no |
+| `AnyImage` | | `Image \| DecorativeImage` | |
+| `Link` | `label` | `string` | yes |
+| | `href` | `string` | yes |
+| | `external` | `boolean` | no |
+| `NavItem` (extends `Link`) | `children` | `NavItem[]` | no |
+| | `order` | `number` | no |
+| `SocialLink` | `network` | `string` | yes |
+| | `url` | `string` | yes |
+| | `label` | `string` | no |
+| `Navigation` | `mainNav` | `Localized<NavItem[]>` | yes |
+| | `legalNav` | `Localized<NavItem[]>` | yes |
+| | `footerNav` | `Localized<NavItem[]>` | no |
+| | `resourceLinks` | `Localized<NavItem[]>` | no |
+| | `socialLinks` | `SocialLink[]` | no |
+| | `skipLabel` | `Localized<string>` | no |
+| `SiteSettings` | `siteName` | `string` | yes |
+| `NotFoundContent` | | `Localized<NotFoundEntry>` | |
+| `NotFoundEntry` | `image` | `AnyImage` | no |
+| | `heading` | `string` | no |
+| | `message` | `string` | no |
+
+`Localized<T>` is a read-only record keyed by locale (`{ de: T, en: T }`). A single-locale site supplies one key.
+
+### Content types
+
+| Type | Field | Type | Required |
+| :--- | :--- | :--- | :--- |
+| `Item` | `title` | `string` | yes |
+| | `description` | `string` | no |
+| | `image` | `Image` | no |
+| | `order` | `number` | no |
+| `Page` (extends `Item`) | `description` | `string` | yes |
+| `Article` (extends `Item`) | `datePublished` | `Date` | yes |
+| | `dateModified` | `Date` | no |
+| | `author` | `string` | no |
+| | `tags` | `string[]` | no |
+| `Event` (extends `Item`) | `startDate` | `Date` | yes |
+| | `endDate` | `Date` | no |
+| | `location` | `string` | no |
+| `Organization` | `name` | `string` | yes |
+| | `logo` | `Image` | yes |
+| | `url` | `string` | no |
+| | `description` | `string` | no |
+| `Person` | `name` | `string` | yes |
+| | `role` | `string` | no |
+| | `image` | `Image` | no |
+| | `email` | `string` | no |
+| `Product` (extends `Item`) | `image` | `Image` | yes |
+
+### Capabilities
+
+A block asks for a capability instead of a whole content type. A hero needs `HasImage`, a gallery needs `HasPhotos`.
+
+| Capability | Field | Type | Required |
+| :--- | :--- | :--- | :--- |
+| `HasImage` | `image` | `Image` | yes |
+| `HasPhotos` | `photos` | `Image[]` | yes |
+| `HasBody` | `Content` | Astro component (the rendered body) | yes |
+| `Linkable` | `href` | `string` | yes |
+| `Rendered<Data>` | | `Data & HasBody` | |
+
+### Helpers
+
+| Export | Purpose |
+| :--- | :--- |
+| `assertImplements<Data, Contract>()` | Compile-time check. It fails `pnpm typecheck` and `astro check` when `Data` stops satisfying `Contract`, and the error names the field |
+| `Implements<Data, Contract>` | Type-level `true` or `false` |
+| `PublishRule` | `'missing-date-means-published' \| 'missing-date-means-draft'` |
+| `isPublished(data, rule, now?)` | Applies a publish rule to `data.publishDate`. A future date is never published |
+| `jsonLd` | `page`, `article`, `event`, `organization`, `person`, `product` builders that turn a contract into schema.org JSON-LD |
+
+```ts
+import { assertImplements, type Event, type HasImage } from '@easy-web/core/contracts';
+import type { InferData } from '@easy-web/cms-adapters';
+import { events } from './content/model';
+
+assertImplements<InferData<typeof events>, Event & HasImage>();
+```
+
+## Labels
+
+Components never hardcode user-facing strings. Every component with built-in text takes `lang` (default `'en'`, unknown languages fall back to English) and `labels` (per-key overrides). Pass `lang="de"` to a header and its theme toggle and language switch follow.
+
+| Key | English | German |
+| :--- | :--- | :--- |
+| `mainNavigation` | Main navigation | Hauptnavigation |
+| `toggleNavigationMenu` | Toggle navigation menu | Navigationsmenü umschalten |
+| `toggleColorTheme` | Toggle color theme (Darkmode) | Farbschema wechseln (Darkmode) |
+| `skipToMainContent` | Skip to main content | Zum Hauptinhalt springen |
+| `legal` | Legal | Rechtliches |
+| `carousel` | carousel | Karussell |
+| `slide` | slide | Folie |
+| `imageCarousel` | Image carousel | Bilderkarussell |
+| `heroSlider` | Hero slider | Hero-Slider |
+| `previousSlide` | Previous slide | Vorherige Folie |
+| `nextSlide` | Next slide | Nächste Folie |
+| `slideNavigation` | Slide navigation | Foliennavigation |
+| `goToSlide` | `Go to slide {number}` | `Zu Folie {number}` |
+| `slidePosition` | `{number} / {total}` | `{number} / {total}` |
+| `openImage` | `Open {alt}` | `{alt} öffnen` |
+| `imageLightbox` | Image lightbox | Bildansicht |
+| `closeLightbox` | Close lightbox | Bildansicht schließen |
+| `previousImage` | Previous image | Vorheriges Bild |
+| `nextImage` | Next image | Nächstes Bild |
+| `switchToLanguage(lang)` | `Switch to ${lang}` | `Wechseln zu ${lang}` |
+
+```astro
+<Header lang="de" labels={{ toggleNavigationMenu: 'Menü' }} {...headerProps} />
+```
+
+## Components
+
+All 31 components are plain `.astro` files imported by path: `import Card from '@easy-web/core/components/Card'`. They style themselves only with `--ew-*` tokens. Prop types are exported from `@easy-web/core/contracts` (e.g. `CardProps`, `FooterProps`).
+
+`L` in the tables below marks components that also accept `lang` and `labels`.
+
+### Page chrome
+
+**`PageShell`** (L): skip link plus `<main>`. Named slots `header` and `footer`.
+
+| Prop | Type | Default |
+| :--- | :--- | :--- |
+| `mainId` | `string` | `main-content` |
+| `skipLabel` | `string` | `labels.skipToMainContent` |
+| `class` | `string` | |
+
+**`Header`**, **`HeaderCentered`**, **`HeaderHideOnScroll`**, **`HeaderFlyout`** (L): four header variants with a responsive menu. A named `actions` slot replaces the default theme toggle and language switch.
+
+| Prop | Type | Required |
+| :--- | :--- | :--- |
+| `siteName` | `string` | yes |
+| `navItems` | `NavItem[]` (only `HeaderFlyout` renders `children`) | yes |
+| `currentLang` | `string` | yes |
+| `pathname` | `string` | yes |
+| `alternateHref` | `string` | no |
+| `menuLabel` | `string`, defaults to `labels.toggleNavigationMenu` | no |
+| `logo` | `string \| Image` | no |
+| `navId` | `string` | no |
+| `locales` | `readonly string[]`; one entry hides the language switch | no |
+| `brandHref` | `string` (`Header` only) | no |
+
+**`Footer`** (L): copyright, legal links and optional link columns. A named `actions` slot renders after the legal links.
+
+| Prop | Type | Required |
+| :--- | :--- | :--- |
+| `siteName` | `string` | yes |
+| `legalLinks` | `Link[]` | yes |
+| `currentYear` | `number` | no |
+| `columns` | `{ title?: string; links: Link[] }[]` | no |
+
+**`ThemeToggle`** (L): `label` (defaults to `labels.toggleColorTheme`).
+
+**`LanguageSwitch`** (L): `currentLang` and `pathname` (required), `defaultLocale` (default `de`), `alternateHref`, `ariaLabel`, and `alternates: { lang, href, label? }[]` for one link per language.
+
+### Sections
+
+| Component | Props |
+| :--- | :--- |
+| `Hero` | `title` (required), `subtitle`, `ctaLabel`, `ctaHref`, `variant` (`centered` \| `left-aligned`), `class` |
+| `Section` | `title`, `id`, `class` |
+| `CtaSection` | `heading`, `buttonLabel`, `buttonHref` (required), `body`, `variant` (`default` \| `muted` \| `primary`), `class` |
+| `ContactSection` | `heading`, `email`, `buttonLabel` (required), `body`, `class` |
+| `DraftBanner` | `message` (required), `class` |
+| `LanguageNotice` | `message` (required), `class` |
+| `LegalLayout` | `title` (required), `lastUpdated`, `class` |
+| `Prose` | `class` |
+
+### Cards
+
+**`Card`** takes an `item` contract. It links when `item.href` is set, and the alt text comes only from `item.image.alt`.
+
+| Prop | Type | Required |
+| :--- | :--- | :--- |
+| `item` | `Item & Partial<Linkable>` | yes |
+| `imageSizes` | `string` (used for local image assets) | no |
+| `class` | `string` | no |
+
+The legacy props `title`, `description`, `href`, `image` and `imageAlt` still work and are deprecated.
+
+**`BlogPostCard`** takes `item: Article & Linkable`, plus `imageSizes`, `locale` (date format) and `class`. Legacy props `title`, `description`, `href`, `pubDate`, `heroImage` and `heroImageAlt` are deprecated.
+
+**`CardGrid`**: responsive grid wrapper, `class`.
+
+### Media
+
+| Component | Props |
+| :--- | :--- |
+| `Media` | `image: AnyImage` (required), `widths`, `sizes`, `loading` (`lazy` \| `eager`), `width`, `height`, `class`. Local assets get a `srcset`; decorative images render `alt=""` |
+| `UniversalMedia` | `src`, `alt`, `images` (glob map) required; `fallbackSrc`, `fallbackAlt`, `width`, `height`, `class`, `decoding` |
+
+### Galleries (L)
+
+`GallerySection` picks a renderer from `gallery.kind`. The six renderers can also be used directly.
+
+| Component | Main props |
+| :--- | :--- |
+| `GallerySection` | `gallery` (`kind`, `title`, `items` or `slides`, options). `entry` is the deprecated form |
+| `GalleryImageGrid` | `items`, `title`, layout options |
+| `GalleryMasonryGrid` | `items`, `title`, layout options |
+| `GalleryLightboxGrid` | `items`, `title`, `columns`, `gap`, `aspectRatio` |
+| `GalleryFeatureHighlight` | `items` (with `title`, `description`, `href`, `cta`, `imagePosition`) |
+| `GalleryCarousel` | `slides`, `title`, carousel options |
+| `GalleryHeroSlider` | `slides`, `title`, slider options |
+
+Items are `GalleryItem` (an `Image` plus optional `caption`, `title`, `subtitle`, `description`, `href`, `cta`, `imagePosition`) or a bare path string, which renders without alt text. The option props per kind are the fields of `gallerySchema` in `@easy-web/core/schemas/galleries`.
+
+### SEO and errors
+
+| Component | Props |
+| :--- | :--- |
+| `SeoHead` | `title`, `pathname`, `locale`, `siteName` (required); `description`, `ogType`, `ogImage`, `themeColor`, `manifest`, `noIndex`, `twitterCard`, `twitterSite`, `alternates`, `trailingSlash`, `structuredData` |
+| `StructuredData` | `data: object \| object[]`, rendered as JSON-LD |
+| `NotFound` | `currentLang`, `defaultLocale` (required); `rootHref`, `alternateHref`, `heading`, `message`, `image` (`AnyImage` or a legacy path string). Ships its own German and English copy |
+
+## Related
+
+- [Writing content types](../../guides/content-types/)
+- [Migrating to core](../../guides/migrating-to-core/)
+- [cms-adapters](../cms-adapters/)
