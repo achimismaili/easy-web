@@ -1,16 +1,31 @@
 ---
-// Standalone Decap CMS admin page — no site layout, no MSAL
+// Standalone Decap CMS admin page - no site layout, no MSAL
+export interface Props {
+  /** Plain Decap config object; when set, Decap is started via manual init instead of /admin/config.yml. */
+  config?: object;
+  /** Decap release to load. Only honoured together with `config`; the legacy path stays pinned. */
+  decapVersion?: string;
+  lang?: string;
+  title?: string;
+}
+const { config, decapVersion, lang = 'en', title = 'Content Manager' } = Astro.props;
+const src = `https://unpkg.com/decap-cms@${config ? (decapVersion ?? '3.14.0') : '3.14.0'}/dist/decap-cms.js`;
+const init = config
+  ? `window.initCMS({ config: ${JSON.stringify(config).replace(/</g, '\\u003c')} });`
+  : '';
 ---
 <!DOCTYPE html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
-    <title>Content Manager</title>
-    <link rel="cms-config-url" href="/admin/config.yml" type="text/yaml" />
+    <title>{title}</title>
+    {!config && <link rel="cms-config-url" href="/admin/config.yml" type="text/yaml" />}
   </head>
   <body>
-    <script src="https://unpkg.com/decap-cms@3.14.0/dist/decap-cms.js" is:inline></script>
+    {config && <script is:inline set:html="window.CMS_MANUAL_INIT = true;"></script>}
+    <script src={src} is:inline></script>
+    {config && <script is:inline set:html={init}></script>}
   </body>
 </html>

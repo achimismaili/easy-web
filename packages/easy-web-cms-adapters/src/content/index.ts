@@ -4,3 +4,5 @@ export { defineContentType, defineSingleton } from './define.js';
 export { toAstroSchema } from './astro-schema.js';
 export type { FieldDef, ContentTypeDef, SingletonDef } from './types.js';
 export type { InferData } from './infer.js';
+export { toDecapCollections, toDecapFiles, buildDecapConfig } from './decap-config.js';
+export type { DecapCollection, DecapFilesCollection, DecapConfig, DecapConfigOptions } from './decap-config.js';
