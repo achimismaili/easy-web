@@ -159,6 +159,10 @@ importers:
         version: 2.1.9(@types/node@24.13.2)(jsdom@29.1.1)(lightningcss@1.33.0)
 
   packages/easy-web-cms-adapters:
+    dependencies:
+      '@easy-web/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       astro:
         specifier: ^7.3.5
