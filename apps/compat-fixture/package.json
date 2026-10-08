@@ -1,6 +1,6 @@
 {
   "name": "compat-fixture",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "description": "Builds every legacy @easy-web/* import path the live sites use, against the compatibility packages.",

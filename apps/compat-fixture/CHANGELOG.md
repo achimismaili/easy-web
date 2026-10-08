@@ -1,5 +1,16 @@
 # compat-fixture
 
+## 0.0.2
+
+### Patch Changes
+
+- @easy-web/cms-adapters@1.4.1
+- @easy-web/content-blocks@1.4.1
+- @easy-web/markdown@1.4.1
+- @easy-web/i18n@1.4.1
+- @easy-web/seo@1.4.1
+- @easy-web/theme-core@1.4.1
+
 ## 0.0.1
 
 ### Patch Changes

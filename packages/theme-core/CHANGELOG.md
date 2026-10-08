@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.1
+
+### Patch Changes
+
+- Updated dependencies [d7c61cc]
+  - @easy-web/core@1.4.1
+
 ## 1.4.0
 
 ### Minor Changes
