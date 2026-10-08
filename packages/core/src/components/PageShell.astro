@@ -23,17 +23,14 @@
  *     <Footer slot="footer" ... />
  *   </PageShell>
  */
+import type { PageShellProps } from '../contracts/props.js';
+import { resolveLabels } from './labels.js';
 
-interface Props {
-  /** id of the <main> element and the skip link's target. */
-  mainId?: string;
-  /** Skip-link text. Set this per locale; the default is English. */
-  skipLabel?: string;
-  /** Extra class(es) for the <main> element. */
-  class?: string;
-}
+export type Props = PageShellProps;
 
-const { mainId = 'main-content', skipLabel = 'Skip to main content', class: className } = Astro.props;
+const { lang = 'en', labels: labelOverrides } = Astro.props;
+const labels = resolveLabels(lang, labelOverrides);
+const { mainId = 'main-content', skipLabel = labels.skipToMainContent, class: className } = Astro.props;
 ---
 
 <a class="ew-skip-link" href={`#${mainId}`}>{skipLabel}</a>

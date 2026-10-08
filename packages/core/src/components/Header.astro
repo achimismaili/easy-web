@@ -3,45 +3,26 @@
  * Header – responsive site header with navigation, theme toggle, and language switch.
  * Pure Astro component with minimal vanilla JS for mobile menu.
  */
+import type { HeaderProps } from '../contracts/props.js';
+import { resolveLabels } from './labels.js';
+import Media from './Media.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import LanguageSwitch from './LanguageSwitch.astro';
 
-interface Props {
-  siteName: string;
-  navItems: Array<{ label: string; href: string }>;
-  currentLang: string;
-  pathname: string;
-  /** Explicit brand link href. Falls back to `/` (de) or `/${currentLang}/` (other). */
-  brandHref?: string;
-  /** Explicit alternate locale URL to pass to LanguageSwitch. */
-  alternateHref?: string;
-  /** Accessible label for the mobile menu toggle button. */
-  menuLabel?: string;
-  /** Optional logo URL. When provided, renders an <img> in the brand area instead of site name text. */
-  logo?: string;
-  /**
-   * DOM id linking the menu button's `aria-controls` to the `<nav>`.
-   * Stable by default so builds are reproducible. Override only when rendering
-   * more than one of this header variant on a single page.
-   */
-  navId?: string;
-  /**
-   * Locales this site actually serves. When it holds a single entry the
-   * language switch is omitted, because on a one-locale site it is a control
-   * that navigates to a route the site does not build. Omit the prop to keep
-   * the switch rendering unconditionally.
-   */
-  locales?: readonly string[];
-}
+export type Props = HeaderProps;
 
-const { siteName, navItems, currentLang, pathname, brandHref, alternateHref, menuLabel = 'Toggle navigation menu', logo, navId = 'ew-header-nav', locales } = Astro.props;
+const { lang = 'en', labels: labelOverrides } = Astro.props;
+const labels = resolveLabels(lang, labelOverrides);
+const { siteName, navItems, currentLang, pathname, brandHref, alternateHref, menuLabel = labels.toggleNavigationMenu, logo, navId = 'ew-header-nav', locales } = Astro.props;
 const showLanguageSwitch = !locales || locales.length > 1;
+// A bare logo URL keeps today's markup: the site name is its alt text.
+const logoImage = !logo ? undefined : typeof logo === 'string' ? { src: logo, alt: siteName } : logo;
 ---
 
 <header class="ew-header" data-testid="header-classic">
   <div class="ew-header__inner">
     <a href={brandHref ?? (currentLang === 'de' ? '/' : `/${currentLang}/`)} class="ew-header__brand">
-      {logo ? <img src={logo} alt={siteName} class="ew-header__logo" /> : siteName}
+      {logoImage ? <Media image={logoImage} class="ew-header__logo" /> : siteName}
     </a>
 
     <button
@@ -63,7 +44,7 @@ const showLanguageSwitch = !locales || locales.length > 1;
       </svg>
     </button>
 
-    <nav id={navId} class="ew-header__nav" aria-label="Main navigation">
+    <nav id={navId} class="ew-header__nav" aria-label={labels.mainNavigation}>
       <ul class="ew-header__links">
         {navItems.map((item) => (
           <li>
@@ -75,8 +56,8 @@ const showLanguageSwitch = !locales || locales.length > 1;
       </ul>
       <div class="ew-header__actions">
         <slot name="actions">
-          <ThemeToggle />
-          {showLanguageSwitch && <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />}
+          <ThemeToggle lang={lang} labels={labelOverrides} />
+          {showLanguageSwitch && <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} lang={lang} labels={labelOverrides} />}
         </slot>
       </div>
     </nav>

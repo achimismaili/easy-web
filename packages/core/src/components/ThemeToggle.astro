@@ -3,12 +3,14 @@
  * ThemeToggle – switches between light and dark themes using @easy-web/theme-core.
  * Pure Astro component with inline vanilla JS. No framework dependency.
  */
-interface Props {
-  /** Accessible label for the toggle button. */
-  label?: string;
-}
+import type { ThemeToggleProps } from '../contracts/props.js';
+import { resolveLabels } from './labels.js';
 
-const { label = 'Toggle color theme (Darkmode)' } = Astro.props;
+export type Props = ThemeToggleProps;
+
+const { lang = 'en', labels: labelOverrides } = Astro.props;
+const labels = resolveLabels(lang, labelOverrides);
+const { label = labels.toggleColorTheme } = Astro.props;
 ---
 
 <button

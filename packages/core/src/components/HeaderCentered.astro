@@ -1,33 +1,18 @@
 ---
+import type { HeaderCenteredProps } from '../contracts/props.js';
+import { resolveLabels } from './labels.js';
+import Media from './Media.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import LanguageSwitch from './LanguageSwitch.astro';
 
-interface Props {
-  siteName: string;
-  navItems: Array<{ label: string; href: string }>;
-  currentLang: string;
-  pathname: string;
-  alternateHref?: string;
-  menuLabel?: string;
-  /** Optional logo URL. When provided, renders an <img> in the brand area instead of site name text. */
-  logo?: string;
-  /**
-   * DOM id linking the menu button's `aria-controls` to the `<nav>`.
-   * Stable by default so builds are reproducible. Override only when rendering
-   * more than one of this header variant on a single page.
-   */
-  navId?: string;
-  /**
-   * Locales this site actually serves. When it holds a single entry the
-   * language switch is omitted, because on a one-locale site it is a control
-   * that navigates to a route the site does not build. Omit the prop to keep
-   * the switch rendering unconditionally.
-   */
-  locales?: readonly string[];
-}
+export type Props = HeaderCenteredProps;
 
-const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = 'Toggle navigation menu', logo, navId = 'ew-header-centered-nav', locales } = Astro.props;
+const { lang = 'en', labels: labelOverrides } = Astro.props;
+const labels = resolveLabels(lang, labelOverrides);
+const { siteName, navItems, currentLang, pathname, alternateHref, menuLabel = labels.toggleNavigationMenu, logo, navId = 'ew-header-centered-nav', locales } = Astro.props;
 const showLanguageSwitch = !locales || locales.length > 1;
+// A bare logo URL keeps today's markup: the site name is its alt text.
+const logoImage = !logo ? undefined : typeof logo === 'string' ? { src: logo, alt: siteName } : logo;
 const mid = Math.ceil(navItems.length / 2);
 const leftItems = navItems.slice(0, mid);
 const rightItems = navItems.slice(mid);
@@ -35,7 +20,7 @@ const rightItems = navItems.slice(mid);
 
 <header class="ew-header-centered" data-testid="header-centered">
   <div class="ew-header-centered__inner">
-    <nav id={navId} class="ew-header-centered__nav" aria-label="Main navigation">
+    <nav id={navId} class="ew-header-centered__nav" aria-label={labels.mainNavigation}>
       <ul class="ew-header-centered__links ew-header-centered__links--left">
         {leftItems.map((item) => (
           <li>
@@ -47,7 +32,7 @@ const rightItems = navItems.slice(mid);
       </ul>
 
       <a href={currentLang === 'de' ? '/' : `/${currentLang}/`} class="ew-header-centered__brand">
-        {logo ? <img src={logo} alt={siteName} class="ew-header-centered__logo" /> : siteName}
+        {logoImage ? <Media image={logoImage} class="ew-header-centered__logo" /> : siteName}
       </a>
 
       <div class="ew-header-centered__right">
@@ -62,8 +47,8 @@ const rightItems = navItems.slice(mid);
         </ul>
         <div class="ew-header-centered__actions">
           <slot name="actions">
-            <ThemeToggle />
-            {showLanguageSwitch && <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} />}
+            <ThemeToggle lang={lang} labels={labelOverrides} />
+            {showLanguageSwitch && <LanguageSwitch currentLang={currentLang} pathname={pathname} alternateHref={alternateHref} lang={lang} labels={labelOverrides} />}
           </slot>
         </div>
       </div>
