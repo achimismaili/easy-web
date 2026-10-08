@@ -4,22 +4,25 @@
  * Renders as clickable anchor when href is provided, plain container otherwise.
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  title: string;
-  description?: string;
-  href?: string;
-  image?: string;
-  imageAlt?: string;
-}
+import type { CardProps } from '../contracts/props.js';
+import Media from './Media.astro';
 
-const { title, description, href, image, imageAlt } = Astro.props;
-const alt = imageAlt || title;
+export type Props = CardProps;
+
+const props = Astro.props;
+const { item, imageSizes, class: className } = props;
+const { title, description, href } = item ?? props;
+// Only the legacy props fall back to the title for alt text; an item's image
+// carries its own alt.
+const legacyAlt = props.imageAlt || props.title;
 const Tag = href ? 'a' : 'div';
 ---
 
-<Tag class:list={['ew-card', { 'ew-card--link': !!href }]} {...(href ? { href } : {})}>
-  {image && (
-    <img src={image} alt={alt} class="ew-card__image" loading="lazy" />
+<Tag class:list={['ew-card', { 'ew-card--link': !!href }, className]} {...(href ? { href } : {})}>
+  {item ? (
+    item.image && <Media image={item.image} sizes={imageSizes} class="ew-card__image" loading="lazy" />
+  ) : (
+    props.image && <img src={props.image} alt={legacyAlt} class="ew-card__image" loading="lazy" />
   )}
   <div class="ew-card__body">
     <h3 class="ew-card__title">{title}</h3>

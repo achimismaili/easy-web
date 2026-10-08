@@ -1,4 +1,5 @@
-import type { Image } from './types.js';
+import type { Linkable } from './capabilities.js';
+import type { Article, Image, Item } from './types.js';
 import type { AnyImage } from './types.js';
 import type { Link, NavItem } from './types.js';
 import type { Labels } from '../components/labels.js';
@@ -12,6 +13,99 @@ export type GalleryItem = Image & {
     readonly cta?: string;
     readonly imagePosition?: 'left' | 'right';
 };
+
+// -- Card family: Card, BlogPostCard, CardGrid --
+
+/**
+ * `Card` rendered from a content contract. Title, description and image come
+ * from `item`, and the card becomes a link when `item.href` is set. The image
+ * alt text comes only from `item.image.alt`; the title is never a fallback.
+ */
+export interface ItemCardProps {
+  item: Item & Partial<Linkable>;
+  /**
+   * `sizes` attribute of the responsive image. Only `ImageMetadata` sources
+   * get a `srcset`; a string source renders a plain `<img>` and ignores it.
+   */
+  imageSizes?: string;
+  class?: string;
+  title?: never;
+  description?: never;
+  href?: never;
+  image?: never;
+  imageAlt?: never;
+}
+
+/** `Card` rendered from individual props, exactly as before the content contracts. */
+export interface LegacyCardProps {
+  /** @deprecated Pass `item`; `item.title` is rendered. */
+  title: string;
+  /** @deprecated Pass `item`; `item.description` is rendered. */
+  description?: string;
+  /** @deprecated Pass `item`; `item.href` makes the card a link. */
+  href?: string;
+  /** @deprecated Pass `item`; `item.image` also accepts a local image asset. */
+  image?: string;
+  /**
+   * @deprecated Pass `item`; the alt text then comes from `item.image.alt`.
+   * This prop falls back to `title`, the `item` path never does.
+   */
+  imageAlt?: string;
+  class?: string;
+  item?: never;
+  imageSizes?: never;
+}
+
+export type CardProps = ItemCardProps | LegacyCardProps;
+
+/**
+ * `BlogPostCard` rendered from an article contract. The date comes from
+ * `item.datePublished`; the image alt text only from `item.image.alt`.
+ */
+export interface ItemBlogPostCardProps {
+  item: Article & Linkable;
+  /** `sizes` attribute of the responsive image, as in `ItemCardProps`. */
+  imageSizes?: string;
+  /** Locale of the formatted date, e.g. `de`. Defaults to the runtime locale. */
+  locale?: string;
+  class?: string;
+  title?: never;
+  description?: never;
+  href?: never;
+  pubDate?: never;
+  heroImage?: never;
+  heroImageAlt?: never;
+}
+
+/** `BlogPostCard` rendered from individual props, exactly as before the content contracts. */
+export interface LegacyBlogPostCardProps {
+  /** @deprecated Pass `item`; `item.title` is rendered. */
+  title: string;
+  /** @deprecated Pass `item`; `item.description` is rendered. */
+  description: string;
+  /** @deprecated Pass `item`; `item.href` is the link target. */
+  href: string;
+  /** @deprecated Pass `item`; the date comes from `item.datePublished`. */
+  pubDate: Date;
+  /** @deprecated Pass `item`; `item.image` also accepts a local image asset. */
+  heroImage?: string;
+  /**
+   * @deprecated Pass `item`; the alt text then comes from `item.image.alt`.
+   * This prop falls back to `title`, the `item` path never does.
+   */
+  heroImageAlt?: string;
+  /** Locale of the formatted date, e.g. `de`. Defaults to the runtime locale. */
+  locale?: string;
+  class?: string;
+  item?: never;
+  imageSizes?: never;
+}
+
+export type BlogPostCardProps = ItemBlogPostCardProps | LegacyBlogPostCardProps;
+
+export interface CardGridProps {
+  class?: string;
+}
 
 // -- Section components and NotFound --
 // The section components take no `lang`/`labels`: they render no fixed copy.

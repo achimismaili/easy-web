@@ -5,29 +5,33 @@
  * and description excerpt.
  * Pure Astro component using --ew-* design tokens.
  */
-interface Props {
-  title: string;
-  description: string;
-  href: string;
-  pubDate: Date;
-  heroImage?: string;
-  heroImageAlt?: string;
-  locale?: string;
-}
+import type { BlogPostCardProps } from '../contracts/props.js';
+import Media from './Media.astro';
 
-const { title, description, href, pubDate, heroImage, heroImageAlt, locale } = Astro.props;
-const alt = heroImageAlt || title;
-const formattedDate = new Intl.DateTimeFormat(locale ?? undefined, { dateStyle: 'medium' }).format(pubDate);
+export type Props = BlogPostCardProps;
+
+const props = Astro.props;
+const { item, imageSizes, locale, class: className } = props;
+const { title, description, href } = item ?? props;
+const date = props.item ? props.item.datePublished : props.pubDate;
+// Only the legacy props fall back to the title for alt text; an item's image
+// carries its own alt.
+const legacyAlt = props.heroImageAlt || props.title;
+// Legacy cards always render the excerpt paragraph; an article may have none.
+const showDescription = !item || Boolean(description);
+const formattedDate = new Intl.DateTimeFormat(locale ?? undefined, { dateStyle: 'medium' }).format(date);
 ---
 
-<a class="ew-blog-card" href={href}>
-  {heroImage && (
-    <img src={heroImage} alt={alt} class="ew-blog-card__image" loading="lazy" />
+<a class:list={['ew-blog-card', className]} href={href}>
+  {item ? (
+    item.image && <Media image={item.image} sizes={imageSizes} class="ew-blog-card__image" loading="lazy" />
+  ) : (
+    props.heroImage && <img src={props.heroImage} alt={legacyAlt} class="ew-blog-card__image" loading="lazy" />
   )}
   <div class="ew-blog-card__body">
     <h3 class="ew-blog-card__title">{title}</h3>
-    <time class="ew-blog-card__date" datetime={pubDate.toISOString()}>{formattedDate}</time>
-    <p class="ew-blog-card__description">{description}</p>
+    <time class="ew-blog-card__date" datetime={date.toISOString()}>{formattedDate}</time>
+    {showDescription && <p class="ew-blog-card__description">{description}</p>}
   </div>
 </a>
 

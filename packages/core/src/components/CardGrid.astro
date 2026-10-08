@@ -4,9 +4,14 @@
  * 1 column mobile, 2 tablet, 3 desktop.
  * Pure Astro component using --ew-* design tokens.
  */
+import type { CardGridProps } from '../contracts/props.js';
+
+export type Props = CardGridProps;
+
+const { class: className } = Astro.props;
 ---
 
-<div class="ew-card-grid">
+<div class:list={['ew-card-grid', className]}>
   <slot />
 </div>
 
