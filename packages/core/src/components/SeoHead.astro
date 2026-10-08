@@ -1,4 +1,5 @@
 ---
+import StructuredData from './StructuredData.astro';
 import { toServedPath, type TrailingSlash } from '../i18n/index.js';
 
 export interface AlternateLink {
@@ -21,6 +22,7 @@ export interface Props {
   twitterSite?: string;
   alternates?: AlternateLink[];
   trailingSlash?: TrailingSlash;
+  structuredData?: object | object[];
 }
 
 const {
@@ -38,6 +40,7 @@ const {
   twitterSite,
   alternates = [],
   trailingSlash,
+  structuredData,
 } = Astro.props;
 
 const site = Astro.site;
@@ -103,3 +106,4 @@ const ogLocaleAlternate = locale === 'en' ? 'de_DE' : 'en_US';
 {alternates.map((link) => (
   <link rel="alternate" hreflang={link.hreflang} href={link.href} />
 ))}
+{structuredData && <StructuredData data={structuredData} />}
