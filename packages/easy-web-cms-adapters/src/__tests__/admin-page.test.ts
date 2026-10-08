@@ -19,6 +19,11 @@ describe('AdminPage manual init', () => {
         expect(html).toContain('<title>CMS</title>');
     });
 
+    it('defaults manual init to the current Decap release without an explicit version', async () => {
+        const html = await render({ config: { load_config_file: false, collections: [] } });
+        expect(html).toContain('decap-cms@3.16.3/dist/decap-cms.js');
+    });
+
     it('escapes a closing script tag inside the config', async () => {
         const html = await render({ config: { hint: '</script><b>' } });
         expect(html).not.toContain('</script><b>');

@@ -9,7 +9,7 @@ export interface Props {
   title?: string;
 }
 const { config, decapVersion, lang = 'en', title = 'Content Manager' } = Astro.props;
-const src = `https://unpkg.com/decap-cms@${config ? (decapVersion ?? '3.14.0') : '3.14.0'}/dist/decap-cms.js`;
+const src = `https://unpkg.com/decap-cms@${config ? (decapVersion ?? '3.16.3') : '3.14.0'}/dist/decap-cms.js`;
 const init = config
   ? `window.initCMS({ config: ${JSON.stringify(config).replace(/</g, '\\u003c')} });`
   : '';
