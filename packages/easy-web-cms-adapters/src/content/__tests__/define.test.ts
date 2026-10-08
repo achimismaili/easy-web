@@ -93,6 +93,19 @@ describe('content definitions', () => {
         expect(result.fields[1]?.alt).toEqual({ from: 'title' });
     });
 
+    it('accepts a nested text field named body', () => {
+        // Given / When
+        const result = defineContentType({
+            ...base,
+            fields: [title, field.object('ctaSection', {
+                label: 'CTA',
+                fields: [field.text('body', { label: 'Body' })],
+            })],
+        });
+        // Then
+        expect(result.fields[1]?.fields?.[0]?.name).toBe('body');
+    });
+
     it('defaults collection settings when omitted', () => {
         // Given / When
         const result = defineContentType(base);

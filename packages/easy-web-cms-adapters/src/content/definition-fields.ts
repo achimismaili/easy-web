@@ -15,7 +15,7 @@ export function resolveFields(definition: DefinitionOptions, fields: readonly Fi
         const fail = (issue: string): never => { throw new DefinitionError(definition.name, path, issue); };
         if (names.has(entry.name)) fail('duplicate field name');
         names.add(entry.name);
-        if (entry.name === 'body' && entry.kind !== 'body') fail('body must use field.body');
+        if (parent === '' && entry.name === 'body' && entry.kind !== 'body') fail('body must use field.body');
         if (entry.alt && typeof entry.alt === 'object') {
             const from = entry.alt.from;
             if (!fields.some(sibling => sibling.name === from && sibling.kind === 'string')) {
