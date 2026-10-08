@@ -23,7 +23,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p src/content/tsconfig.tests.json",
     "test": "vitest run"
   },
   "license": "MIT",
