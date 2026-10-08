@@ -25,8 +25,11 @@ export function defineContentType(options: ContentTypeOptions): ContentTypeDef {
             throw new DefinitionError(options.name, 'publish', String(exhaustive));
         }
     }
-    const identifierField = options.identifierField ?? (options.fields.some(f => f.name === 'title') ? 'title' : 'name');
-    if (!options.fields.some(f => f.name === identifierField)) {
+    const hasIdentifier = (name: string) => options.fields.some(f => f.name === name)
+        || (options.variants !== undefined && Object.values(options.variants.options).length > 0
+            && Object.values(options.variants.options).every(variant => variant.fields.some(f => f.name === name)));
+    const identifierField = options.identifierField ?? (hasIdentifier('title') ? 'title' : 'name');
+    if (!hasIdentifier(identifierField)) {
         throw new DefinitionError(options.name, 'identifierField', `missing ${identifierField}; expected title or name or configured identifier`);
     }
     const allFields = resolveFields(options, [...options.fields, ...generatedFields]);

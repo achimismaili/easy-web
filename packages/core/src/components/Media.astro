@@ -21,6 +21,7 @@ const {
   class: className,
   width,
   height,
+  ...attributes
 } = Astro.props;
 
 const isDecorative = (img: AnyImage): img is DecorativeImage =>
@@ -34,18 +35,20 @@ const isMetadata = typeof image.src !== 'string';
     alt={alt}
     widths={widths}
     sizes={sizes}
-    loading={loading}
     class={className}
+    loading={loading}
     width={width}
     height={height}
+    {...attributes}
   />
 ) : (
   <img
     src={image.src as string}
     alt={alt}
-    loading={loading}
     class={className}
+    loading={loading}
     width={width}
     height={height}
+    {...attributes}
   />
 )}

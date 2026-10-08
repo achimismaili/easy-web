@@ -1,15 +1,23 @@
 ---
 import type { GalleryLightboxGridData } from '../schemas/galleries';
+import type { GalleryItem } from '../contracts/props.js';
+import { resolveLabels, type GalleryLabelProps } from './labels.js';
+import Media from './Media.astro';
 
-type Props = Omit<GalleryLightboxGridData, 'kind' | 'locale' | 'translationKey'>;
+// allow: SIZE_OK - preserve the legacy lightbox CSS alongside its conditional inline controller.
+export type Props = Omit<GalleryLightboxGridData, 'kind' | 'locale' | 'translationKey' | 'items'> & GalleryLabelProps & {
+  readonly items: (GalleryItem | string)[];
+};
 
 const {
   title,
   columns = 3,
   gap = 'md',
   aspectRatio = 'square',
-  items,
+  items: inputItems,
 } = Astro.props;
+const items: GalleryItem[] = inputItems.map(item => typeof item === 'string' ? { src: item, alt: '' } : item);
+const labels = resolveLabels(Astro.props.lang, Astro.props.labels);
 
 const gridClass = [
   'ew-lightbox-grid',
@@ -30,11 +38,13 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
             type="button"
             class="ew-lightbox-grid__item"
             data-index={i}
-            aria-label={`Open ${item.alt}`}
+            data-title={item.title}
+            data-description={item.description}
+            aria-label={labels.openImage.replace('{alt}', item.alt)}
           >
-            <img
-              src={item.src}
-              alt={item.alt}
+            <Media
+              image={item}
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               class={`ew-lightbox-grid__img ${ratioClass}`}
               loading="lazy"
             />
@@ -45,14 +55,14 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
         class="ew-lightbox"
         role="dialog"
         aria-modal="true"
-        aria-label={title ?? 'Image lightbox'}
+        aria-label={title ?? labels.imageLightbox}
         data-open="false"
         hidden
       >
         <button
           type="button"
           class="ew-lightbox__close"
-          aria-label="Close lightbox"
+          aria-label={labels.closeLightbox}
         >
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -62,7 +72,7 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
         <button
           type="button"
           class="ew-lightbox__arrow ew-lightbox__arrow--prev"
-          aria-label="Previous image"
+          aria-label={labels.previousImage}
         >
           <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="15 18 9 12 15 6"></polyline>
@@ -71,70 +81,56 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
         <button
           type="button"
           class="ew-lightbox__arrow ew-lightbox__arrow--next"
-          aria-label="Next image"
+          aria-label={labels.nextImage}
         >
           <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </button>
         <figure class="ew-lightbox__figure">
-          <img class="ew-lightbox__img" src="" alt="" />
+          <Media image={{ src: '', alt: '' }} class="ew-lightbox__img" />
           <figcaption class="ew-lightbox__caption">
             <h3 class="ew-lightbox__caption-title"></h3>
             <p class="ew-lightbox__caption-description"></p>
           </figcaption>
         </figure>
       </div>
-      <script type="application/json" data-lightbox-items set:html={JSON.stringify(items)} />
     </div>
   </section>
 )}
 
-<script>
-  type LightboxItem = {
-    src: string;
-    alt: string;
-    title?: string;
-    description?: string;
-  };
-
-  const initLightbox = (root: HTMLElement) => {
-    const dataNode = root.querySelector<HTMLScriptElement>('[data-lightbox-items]');
-    const modal = root.querySelector<HTMLElement>('.ew-lightbox');
-    const img = modal?.querySelector<HTMLImageElement>('.ew-lightbox__img');
-    const captionTitle = modal?.querySelector<HTMLElement>('.ew-lightbox__caption-title');
-    const captionDesc = modal?.querySelector<HTMLElement>('.ew-lightbox__caption-description');
-    const closeBtn = modal?.querySelector<HTMLButtonElement>('.ew-lightbox__close');
-    const prevBtn = modal?.querySelector<HTMLButtonElement>('.ew-lightbox__arrow--prev');
-    const nextBtn = modal?.querySelector<HTMLButtonElement>('.ew-lightbox__arrow--next');
-    const triggers = Array.from(root.querySelectorAll<HTMLButtonElement>('.ew-lightbox-grid__item'));
-
-    if (!dataNode || !modal || !img || !captionTitle || !captionDesc || !closeBtn || triggers.length === 0) return;
-
-    let items: LightboxItem[] = [];
-    try {
-      items = JSON.parse(dataNode.textContent || '[]');
-    } catch {
-      return;
-    }
+{items.length > 0 && <script is:inline>
+(() => {
+  const initLightbox = (root) => {
+    if (root.dataset.lightboxInitialized) return;
+    root.dataset.lightboxInitialized = 'true';
+    const modal = root.querySelector('.ew-lightbox');
+    const img = modal.querySelector('.ew-lightbox__img');
+    const captionTitle = modal.querySelector('.ew-lightbox__caption-title');
+    const captionDesc = modal.querySelector('.ew-lightbox__caption-description');
+    const closeBtn = modal.querySelector('.ew-lightbox__close');
+    const prevBtn = modal.querySelector('.ew-lightbox__arrow--prev');
+    const nextBtn = modal.querySelector('.ew-lightbox__arrow--next');
+    const triggers = Array.from(root.querySelectorAll('.ew-lightbox-grid__item'));
 
     let current = 0;
-    let lastTrigger: HTMLElement | null = null;
+    let lastTrigger = null;
 
-    const render = (idx: number) => {
-      const next = ((idx % items.length) + items.length) % items.length;
+    const render = (idx) => {
+      const next = ((idx % triggers.length) + triggers.length) % triggers.length;
       current = next;
-      const item = items[current];
-      img.src = item.src;
-      img.alt = item.alt;
-      captionTitle.textContent = item.title ?? '';
-      captionTitle.hidden = !item.title;
-      captionDesc.textContent = item.description ?? '';
-      captionDesc.hidden = !item.description;
+      const trigger = triggers[current];
+      const thumbnail = trigger.querySelector('img');
+      img.src = thumbnail.currentSrc || thumbnail.src;
+      img.alt = thumbnail.alt;
+      captionTitle.textContent = trigger.dataset.title ?? '';
+      captionTitle.hidden = !trigger.dataset.title;
+      captionDesc.textContent = trigger.dataset.description ?? '';
+      captionDesc.hidden = !trigger.dataset.description;
     };
 
-    const open = (idx: number) => {
-      lastTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const open = (idx, trigger) => {
+      lastTrigger = trigger;
       render(idx);
       modal.hidden = false;
       modal.dataset.open = 'true';
@@ -150,7 +146,7 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
     };
 
     triggers.forEach((trigger, i) => {
-      trigger.addEventListener('click', () => open(i));
+      trigger.addEventListener('click', (event) => open(i, event.currentTarget));
     });
 
     closeBtn.addEventListener('click', close);
@@ -161,7 +157,7 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
       if (e.target === modal) close();
     });
 
-    document.addEventListener('keydown', (e: KeyboardEvent) => {
+    document.addEventListener('keydown', (e) => {
       if (modal.dataset.open !== 'true') return;
       if (e.key === 'Escape') { e.preventDefault(); close(); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); render(current - 1); }
@@ -169,8 +165,9 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
     });
   };
 
-  document.querySelectorAll<HTMLElement>('[data-lightbox-root]').forEach(initLightbox);
-</script>
+  document.querySelectorAll('[data-lightbox-root]').forEach(initLightbox);
+})();
+</script>}
 
 <style>
   .ew-lightbox-wrap {

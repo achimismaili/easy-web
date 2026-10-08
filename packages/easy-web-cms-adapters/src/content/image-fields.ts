@@ -1,9 +1,10 @@
 import type { Image, DecorativeImage } from '@easy-web/core/contracts';
-import type { DecapField, FieldDef, Folders, ImageOptions, ImagesOptions } from './types.js';
+import type { DecapField, FieldDef, Folders, ImageLabels, ImageOptions, ImagesOptions } from './types.js';
 import type { InferFields, RequiredValue } from './infer.js';
 
-function source(folders: Folders): DecapField {
-    return { name: 'src', label: 'Bild', widget: 'image', required: true,
+function source(folders: Folders & ImageLabels): DecapField {
+    return { name: 'src', label: folders.sourceLabel ?? 'Bild', widget: 'image', required: true,
+        ...(folders.sourceHint !== undefined ? { hint: folders.sourceHint } : {}),
         ...(folders.mediaFolder !== undefined ? { media_folder: folders.mediaFolder } : {}),
         ...(folders.publicFolder !== undefined ? { public_folder: folders.publicFolder } : {}) };
 }
@@ -45,5 +46,5 @@ export function images(name: string, options: ImagesOptions): FieldDef {
     return Object.freeze({ name, kind: 'images', required, fields, alt: 'required', mediaFolder, publicFolder,
         decap: { name, label, widget: 'list', required, label_singular: labelSingular, summary: '{{fields.alt}}',
             ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}),
-            fields: [source(options), description({}), ...fields.map(f => f.decap)] } } as const);
+            fields: [source(options), description(options), ...fields.map(f => f.decap)] } } as const);
 }

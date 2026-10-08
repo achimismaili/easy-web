@@ -1,14 +1,20 @@
 ---
 import type { GalleryMasonryGridData } from '../schemas/galleries';
+import type { GalleryItem } from '../contracts/props.js';
+import type { GalleryLabelProps } from './labels.js';
+import Media from './Media.astro';
 
-type Props = Omit<GalleryMasonryGridData, 'kind' | 'locale' | 'translationKey'>;
+export type Props = Omit<GalleryMasonryGridData, 'kind' | 'locale' | 'translationKey' | 'items'> & GalleryLabelProps & {
+  readonly items: (GalleryItem | string)[];
+};
 
 const {
   title,
   columns = 3,
   gap = 'md',
-  items,
+  items: inputItems,
 } = Astro.props;
+const items: GalleryItem[] = inputItems.map(item => typeof item === 'string' ? { src: item, alt: '' } : item);
 
 const sectionClass = [
   'ew-masonry',
@@ -25,9 +31,9 @@ const sectionClass = [
         {items.map((item) => {
           const figure = (
             <figure class="ew-masonry__item">
-              <img
-                src={item.src}
-                alt={item.alt}
+              <Media
+                image={item}
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 class="ew-masonry__img"
                 loading="lazy"
               />

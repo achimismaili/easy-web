@@ -1,13 +1,19 @@
 ---
 import type { GalleryFeatureHighlightData } from '../schemas/galleries';
+import type { GalleryItem } from '../contracts/props.js';
+import type { GalleryLabelProps } from './labels.js';
+import Media from './Media.astro';
 
-type Props = Omit<GalleryFeatureHighlightData, 'kind' | 'locale' | 'translationKey'>;
+export type Props = Omit<GalleryFeatureHighlightData, 'kind' | 'locale' | 'translationKey' | 'items'> & GalleryLabelProps & {
+  readonly items: (GalleryItem | string)[];
+};
 
 const {
   title,
   gap = 'lg',
-  items,
+  items: inputItems,
 } = Astro.props;
+const items: GalleryItem[] = inputItems.map(item => typeof item === 'string' ? { src: item, alt: '' } : item);
 
 const sectionClass = ['ew-feature-highlight', `ew-feature-highlight--gap-${gap}`].join(' ');
 ---
@@ -23,9 +29,9 @@ const sectionClass = ['ew-feature-highlight', `ew-feature-highlight--gap-${gap}`
           return (
             <article class={rowClass}>
               <div class="ew-feature-highlight__media">
-                <img
-                  src={item.src}
-                  alt={item.alt}
+                <Media
+                  image={item}
+                  sizes="(min-width: 768px) 50vw, 100vw"
                   class="ew-feature-highlight__img"
                   loading="lazy"
                 />

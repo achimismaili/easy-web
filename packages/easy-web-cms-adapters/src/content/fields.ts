@@ -27,9 +27,9 @@ function body({ label = 'Inhalt' }: { readonly label?: string } = {}): FieldDef<
 
 function number<const N extends string, const O extends NumberOptions>(name: N, options: O): FieldDef<N, RequiredValue<number, O>, 'number'>;
 function number(name: string, options: NumberOptions): FieldDef {
-    const { label, required = true, valueType = 'int', min, max, step, default: defaultValue } = options;
+    const { label, required = true, valueType = 'int', min, max, step, hint, default: defaultValue } = options;
     return Object.freeze({ name, kind: 'number', required, decap: { name, widget: 'number', label, required, value_type: valueType,
-        ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}),
+        ...(hint !== undefined ? { hint } : {}), ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}),
         ...(step !== undefined ? { step } : {}), ...(defaultValue !== undefined ? { default: defaultValue } : {}) } } as const);
 }
 
@@ -50,14 +50,14 @@ function date(name: string, options: FieldOptions & { readonly hint?: string }):
         format: 'YYYY-MM-DD', date_format: 'DD.MM.YYYY', time_format: false, picker_utc: true } } as const);
 }
 
-type SelectOptions = FieldOptions & { readonly options: readonly SelectOption[]; readonly default?: string };
+type SelectOptions = FieldOptions & { readonly options: readonly SelectOption[]; readonly default?: string; readonly hint?: string };
 type SelectValue<O extends SelectOptions> = O['options'][number] extends infer V
     ? V extends string ? V : V extends { readonly value: infer S } ? S : never : never;
 function select<const N extends string, const O extends SelectOptions>(name: N, options: O): FieldDef<N, RequiredValue<SelectValue<O>, O>, 'select'>;
 function select(name: string, options: SelectOptions): FieldDef {
-    const { label, required = true, default: defaultValue } = options;
+    const { label, required = true, default: defaultValue, hint } = options;
     return Object.freeze({ name, kind: 'select', required, decap: { name, widget: 'select', label, required, options: options.options,
-        ...(defaultValue !== undefined ? { default: defaultValue } : {}) } } as const);
+        ...(hint !== undefined ? { hint } : {}), ...(defaultValue !== undefined ? { default: defaultValue } : {}) } } as const);
 }
 
 function hidden<const N extends string, const V extends string>(name: N, options: { readonly default: V }): FieldDef<N, V, 'hidden'> {

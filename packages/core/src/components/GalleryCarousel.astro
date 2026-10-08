@@ -1,7 +1,13 @@
 ---
 import type { GalleryCarouselData } from '../schemas/galleries';
+import type { GalleryItem } from '../contracts/props.js';
+import { resolveLabels, type GalleryLabelProps } from './labels.js';
+import Media from './Media.astro';
 
-type Props = Omit<GalleryCarouselData, 'kind' | 'locale' | 'translationKey'>;
+// allow: SIZE_OK - preserve the colocated legacy carousel CSS and script during contract migration.
+export type Props = Omit<GalleryCarouselData, 'kind' | 'locale' | 'translationKey' | 'slides'> & GalleryLabelProps & {
+  readonly slides: (GalleryItem | string)[];
+};
 
 const {
   title,
@@ -9,8 +15,10 @@ const {
   interval = 4000,
   showDots = true,
   showArrows = true,
-  slides,
+  slides: inputSlides,
 } = Astro.props;
+const slides: GalleryItem[] = inputSlides.map(slide => typeof slide === 'string' ? { src: slide, alt: '' } : slide);
+const labels = resolveLabels(Astro.props.lang, Astro.props.labels);
 ---
 
 {slides.length > 0 && (
@@ -21,8 +29,8 @@ const {
         class="ew-carousel"
         data-autoplay={String(autoplay)}
         data-interval={String(interval)}
-        aria-roledescription="carousel"
-        aria-label={title ?? 'Image carousel'}
+        aria-roledescription={labels.carousel}
+        aria-label={title ?? labels.imageCarousel}
         tabindex="0"
       >
         <div class="ew-carousel__viewport">
@@ -31,12 +39,12 @@ const {
               class="ew-carousel__slide"
               data-active={i === 0 ? 'true' : 'false'}
               aria-hidden={i !== 0}
-              aria-roledescription="slide"
-              aria-label={`${i + 1} / ${slides.length}`}
+              aria-roledescription={labels.slide}
+              aria-label={labels.slidePosition.replace('{number}', String(i + 1)).replace('{total}', String(slides.length))}
             >
-              <img
-                src={slide.src}
-                alt={slide.alt}
+              <Media
+                image={slide}
+                sizes="100vw"
                 class="ew-carousel__img"
                 loading={i === 0 ? 'eager' : 'lazy'}
               />
@@ -52,7 +60,7 @@ const {
             <button
               type="button"
               class="ew-carousel__arrow ew-carousel__arrow--prev"
-              aria-label="Previous slide"
+              aria-label={labels.previousSlide}
             >
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="15 18 9 12 15 6"></polyline>
@@ -61,7 +69,7 @@ const {
             <button
               type="button"
               class="ew-carousel__arrow ew-carousel__arrow--next"
-              aria-label="Next slide"
+              aria-label={labels.nextSlide}
             >
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="9 18 15 12 9 6"></polyline>
@@ -71,7 +79,7 @@ const {
         )}
 
         {slides.length > 1 && showDots && (
-          <div class="ew-carousel__dots" role="tablist" aria-label="Slide navigation">
+          <div class="ew-carousel__dots" role="tablist" aria-label={labels.slideNavigation}>
             {slides.map((_, i) => (
               <button
                 type="button"
@@ -79,7 +87,7 @@ const {
                 data-active={i === 0 ? 'true' : 'false'}
                 data-index={i}
                 role="tab"
-                aria-label={`Go to slide ${i + 1}`}
+                aria-label={labels.goToSlide.replace('{number}', String(i + 1))}
                 aria-selected={i === 0 ? 'true' : 'false'}
               ></button>
             ))}

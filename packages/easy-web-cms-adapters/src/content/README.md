@@ -42,3 +42,14 @@ cannot prove a multi-locale contract statically; prefer literal tuples.
 package's normal tsconfig. `type-tests.ts` is also checked by the normal package
 typecheck and contains the negative conformance assertions. Its function is
 neither exported nor called. No schema generation or config assembly lives here.
+
+## Gallery variants
+
+`fieldSets.galleryVariants({ uiLocale: 'de' })` returns the six gallery branches
+for `defineContentType({ ..., fields: [], variants: ... })`. Each branch owns its
+optional `title` plus only the options its component renders. An identifier may
+be common or present in every branch; these galleries use `title`.
+Set `publicFolder` on the containing definition: image lists inherit it and keep
+`src` plus required non-whitespace `alt` together. `uiLocale: 'en'` changes the
+editor labels, not content locale participation. `ImageLabels` options let image
+builders localize the source and alt controls without replacing their validation.

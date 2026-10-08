@@ -58,6 +58,7 @@ export interface TextOptions extends FieldOptions {
     readonly default?: string;
 }
 export interface NumberOptions extends FieldOptions {
+    readonly hint?: string;
     readonly valueType?: 'int' | 'float';
     readonly min?: number;
     readonly max?: number;
@@ -68,10 +69,14 @@ export interface Folders {
     readonly mediaFolder?: string;
     readonly publicFolder?: string;
 }
-export interface ImageOptions extends FieldOptions, Folders {
-    readonly alt: AltRule;
+export interface ImageLabels {
+    readonly sourceLabel?: string;
+    readonly sourceHint?: string;
     readonly altLabel?: string;
     readonly altHint?: string;
+}
+export interface ImageOptions extends FieldOptions, Folders, ImageLabels {
+    readonly alt: AltRule;
 }
 export interface ListOptions extends FieldOptions {
     readonly labelSingular?: string;
@@ -79,7 +84,7 @@ export interface ListOptions extends FieldOptions {
     readonly min?: number;
     readonly max?: number;
 }
-export interface ImagesOptions extends Omit<ListOptions, 'fields'>, Folders {
+export interface ImagesOptions extends Omit<ListOptions, 'fields'>, Folders, ImageLabels {
     readonly fields?: readonly FieldDef[];
 }
 export interface VariantOption {

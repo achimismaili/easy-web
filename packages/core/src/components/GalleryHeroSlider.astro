@@ -1,15 +1,23 @@
 ---
 import type { GalleryHeroSliderData } from '../schemas/galleries';
+import type { GalleryItem } from '../contracts/props.js';
+import { resolveLabels, type GalleryLabelProps } from './labels.js';
+import Media from './Media.astro';
 
-type Props = Omit<GalleryHeroSliderData, 'kind' | 'locale' | 'translationKey'>;
+// allow: SIZE_OK - preserve the colocated legacy slider CSS and script during contract migration.
+export type Props = Omit<GalleryHeroSliderData, 'kind' | 'locale' | 'translationKey' | 'slides'> & GalleryLabelProps & {
+  readonly slides: (GalleryItem | string)[];
+};
 
 const {
   title,
   autoplay = true,
   interval = 5000,
   height = 'lg',
-  slides,
+  slides: inputSlides,
 } = Astro.props;
+const slides: GalleryItem[] = inputSlides.map(slide => typeof slide === 'string' ? { src: slide, alt: '' } : slide);
+const labels = resolveLabels(Astro.props.lang, Astro.props.labels);
 
 const sliderClass = `ew-hero-slider ew-hero-slider--height-${height}`;
 ---
@@ -19,8 +27,8 @@ const sliderClass = `ew-hero-slider ew-hero-slider--height-${height}`;
     class={sliderClass}
     data-autoplay={String(autoplay)}
     data-interval={String(interval)}
-    aria-roledescription="carousel"
-    aria-label={title ?? 'Hero slider'}
+    aria-roledescription={labels.carousel}
+    aria-label={title ?? labels.heroSlider}
     tabindex="0"
   >
     {title && <h2 class="ew-hero-slider__heading">{title}</h2>}
@@ -31,12 +39,12 @@ const sliderClass = `ew-hero-slider ew-hero-slider--height-${height}`;
           class="ew-hero-slider__slide"
           data-active={i === 0 ? 'true' : 'false'}
           aria-hidden={i !== 0}
-          aria-roledescription="slide"
-          aria-label={`${i + 1} / ${slides.length}`}
+          aria-roledescription={labels.slide}
+          aria-label={labels.slidePosition.replace('{number}', String(i + 1)).replace('{total}', String(slides.length))}
         >
-          <img
-            src={slide.src}
-            alt={slide.alt}
+          <Media
+            image={slide}
+            sizes="100vw"
             class="ew-hero-slider__img"
             loading={i === 0 ? 'eager' : 'lazy'}
           />
@@ -60,7 +68,7 @@ const sliderClass = `ew-hero-slider ew-hero-slider--height-${height}`;
         <button
           type="button"
           class="ew-hero-slider__arrow ew-hero-slider__arrow--prev"
-          aria-label="Previous slide"
+          aria-label={labels.previousSlide}
           data-direction="prev"
         >
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -70,7 +78,7 @@ const sliderClass = `ew-hero-slider ew-hero-slider--height-${height}`;
         <button
           type="button"
           class="ew-hero-slider__arrow ew-hero-slider__arrow--next"
-          aria-label="Next slide"
+          aria-label={labels.nextSlide}
           data-direction="next"
         >
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -78,7 +86,7 @@ const sliderClass = `ew-hero-slider ew-hero-slider--height-${height}`;
           </svg>
         </button>
 
-        <div class="ew-hero-slider__dots" role="tablist" aria-label="Slide navigation">
+        <div class="ew-hero-slider__dots" role="tablist" aria-label={labels.slideNavigation}>
           {slides.map((_, i) => (
             <button
               type="button"
@@ -86,7 +94,7 @@ const sliderClass = `ew-hero-slider ew-hero-slider--height-${height}`;
               data-active={i === 0 ? 'true' : 'false'}
               data-index={i}
               role="tab"
-              aria-label={`Go to slide ${i + 1}`}
+              aria-label={labels.goToSlide.replace('{number}', String(i + 1))}
               aria-selected={i === 0 ? 'true' : 'false'}
             ></button>
           ))}
