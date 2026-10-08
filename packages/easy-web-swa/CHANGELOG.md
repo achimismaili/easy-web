@@ -1,5 +1,7 @@
 # @achimismaili/easy-web-swa
 
+## 1.4.0
+
 ## 1.3.3
 
 ## 1.3.2
