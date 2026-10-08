@@ -225,8 +225,8 @@ const {
     right: 0;
     bottom: 0;
     padding: var(--ew-space-3) var(--ew-space-5);
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0));
-    color: #fff;
+    background: var(--ew-caption-gradient);
+    color: var(--ew-overlay-fg);
     font-family: var(--ew-font-sans);
     font-size: var(--ew-text-sm);
     line-height: var(--ew-leading-normal);
@@ -241,8 +241,8 @@ const {
     height: 2.5rem;
     border-radius: var(--ew-radius-full);
     border: none;
-    background: rgba(0, 0, 0, 0.45);
-    color: #fff;
+    background: var(--ew-control-bg);
+    color: var(--ew-control-fg);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -252,10 +252,10 @@ const {
   }
   .ew-carousel__arrow:hover,
   .ew-carousel__arrow:focus-visible {
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--ew-control-bg-hover);
   }
   .ew-carousel__arrow:focus-visible {
-    outline: 2px solid #fff;
+    outline: 2px solid var(--ew-control-fg);
     outline-offset: 2px;
   }
   .ew-carousel__arrow--prev { left: var(--ew-space-3); }
@@ -276,21 +276,21 @@ const {
     height: 0.5rem;
     border-radius: var(--ew-radius-full);
     border: none;
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--ew-indicator-bg);
     cursor: pointer;
     padding: 0;
     transition: background 0.15s ease, transform 0.15s ease;
   }
   .ew-carousel__dot[data-active='true'] {
-    background: #fff;
+    background: var(--ew-control-fg);
     transform: scale(1.3);
   }
   .ew-carousel__dot:hover,
   .ew-carousel__dot:focus-visible {
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--ew-indicator-bg-hover);
   }
   .ew-carousel__dot:focus-visible {
-    outline: 2px solid #fff;
+    outline: 2px solid var(--ew-control-fg);
     outline-offset: 2px;
   }
 </style>

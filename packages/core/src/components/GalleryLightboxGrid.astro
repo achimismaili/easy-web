@@ -243,7 +243,7 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
   .ew-lightbox {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.92);
+    background: var(--ew-overlay-bg);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -273,7 +273,7 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
   }
 
   .ew-lightbox__caption {
-    color: #fff;
+    color: var(--ew-overlay-fg);
     text-align: center;
     font-family: var(--ew-font-sans);
     max-width: 40rem;
@@ -298,8 +298,8 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
     height: 2.75rem;
     border-radius: var(--ew-radius-full);
     border: none;
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    background: var(--ew-control-bg-inverse);
+    color: var(--ew-control-fg);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -308,10 +308,10 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
   }
   .ew-lightbox__close:hover,
   .ew-lightbox__close:focus-visible {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--ew-control-bg-inverse-hover);
   }
   .ew-lightbox__close:focus-visible {
-    outline: 2px solid #fff;
+    outline: 2px solid var(--ew-control-fg);
     outline-offset: 2px;
   }
 
@@ -323,8 +323,8 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
     height: 3rem;
     border-radius: var(--ew-radius-full);
     border: none;
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    background: var(--ew-control-bg-inverse);
+    color: var(--ew-control-fg);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -333,10 +333,10 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
   }
   .ew-lightbox__arrow:hover,
   .ew-lightbox__arrow:focus-visible {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--ew-control-bg-inverse-hover);
   }
   .ew-lightbox__arrow:focus-visible {
-    outline: 2px solid #fff;
+    outline: 2px solid var(--ew-control-fg);
     outline-offset: 2px;
   }
   .ew-lightbox__arrow--prev { left: var(--ew-space-4); }

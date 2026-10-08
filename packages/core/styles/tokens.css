@@ -116,6 +116,26 @@
   --ew-z-modal:     1300;
   --ew-z-popover:   1400;
   --ew-z-toast:     1500;
+
+  /* Gallery overlay & control tokens (todo 11) — literal values preserved
+     exactly from GalleryCarousel/GalleryHeroSlider/GalleryLightboxGrid/
+     GalleryFeatureHighlight; "-strong"/"-inverse" variants exist because the
+     4 files use genuinely different opacities for the same visual role. */
+  --ew-overlay-bg: rgba(0, 0, 0, 0.92);
+  --ew-overlay-fg: #fff;
+  --ew-overlay-gradient: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+  --ew-caption-gradient: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0));
+  --ew-control-fg: #fff;
+  --ew-control-bg: rgba(0, 0, 0, 0.45);
+  --ew-control-bg-hover: rgba(0, 0, 0, 0.7);
+  --ew-control-bg-strong: rgba(0, 0, 0, 0.5);
+  --ew-control-bg-strong-hover: rgba(0, 0, 0, 0.75);
+  --ew-control-bg-inverse: rgba(255, 255, 255, 0.15);
+  --ew-control-bg-inverse-hover: rgba(255, 255, 255, 0.3);
+  --ew-indicator-bg: rgba(255, 255, 255, 0.5);
+  --ew-indicator-bg-hover: rgba(255, 255, 255, 0.85);
+  --ew-shadow-image: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --ew-shadow-image-strong: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 [data-theme="dark"] {
