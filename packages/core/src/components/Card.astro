@@ -1,0 +1,70 @@
+---
+/**
+ * Card – content card with optional image, description, and link.
+ * Renders as clickable anchor when href is provided, plain container otherwise.
+ * Pure Astro component using --ew-* design tokens.
+ */
+interface Props {
+  title: string;
+  description?: string;
+  href?: string;
+  image?: string;
+  imageAlt?: string;
+}
+
+const { title, description, href, image, imageAlt } = Astro.props;
+const alt = imageAlt || title;
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag class:list={['ew-card', { 'ew-card--link': !!href }]} {...(href ? { href } : {})}>
+  {image && (
+    <img src={image} alt={alt} class="ew-card__image" loading="lazy" />
+  )}
+  <div class="ew-card__body">
+    <h3 class="ew-card__title">{title}</h3>
+    {description && <p class="ew-card__description">{description}</p>}
+  </div>
+</Tag>
+
+<style>
+  .ew-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--ew-surface);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-lg);
+    overflow: hidden;
+  }
+  .ew-card--link {
+    text-decoration: none;
+    color: inherit;
+  }
+  .ew-card--link:hover {
+    border-color: var(--ew-primary);
+  }
+  .ew-card__image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+  }
+  .ew-card__body {
+    padding: var(--ew-space-4);
+  }
+  .ew-card__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-lg);
+    font-weight: 600;
+    color: var(--ew-on-surface);
+    margin: 0;
+    line-height: var(--ew-leading-tight);
+  }
+  .ew-card__description {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    color: var(--ew-muted);
+    margin: var(--ew-space-2) 0 0;
+    line-height: var(--ew-leading-normal);
+  }
+</style>

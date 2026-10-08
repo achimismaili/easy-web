@@ -15,6 +15,6 @@ The base package for the `@easy-web/*` family. It owns the shared content contra
 
 ## Add-ons
 
-Four concerns remain separate because they depend on a specific platform or runtime: `@easy-web/swa` for Azure Static Web Apps, `@easy-web/cms-adapters` for Decap CMS, `@easy-web/auth` for React and MSAL authentication, and `@easy-web/brand` for brand tooling.
+Four concerns remain separate because they depend on a specific platform or runtime: `@easy-web/swa` for Azure Static Web Apps, the `cms-adapters` package for Decap CMS, `@easy-web/auth` for React and MSAL authentication, and `@easy-web/brand` for brand tooling.
 
 This package is private while the consolidation is in progress and is made publishable only by the family release task.

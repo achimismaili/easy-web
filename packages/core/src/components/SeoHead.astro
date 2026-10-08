@@ -1,0 +1,105 @@
+---
+import { toServedPath, type TrailingSlash } from '../i18n/index.js';
+
+export interface AlternateLink {
+  hreflang: string;
+  href: string;
+}
+
+export interface Props {
+  title: string;
+  description?: string;
+  pathname: string;
+  locale: string;
+  siteName: string;
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+  themeColor?: string;
+  manifest?: string;
+  noIndex?: boolean;
+  twitterCard?: 'summary' | 'summary_large_image';
+  twitterSite?: string;
+  alternates?: AlternateLink[];
+  trailingSlash?: TrailingSlash;
+}
+
+const {
+  title,
+  description,
+  pathname,
+  locale,
+  siteName,
+  ogType = 'website',
+  ogImage,
+  themeColor,
+  manifest,
+  noIndex,
+  twitterCard = 'summary',
+  twitterSite,
+  alternates = [],
+  trailingSlash,
+} = Astro.props;
+
+const site = Astro.site;
+if (!site) {
+  throw new Error(
+    '@easy-web/seo: <SeoHead> requires astro.config.mjs to set `site` (a full https:// URL).'
+  );
+}
+
+// Callers hand-write `pathname` in mixed conventions, so the canonical is
+// normalised to the form the site actually serves. It must match the sitemap
+// <loc> and the self-referencing hreflang exactly, or Google treats /x and /x/
+// as competing duplicates. The style is resolved from Astro's build config by
+// the easyWebSeo() integration.
+const servedStyle: TrailingSlash =
+  trailingSlash ?? (process.env.EASY_WEB_SEO_TRAILING_SLASH === 'never' ? 'never' : 'always');
+const servedPath = toServedPath(pathname, servedStyle);
+
+// The built 404 documents answer 200 when requested directly, so without this
+// they are ordinary indexable pages whose content happens to say "not found".
+// A self-referencing canonical is omitted for the same reason: it would assert
+// the page is a canonical destination while the body says the opposite.
+const isNotFoundRoute = servedPath.split('/').filter(Boolean).pop() === '404';
+
+// The crawl policy is resolved once by easyWebSeo() and published to the
+// environment, exactly like the trailing-slash style above. Defaulting the prop
+// to `false` instead of reading that value meant `easyWebSeo({ noIndex: true })`
+// suppressed the sitemap and wrote a disallow-all robots.txt while every page
+// still shipped without a robots meta tag — the integration and the document
+// disagreeing about the same policy. An explicit prop still wins, so a single
+// page can opt out of a site-wide setting.
+const policyNoIndex = process.env.EASY_WEB_SEO_NO_INDEX === 'true';
+const shouldNoIndex = (noIndex ?? policyNoIndex) || isNotFoundRoute;
+
+const canonical = new URL(servedPath, site).href;
+const absoluteOgImage = ogImage ? new URL(ogImage, site).href : undefined;
+// Map locale to OG locale format: 'de' → 'de_DE', 'en' → 'en_US'
+const ogLocale = locale === 'en' ? 'en_US' : locale === 'de' ? 'de_DE' : locale.replace('-', '_');
+const ogLocaleAlternate = locale === 'en' ? 'de_DE' : 'en_US';
+---
+<title>{title}</title>
+{description && <meta name="description" content={description} />}
+{!isNotFoundRoute && <link rel="canonical" href={canonical} />}
+{shouldNoIndex && <meta name="robots" content="noindex, nofollow" />}
+{themeColor && <meta name="theme-color" content={themeColor} />}
+{manifest && <link rel="manifest" href={manifest} />}
+<!-- Open Graph -->
+<meta property="og:title" content={title} />
+{description && <meta property="og:description" content={description} />}
+<meta property="og:url" content={canonical} />
+<meta property="og:type" content={ogType} />
+<meta property="og:locale" content={ogLocale} />
+<meta property="og:locale:alternate" content={ogLocaleAlternate} />
+<meta property="og:site_name" content={siteName} />
+{absoluteOgImage && <meta property="og:image" content={absoluteOgImage} />}
+<!-- Twitter Cards -->
+<meta name="twitter:card" content={twitterCard} />
+<meta name="twitter:title" content={title} />
+{description && <meta name="twitter:description" content={description} />}
+{absoluteOgImage && <meta name="twitter:image" content={absoluteOgImage} />}
+{twitterSite && <meta name="twitter:site" content={twitterSite} />}
+<!-- hreflang alternates -->
+{alternates.map((link) => (
+  <link rel="alternate" hreflang={link.hreflang} href={link.href} />
+))}

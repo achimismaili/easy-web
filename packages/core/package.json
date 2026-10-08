@@ -52,9 +52,16 @@
   "peerDependencies": {
     "astro": ">=6.0.0 <8.0.0"
   },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "unified": "^11",
+    "unist-util-visit": "^5"
+  },
   "devDependencies": {
+    "@types/mdast": "^4",
     "astro": "^7.3.5",
     "typescript": "^5.5.0",
+    "vfile": "^6.0.3",
     "vitest": "^3.2.4"
   },
   "publishConfig": {

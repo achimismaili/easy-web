@@ -1,0 +1,362 @@
+---
+import type { GalleryHeroSliderData } from '../schemas/galleries';
+
+type Props = Omit<GalleryHeroSliderData, 'kind' | 'locale' | 'translationKey'>;
+
+const {
+  title,
+  autoplay = true,
+  interval = 5000,
+  height = 'lg',
+  slides,
+} = Astro.props;
+
+const sliderClass = `ew-hero-slider ew-hero-slider--height-${height}`;
+---
+
+{slides.length > 0 && (
+  <section
+    class={sliderClass}
+    data-autoplay={String(autoplay)}
+    data-interval={String(interval)}
+    aria-roledescription="carousel"
+    aria-label={title ?? 'Hero slider'}
+    tabindex="0"
+  >
+    {title && <h2 class="ew-hero-slider__heading">{title}</h2>}
+
+    <div class="ew-hero-slider__viewport">
+      {slides.map((slide, i) => (
+        <article
+          class="ew-hero-slider__slide"
+          data-active={i === 0 ? 'true' : 'false'}
+          aria-hidden={i !== 0}
+          aria-roledescription="slide"
+          aria-label={`${i + 1} / ${slides.length}`}
+        >
+          <img
+            src={slide.src}
+            alt={slide.alt}
+            class="ew-hero-slider__img"
+            loading={i === 0 ? 'eager' : 'lazy'}
+          />
+          <div class="ew-hero-slider__overlay">
+            <div class="ew-hero-slider__content">
+              <h3 class="ew-hero-slider__title">{slide.title}</h3>
+              {slide.subtitle && (
+                <p class="ew-hero-slider__subtitle">{slide.subtitle}</p>
+              )}
+              {slide.href && slide.cta && (
+                <a href={slide.href} class="ew-hero-slider__cta">{slide.cta}</a>
+              )}
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    {slides.length > 1 && (
+      <>
+        <button
+          type="button"
+          class="ew-hero-slider__arrow ew-hero-slider__arrow--prev"
+          aria-label="Previous slide"
+          data-direction="prev"
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="ew-hero-slider__arrow ew-hero-slider__arrow--next"
+          aria-label="Next slide"
+          data-direction="next"
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <div class="ew-hero-slider__dots" role="tablist" aria-label="Slide navigation">
+          {slides.map((_, i) => (
+            <button
+              type="button"
+              class="ew-hero-slider__dot"
+              data-active={i === 0 ? 'true' : 'false'}
+              data-index={i}
+              role="tab"
+              aria-label={`Go to slide ${i + 1}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+            ></button>
+          ))}
+        </div>
+      </>
+    )}
+  </section>
+)}
+
+<script>
+  type Slider = HTMLElement;
+
+  const initSlider = (slider: Slider) => {
+    const slides = Array.from(slider.querySelectorAll<HTMLElement>('.ew-hero-slider__slide'));
+    const dots = Array.from(slider.querySelectorAll<HTMLElement>('.ew-hero-slider__dot'));
+    if (slides.length <= 1) return;
+
+    let current = 0;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const intervalMs = Number(slider.dataset.interval) || 5000;
+    const autoplay = slider.dataset.autoplay === 'true';
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const go = (idx: number) => {
+      const next = ((idx % slides.length) + slides.length) % slides.length;
+      if (next === current) return;
+      slides[current].dataset.active = 'false';
+      slides[current].setAttribute('aria-hidden', 'true');
+      slides[next].dataset.active = 'true';
+      slides[next].setAttribute('aria-hidden', 'false');
+      if (dots[current]) {
+        dots[current].dataset.active = 'false';
+        dots[current].setAttribute('aria-selected', 'false');
+      }
+      if (dots[next]) {
+        dots[next].dataset.active = 'true';
+        dots[next].setAttribute('aria-selected', 'true');
+      }
+      current = next;
+    };
+
+    const stop = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+    const start = () => {
+      stop();
+      if (autoplay && !reduced) {
+        timer = setInterval(() => go(current + 1), intervalMs);
+      }
+    };
+
+    slider.querySelector<HTMLElement>('.ew-hero-slider__arrow--prev')
+      ?.addEventListener('click', () => { go(current - 1); start(); });
+    slider.querySelector<HTMLElement>('.ew-hero-slider__arrow--next')
+      ?.addEventListener('click', () => { go(current + 1); start(); });
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => { go(i); start(); });
+    });
+
+    slider.addEventListener('mouseenter', stop);
+    slider.addEventListener('mouseleave', start);
+    slider.addEventListener('focusin', stop);
+    slider.addEventListener('focusout', start);
+
+    slider.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        go(current - 1);
+        start();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        go(current + 1);
+        start();
+      }
+    });
+
+    start();
+  };
+
+  document.querySelectorAll<HTMLElement>('.ew-hero-slider').forEach(initSlider);
+</script>
+
+<style>
+  .ew-hero-slider {
+    position: relative;
+    overflow: hidden;
+    background: var(--ew-surface-muted);
+    outline: none;
+  }
+  .ew-hero-slider:focus-visible {
+    outline: 3px solid var(--ew-primary);
+    outline-offset: -3px;
+  }
+
+  .ew-hero-slider--height-sm .ew-hero-slider__viewport { height: 20rem; }
+  .ew-hero-slider--height-md .ew-hero-slider__viewport { height: 30rem; }
+  .ew-hero-slider--height-lg .ew-hero-slider__viewport { height: 40rem; }
+  .ew-hero-slider--height-full .ew-hero-slider__viewport { height: 100vh; }
+
+  @media (max-width: 768px) {
+    .ew-hero-slider--height-md .ew-hero-slider__viewport { height: 24rem; }
+    .ew-hero-slider--height-lg .ew-hero-slider__viewport { height: 28rem; }
+  }
+
+  .ew-hero-slider__heading {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-4);
+    padding: 0 var(--ew-space-5);
+    line-height: var(--ew-leading-tight);
+  }
+
+  .ew-hero-slider__viewport {
+    position: relative;
+    width: 100%;
+  }
+
+  .ew-hero-slider__slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .ew-hero-slider__slide[data-active='true'] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ew-hero-slider__slide {
+      transition: none;
+    }
+  }
+
+  .ew-hero-slider__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ew-hero-slider__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0.2) 50%,
+      transparent 100%
+    );
+  }
+
+  .ew-hero-slider__content {
+    max-width: 48rem;
+    padding: var(--ew-space-8) var(--ew-space-6);
+    color: #fff;
+  }
+  @media (min-width: 768px) {
+    .ew-hero-slider__content {
+      padding: var(--ew-space-10) var(--ew-space-8);
+    }
+  }
+
+  .ew-hero-slider__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-3xl);
+    font-weight: 700;
+    margin: 0 0 var(--ew-space-3);
+    line-height: var(--ew-leading-tight);
+  }
+  @media (min-width: 768px) {
+    .ew-hero-slider__title { font-size: var(--ew-text-3xl); }
+  }
+
+  .ew-hero-slider__subtitle {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-lg);
+    margin: 0 0 var(--ew-space-5);
+    line-height: var(--ew-leading-normal);
+    opacity: 0.95;
+  }
+
+  .ew-hero-slider__cta {
+    display: inline-block;
+    background: var(--ew-primary);
+    color: var(--ew-on-primary);
+    padding: var(--ew-space-3) var(--ew-space-6);
+    border-radius: var(--ew-radius-md);
+    text-decoration: none;
+    font-family: var(--ew-font-sans);
+    font-weight: 600;
+    font-size: var(--ew-text-base);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .ew-hero-slider__cta:hover,
+  .ew-hero-slider__cta:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  .ew-hero-slider__cta:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .ew-hero-slider__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--ew-radius-full);
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+    z-index: 2;
+  }
+  .ew-hero-slider__arrow:hover,
+  .ew-hero-slider__arrow:focus-visible {
+    background: rgba(0, 0, 0, 0.75);
+  }
+  .ew-hero-slider__arrow:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+  .ew-hero-slider__arrow--prev { left: var(--ew-space-4); }
+  .ew-hero-slider__arrow--next { right: var(--ew-space-4); }
+
+  .ew-hero-slider__dots {
+    position: absolute;
+    bottom: var(--ew-space-4);
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: var(--ew-space-2);
+    z-index: 2;
+  }
+  .ew-hero-slider__dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: var(--ew-radius-full);
+    border: none;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .ew-hero-slider__dot[data-active='true'] {
+    background: #fff;
+    transform: scale(1.25);
+  }
+  .ew-hero-slider__dot:hover,
+  .ew-hero-slider__dot:focus-visible {
+    background: rgba(255, 255, 255, 0.85);
+  }
+  .ew-hero-slider__dot:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+</style>

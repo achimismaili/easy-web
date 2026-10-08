@@ -24,7 +24,6 @@
   "files": [
     "dist",
     "src/components",
-    "src/routes",
     "README.md"
   ],
   "sideEffects": false,
@@ -38,8 +37,7 @@
     "astro": ">=6.0.0 <8.0.0"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.3",
-    "@easy-web/i18n": "workspace:*"
+    "@easy-web/core": "workspace:*"
   },
   "devDependencies": {
     "astro": "^7.3.5",

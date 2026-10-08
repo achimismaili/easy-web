@@ -1,0 +1,143 @@
+---
+import type { GalleryImageGridData } from '../schemas/galleries';
+
+type Props = Omit<GalleryImageGridData, 'kind' | 'locale' | 'translationKey'>;
+
+const {
+  title,
+  columns = 3,
+  gap = 'md',
+  aspectRatio = 'square',
+  items,
+} = Astro.props;
+
+const gridClass = [
+  'ew-gallery-grid',
+  `ew-gallery-grid--cols-${columns}`,
+  `ew-gallery-grid--gap-${gap}`,
+].join(' ');
+
+const ratioClass = `ew-gallery-img--ratio-${aspectRatio.replace('/', '-')}`;
+---
+
+{items.length > 0 && (
+  <section class="ew-gallery">
+    <div class="ew-gallery__inner">
+      {title && <h2 class="ew-gallery__title">{title}</h2>}
+      <div class={gridClass}>
+        {items.map((item) => {
+          const figure = (
+            <figure class="ew-gallery__item">
+              <img
+                src={item.src}
+                alt={item.alt}
+                class={`ew-gallery__img ${ratioClass}`}
+                loading="lazy"
+              />
+              {item.caption && (
+                <figcaption class="ew-gallery__caption">{item.caption}</figcaption>
+              )}
+            </figure>
+          );
+          return item.href ? (
+            <a href={item.href} class="ew-gallery__link" aria-label={item.alt}>
+              {figure}
+            </a>
+          ) : figure;
+        })}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .ew-gallery {
+    padding: var(--ew-space-8) var(--ew-space-5);
+  }
+  .ew-gallery__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+  .ew-gallery__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-5);
+    line-height: var(--ew-leading-tight);
+  }
+
+  .ew-gallery-grid {
+    display: grid;
+    gap: var(--ew-space-4);
+  }
+  .ew-gallery-grid--cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .ew-gallery-grid--cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .ew-gallery-grid--cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .ew-gallery-grid--cols-6 { grid-template-columns: repeat(6, 1fr); }
+
+  .ew-gallery-grid--gap-sm { gap: var(--ew-space-2); }
+  .ew-gallery-grid--gap-md { gap: var(--ew-space-4); }
+  .ew-gallery-grid--gap-lg { gap: var(--ew-space-6); }
+
+  @media (max-width: 1024px) {
+    .ew-gallery-grid--cols-6 { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .ew-gallery-grid--cols-3,
+    .ew-gallery-grid--cols-4,
+    .ew-gallery-grid--cols-6 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 480px) {
+    .ew-gallery-grid--cols-2,
+    .ew-gallery-grid--cols-3,
+    .ew-gallery-grid--cols-4,
+    .ew-gallery-grid--cols-6 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ew-gallery__item {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ew-space-2);
+  }
+  .ew-gallery__img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: var(--ew-radius-md);
+    display: block;
+    transition: transform 0.2s ease;
+  }
+  .ew-gallery__img--ratio-square { aspect-ratio: 1 / 1; }
+  .ew-gallery__img--ratio-4-3 { aspect-ratio: 4 / 3; }
+  .ew-gallery__img--ratio-16-9 { aspect-ratio: 16 / 9; }
+  .ew-gallery__img--ratio-auto { aspect-ratio: auto; }
+
+  .ew-gallery__caption {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    color: var(--ew-muted);
+    line-height: var(--ew-leading-normal);
+    text-align: center;
+  }
+
+  .ew-gallery__link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .ew-gallery__link:hover .ew-gallery__img,
+  .ew-gallery__link:focus-visible .ew-gallery__img {
+    transform: scale(1.02);
+  }
+  .ew-gallery__link:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+    border-radius: var(--ew-radius-md);
+  }
+</style>

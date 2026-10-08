@@ -1,0 +1,81 @@
+---
+/**
+ * Footer – site footer with copyright line and legal links.
+ * Pure Astro component using theme tokens only.
+ */
+interface Props {
+  siteName: string;
+  legalLinks: Array<{ label: string; href: string }>;
+  currentYear?: number;
+}
+
+const { siteName, legalLinks, currentYear = new Date().getFullYear() } = Astro.props;
+---
+
+<footer class="ew-footer">
+  <div class="ew-footer__inner">
+    <p class="ew-footer__copyright">&copy; {currentYear} {siteName}</p>
+    {legalLinks.length > 0 && (
+      <nav class="ew-footer__legal" aria-label="Legal">
+        <ul class="ew-footer__links">
+          {legalLinks.map((link) => (
+            <li>
+              <a href={link.href} class="ew-footer__link">{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+  </div>
+</footer>
+
+<style>
+  .ew-footer {
+    background: var(--ew-surface-muted);
+    border-top: 1px solid var(--ew-border);
+    color: var(--ew-on-surface);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+  }
+  .ew-footer__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--ew-space-3);
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--ew-space-6) var(--ew-space-5);
+    text-align: center;
+  }
+  .ew-footer__copyright {
+    margin: 0;
+    color: var(--ew-muted);
+  }
+  .ew-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--ew-space-4);
+  }
+  .ew-footer__link {
+    color: var(--ew-muted);
+    text-decoration: none;
+  }
+  .ew-footer__link:hover {
+    color: var(--ew-on-surface);
+  }
+  .ew-footer__link:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 769px) {
+    .ew-footer__inner {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+</style>

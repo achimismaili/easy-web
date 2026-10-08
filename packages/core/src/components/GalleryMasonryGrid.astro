@@ -1,0 +1,127 @@
+---
+import type { GalleryMasonryGridData } from '../schemas/galleries';
+
+type Props = Omit<GalleryMasonryGridData, 'kind' | 'locale' | 'translationKey'>;
+
+const {
+  title,
+  columns = 3,
+  gap = 'md',
+  items,
+} = Astro.props;
+
+const sectionClass = [
+  'ew-masonry',
+  `ew-masonry--cols-${columns}`,
+  `ew-masonry--gap-${gap}`,
+].join(' ');
+---
+
+{items.length > 0 && (
+  <section class="ew-masonry-wrap">
+    <div class="ew-masonry-wrap__inner">
+      {title && <h2 class="ew-masonry-wrap__title">{title}</h2>}
+      <div class={sectionClass}>
+        {items.map((item) => {
+          const figure = (
+            <figure class="ew-masonry__item">
+              <img
+                src={item.src}
+                alt={item.alt}
+                class="ew-masonry__img"
+                loading="lazy"
+              />
+              {item.caption && (
+                <figcaption class="ew-masonry__caption">{item.caption}</figcaption>
+              )}
+            </figure>
+          );
+          return item.href ? (
+            <a href={item.href} class="ew-masonry__link" aria-label={item.alt}>
+              {figure}
+            </a>
+          ) : figure;
+        })}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .ew-masonry-wrap {
+    padding: var(--ew-space-8) var(--ew-space-5);
+  }
+  .ew-masonry-wrap__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+  .ew-masonry-wrap__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-5);
+    line-height: var(--ew-leading-tight);
+  }
+
+  .ew-masonry {
+    column-fill: balance;
+  }
+  .ew-masonry--cols-2 { column-count: 2; }
+  .ew-masonry--cols-3 { column-count: 3; }
+  .ew-masonry--cols-4 { column-count: 4; }
+
+  .ew-masonry--gap-sm { column-gap: var(--ew-space-2); }
+  .ew-masonry--gap-md { column-gap: var(--ew-space-4); }
+  .ew-masonry--gap-lg { column-gap: var(--ew-space-6); }
+
+  @media (max-width: 768px) {
+    .ew-masonry--cols-3,
+    .ew-masonry--cols-4 { column-count: 2; }
+  }
+  @media (max-width: 480px) {
+    .ew-masonry--cols-2,
+    .ew-masonry--cols-3,
+    .ew-masonry--cols-4 { column-count: 1; }
+  }
+
+  .ew-masonry__item {
+    margin: 0 0 var(--ew-space-4);
+    break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ew-space-2);
+  }
+  .ew-masonry--gap-sm .ew-masonry__item { margin-bottom: var(--ew-space-2); }
+  .ew-masonry--gap-lg .ew-masonry__item { margin-bottom: var(--ew-space-6); }
+
+  .ew-masonry__img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--ew-radius-md);
+    transition: transform 0.2s ease;
+  }
+
+  .ew-masonry__caption {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    color: var(--ew-muted);
+    line-height: var(--ew-leading-normal);
+  }
+
+  .ew-masonry__link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .ew-masonry__link:hover .ew-masonry__img,
+  .ew-masonry__link:focus-visible .ew-masonry__img {
+    transform: scale(1.02);
+  }
+  .ew-masonry__link:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+    border-radius: var(--ew-radius-md);
+  }
+</style>

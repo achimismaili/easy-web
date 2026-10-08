@@ -1,0 +1,85 @@
+---
+/**
+ * PageShell – document-level landmark scaffold: skip link, <main>, and slots for
+ * the site header and footer.
+ *
+ * Exists because a layout that renders `<Header /> <slot /> <Footer />` produces
+ * a document with no `<main>` landmark and no way to bypass the navigation. That
+ * fails WCAG 2.1 success criterion 2.4.1 "Bypass Blocks" (Level A), which is
+ * satisfied by a skip link, a heading, or a landmark region — and such a layout
+ * offers none of the three on any route whose content does not open with a
+ * heading. axe-core reports this as `bypass`, and because that rule carries
+ * `reviewOnFail`, it surfaces as *incomplete* rather than a violation, so a gate
+ * asserting `violations.length === 0` stays green while the failure ships.
+ *
+ * This component owns the DOM order on purpose: the skip link has to precede the
+ * header to be the first focusable element, which a layout cannot arrange if the
+ * header is rendered by the caller before the shell.
+ *
+ * Usage:
+ *   <PageShell>
+ *     <Header slot="header" ... />
+ *     <slot />
+ *     <Footer slot="footer" ... />
+ *   </PageShell>
+ */
+
+interface Props {
+  /** id of the <main> element and the skip link's target. */
+  mainId?: string;
+  /** Skip-link text. Set this per locale; the default is English. */
+  skipLabel?: string;
+  /** Extra class(es) for the <main> element. */
+  class?: string;
+}
+
+const { mainId = 'main-content', skipLabel = 'Skip to main content', class: className } = Astro.props;
+---
+
+<a class="ew-skip-link" href={`#${mainId}`}>{skipLabel}</a>
+<slot name="header" />
+<!--
+  tabindex="-1" makes <main> programmatically focusable so activating the skip
+  link moves focus as well as scroll position. Without it, some browsers scroll
+  the viewport but leave focus in the nav, so the next Tab returns to the menu —
+  the control appears to work while not actually bypassing anything.
+-->
+<main id={mainId} class:list={['ew-main', className]} tabindex="-1">
+  <slot />
+</main>
+<slot name="footer" />
+
+<style>
+  /*
+    Off-screen until focused rather than `display: none` — a hidden element is
+    removed from the focus order entirely, which would make the skip link
+    unreachable by the keyboard users it exists for.
+  */
+  .ew-skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: var(--ew-space-2) var(--ew-space-4);
+    background: var(--ew-surface);
+    color: var(--ew-on-surface);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-md);
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-base);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .ew-skip-link:focus-visible,
+  .ew-skip-link:focus {
+    left: var(--ew-space-3);
+    top: var(--ew-space-3);
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+
+  /* The landmark itself is layout-neutral; instances style it via `class`. */
+  .ew-main:focus {
+    outline: none;
+  }
+</style>

@@ -1,33 +1,13 @@
 ---
 /**
- * DraftBanner – warning banner for draft/unfinished legal content.
- * Pure Astro component using --ew-* design tokens.
+ * @deprecated Import `@easy-web/core/components/DraftBanner.astro` instead.
+ * Compatibility wrapper: renders the core component with the same props and slots.
  */
-interface Props {
-  message: string;
-}
+import type { ComponentProps } from 'astro/types';
+import DraftBanner from '@easy-web/core/components/DraftBanner.astro';
 
-const { message } = Astro.props;
+type Props = ComponentProps<typeof DraftBanner>;
+
+const props = Astro.props;
 ---
-
-<div class="ew-draft-banner" role="status">
-  <p class="ew-draft-banner__text">{message}</p>
-</div>
-
-<style>
-  .ew-draft-banner {
-    background: var(--ew-surface-muted);
-    border: 2px solid var(--ew-border);
-    border-radius: var(--ew-radius-md);
-    padding: var(--ew-space-3) var(--ew-space-4);
-    margin: 0 0 var(--ew-space-5);
-  }
-  .ew-draft-banner__text {
-    font-family: var(--ew-font-sans);
-    font-size: var(--ew-text-sm);
-    font-weight: 600;
-    color: var(--ew-on-surface);
-    margin: 0;
-    line-height: var(--ew-leading-normal);
-  }
-</style>
+<DraftBanner {...props} />

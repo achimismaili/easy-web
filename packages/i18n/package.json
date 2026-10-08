@@ -32,6 +32,9 @@
       "optional": false
     }
   },
+  "dependencies": {
+    "@easy-web/core": "workspace:*"
+  },
   "devDependencies": {
     "@inlang/paraglide-js": "^2.0.0",
     "astro": "^7.3.5",

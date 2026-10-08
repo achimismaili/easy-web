@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '@easy-web/content-blocks/components/Hero';
+import Section from '@easy-web/content-blocks/components/Section';
+import CardGrid from '@easy-web/content-blocks/components/CardGrid';
+import Card from '@easy-web/content-blocks/components/Card';
+import BlogPostCard from '@easy-web/content-blocks/components/BlogPostCard';
+import CtaSection from '@easy-web/content-blocks/components/CtaSection';
+import Prose from '@easy-web/content-blocks/components/Prose';
+import LanguageNotice from '@easy-web/content-blocks/components/LanguageNotice';
+import { createI18n, formatDate } from '@easy-web/i18n';
+
+const i18n = createI18n({ defaultLocale: 'de', locales: ['de'], baseUrl: 'https://compat-fixture.example' });
+const published = formatDate('de', new Date('2025-03-15T12:00:00Z'));
+---
+<Base title="Start" pageId="index">
+  <Hero title="Compat fixture" subtitle={`Default locale ${i18n.defaultLocale}`} ctaLabel="Headers" ctaHref="/headers/" />
+  <LanguageNotice message="Nur der deutsche Text ist verbindlich." />
+  <Section title="Cards" id="cards">
+    <CardGrid>
+      <Card title="Card" description="A legacy card" href="/legal/" />
+      <BlogPostCard title="Post" description={`Published ${published}`} href="/" pubDate={new Date('2025-03-15T12:00:00Z')} locale="de" />
+    </CardGrid>
+  </Section>
+  <Prose><p data-marker="prose">Prose body</p></Prose>
+  <CtaSection heading="Join" body="Do it now" buttonLabel="Go" buttonHref="/" />
+</Base>

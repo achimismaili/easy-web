@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import HeaderCentered from '@easy-web/content-blocks/components/HeaderCentered';
+import HeaderFlyout from '@easy-web/content-blocks/components/HeaderFlyout';
+import HeaderHideOnScroll from '@easy-web/content-blocks/components/HeaderHideOnScroll';
+
+const navItems = [
+  { label: 'Home', href: '/' },
+  { label: 'More', href: '/headers/', children: [{ label: 'Gallery', href: '/gallery/' }] },
+];
+---
+<Base title="Headers" pageId="headers">
+  <HeaderCentered siteName="Centered" navItems={navItems} currentLang="de" pathname="/headers/" locales={['de']} navId="centered-nav" />
+  <HeaderFlyout siteName="Flyout" navItems={navItems} currentLang="de" pathname="/headers/" locales={['de']} navId="flyout-nav" />
+  <HeaderHideOnScroll siteName="Hide" navItems={navItems} currentLang="de" pathname="/headers/" locales={['de']} navId="hide-nav" />
+</Base>

@@ -1,0 +1,79 @@
+---
+/**
+ * BlogPostCard – clickable card linking to a blog post.
+ * Displays optional hero image, title, locale-formatted date,
+ * and description excerpt.
+ * Pure Astro component using --ew-* design tokens.
+ */
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  pubDate: Date;
+  heroImage?: string;
+  heroImageAlt?: string;
+  locale?: string;
+}
+
+const { title, description, href, pubDate, heroImage, heroImageAlt, locale } = Astro.props;
+const alt = heroImageAlt || title;
+const formattedDate = new Intl.DateTimeFormat(locale ?? undefined, { dateStyle: 'medium' }).format(pubDate);
+---
+
+<a class="ew-blog-card" href={href}>
+  {heroImage && (
+    <img src={heroImage} alt={alt} class="ew-blog-card__image" loading="lazy" />
+  )}
+  <div class="ew-blog-card__body">
+    <h3 class="ew-blog-card__title">{title}</h3>
+    <time class="ew-blog-card__date" datetime={pubDate.toISOString()}>{formattedDate}</time>
+    <p class="ew-blog-card__description">{description}</p>
+  </div>
+</a>
+
+<style>
+  .ew-blog-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--ew-surface);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+  }
+  .ew-blog-card:hover {
+    border-color: var(--ew-primary);
+  }
+  .ew-blog-card__image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+  }
+  .ew-blog-card__body {
+    padding: var(--ew-space-4);
+  }
+  .ew-blog-card__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-lg);
+    font-weight: 600;
+    color: var(--ew-on-surface);
+    margin: 0;
+    line-height: var(--ew-leading-tight);
+  }
+  .ew-blog-card__date {
+    display: block;
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xs);
+    color: var(--ew-muted);
+    margin-top: var(--ew-space-1);
+  }
+  .ew-blog-card__description {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-sm);
+    color: var(--ew-muted);
+    margin: var(--ew-space-2) 0 0;
+    line-height: var(--ew-leading-normal);
+  }
+</style>

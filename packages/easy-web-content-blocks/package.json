@@ -30,8 +30,7 @@
     "zod": ">=4.0.0"
   },
   "dependencies": {
-    "@easy-web/i18n": "workspace:*",
-    "@easy-web/theme-core": "workspace:*"
+    "@easy-web/core": "workspace:*"
   },
   "devDependencies": {
     "astro": "^7.3.5",

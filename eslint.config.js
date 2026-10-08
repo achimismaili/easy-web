@@ -9,4 +9,14 @@ export default [
   {
     ignores: ["**/dist/**", "**/node_modules/**", "**/.turbo/**"],
   },
+  {
+    rules: {
+      // A leading underscore marks a binding as deliberately unused: phantom
+      // type parameters, compile-only assertions, and rest-sibling omission.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true },
+      ],
+    },
+  },
 ];

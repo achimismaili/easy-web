@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import GalleryHeroSlider from '@easy-web/content-blocks/components/GalleryHeroSlider';
+import GalleryLightboxGrid from '@easy-web/content-blocks/components/GalleryLightboxGrid';
+import GallerySection from '@easy-web/content-blocks/components/GallerySection';
+import { gallerySchema } from '@easy-web/content-blocks/schemas/galleries';
+
+const grid = gallerySchema.parse({
+  kind: 'image-grid',
+  title: 'Grid',
+  locale: 'de',
+  translationKey: 'grid',
+  items: [{ src: '/img/one.jpg', alt: 'One' }],
+});
+---
+<Base title="Gallery" pageId="gallery">
+  <GalleryHeroSlider title="Slider" autoplay={false} interval={5000} height="md" slides={[{ src: '/img/s1.jpg', alt: 'S1', title: 'Slide' }]} />
+  <GalleryLightboxGrid title="Lightbox" columns={3} gap="md" aspectRatio="square" items={[{ src: '/img/l1.jpg', alt: 'L1' }]} />
+  <GallerySection entry={{ data: grid }} />
+</Base>

@@ -1,0 +1,153 @@
+---
+import type { GalleryFeatureHighlightData } from '../schemas/galleries';
+
+type Props = Omit<GalleryFeatureHighlightData, 'kind' | 'locale' | 'translationKey'>;
+
+const {
+  title,
+  gap = 'lg',
+  items,
+} = Astro.props;
+
+const sectionClass = ['ew-feature-highlight', `ew-feature-highlight--gap-${gap}`].join(' ');
+---
+
+{items.length > 0 && (
+  <section class="ew-feature-highlight-wrap">
+    <div class="ew-feature-highlight-wrap__inner">
+      {title && <h2 class="ew-feature-highlight-wrap__title">{title}</h2>}
+      <div class={sectionClass}>
+        {items.map((item, i) => {
+          const position = item.imagePosition ?? (i % 2 === 0 ? 'right' : 'left');
+          const rowClass = `ew-feature-highlight__row ew-feature-highlight__row--image-${position}`;
+          return (
+            <article class={rowClass}>
+              <div class="ew-feature-highlight__media">
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  class="ew-feature-highlight__img"
+                  loading="lazy"
+                />
+              </div>
+              <div class="ew-feature-highlight__content">
+                <h3 class="ew-feature-highlight__title">{item.title}</h3>
+                <p class="ew-feature-highlight__description">{item.description}</p>
+                {item.href && item.cta && (
+                  <a href={item.href} class="ew-feature-highlight__cta">{item.cta}</a>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .ew-feature-highlight-wrap {
+    padding: var(--ew-space-8) var(--ew-space-5);
+  }
+  .ew-feature-highlight-wrap__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+  .ew-feature-highlight-wrap__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    margin: 0 0 var(--ew-space-5);
+    line-height: var(--ew-leading-tight);
+  }
+
+  .ew-feature-highlight {
+    display: flex;
+    flex-direction: column;
+  }
+  .ew-feature-highlight--gap-sm { gap: var(--ew-space-5); }
+  .ew-feature-highlight--gap-md { gap: var(--ew-space-7); }
+  .ew-feature-highlight--gap-lg { gap: var(--ew-space-8); }
+
+  .ew-feature-highlight__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--ew-space-7);
+  }
+
+  .ew-feature-highlight__row--image-left .ew-feature-highlight__media { order: 1; }
+  .ew-feature-highlight__row--image-left .ew-feature-highlight__content { order: 2; }
+  .ew-feature-highlight__row--image-right .ew-feature-highlight__media { order: 2; }
+  .ew-feature-highlight__row--image-right .ew-feature-highlight__content { order: 1; }
+
+  @media (max-width: 768px) {
+    .ew-feature-highlight__row {
+      grid-template-columns: 1fr;
+      gap: var(--ew-space-4);
+    }
+    .ew-feature-highlight__row .ew-feature-highlight__media { order: 1; }
+    .ew-feature-highlight__row .ew-feature-highlight__content { order: 2; }
+  }
+
+  .ew-feature-highlight__media {
+    overflow: hidden;
+    border-radius: var(--ew-radius-md);
+  }
+
+  .ew-feature-highlight__img {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .ew-feature-highlight__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ew-space-3);
+  }
+
+  .ew-feature-highlight__title {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-xl);
+    font-weight: 700;
+    color: var(--ew-on-surface);
+    margin: 0;
+    line-height: var(--ew-leading-tight);
+  }
+
+  .ew-feature-highlight__description {
+    font-family: var(--ew-font-sans);
+    font-size: var(--ew-text-base);
+    color: var(--ew-on-surface);
+    margin: 0;
+    line-height: var(--ew-leading-loose);
+  }
+
+  .ew-feature-highlight__cta {
+    align-self: flex-start;
+    display: inline-block;
+    background: var(--ew-primary);
+    color: var(--ew-on-primary);
+    padding: var(--ew-space-2) var(--ew-space-5);
+    border-radius: var(--ew-radius-md);
+    text-decoration: none;
+    font-family: var(--ew-font-sans);
+    font-weight: 600;
+    font-size: var(--ew-text-base);
+    margin-top: var(--ew-space-2);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .ew-feature-highlight__cta:hover,
+  .ew-feature-highlight__cta:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .ew-feature-highlight__cta:focus-visible {
+    outline: 2px solid var(--ew-primary);
+    outline-offset: 2px;
+  }
+</style>
