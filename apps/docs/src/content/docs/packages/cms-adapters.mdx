@@ -168,13 +168,13 @@ export default defineConfig({
   integrations: [easyWebCmsPreviewAssets({
     folders: [
       { source: 'src/assets/galleries', publicPath: '/src/assets/galleries' },
-      { source: 'src/assets/site', publicPath: '/src/assets/site' },
+      { source: 'src/assets/images', publicPath: '/src/assets/images' },
     ],
   })],
 });
 ```
 
-That two-folder example matches Party200. Harley uses one mapping for `src/assets/bikes`. The pilot's `public/images` setup is already browser-addressable and does not need this integration. Mappings are always explicit; source and public suffixes must correspond one-to-one, while duplicate or overlapping public prefixes are rejected.
+That two-folder example matches Party200. Harley uses one mapping for `src/assets/images`. The pilot's `public/images` setup is already browser-addressable and does not need this integration. Mappings are always explicit; source and public suffixes must correspond one-to-one, while duplicate or overlapping public prefixes are rejected.
 
 In development, valid owned browser-image paths serve the contained original with `Cache-Control: no-store` and `X-Content-Type-Options: nosniff`. In production, raster images (`jpg`, `jpeg`, `png`, `webp`, `avif`) are auto-oriented and fitted inside 1600x1600 without enlargement. JPEG/WebP use quality 80, AVIF quality 50, and PNG uses lossless compression. SVG/GIF pass through only within the limits. Inputs over 25 MiB, emitted files over 5 MiB, MOV/video, unknown or malformed files, symlink escapes, and output collisions are never published. Warnings are summarized rather than logged per successful file.
 

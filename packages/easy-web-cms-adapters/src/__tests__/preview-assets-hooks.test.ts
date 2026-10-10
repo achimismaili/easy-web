@@ -20,16 +20,16 @@ function createRoot(): string {
   return root;
 }
 
-function integration(root: string) {
-  const previous = process.cwd();
-  process.chdir(root);
-  try {
-    return easyWebCmsPreviewAssets({ folders: [
-      { source: 'src/assets/photos', publicPath: '/src/assets/photos' },
-    ] });
-  } finally {
-    process.chdir(previous);
-  }
+function integration() {
+  return easyWebCmsPreviewAssets({ folders: [
+    { source: 'src/assets/photos', publicPath: '/src/assets/photos' },
+  ] });
+}
+
+async function configure(value: unknown, root: string): Promise<void> {
+  await hook(value, 'astro:config:setup')({
+    config: { root: pathToFileURL(`${root}${path.sep}`) },
+  });
 }
 
 function hook(value: unknown, name: string): (...args: readonly unknown[]) => unknown {
@@ -47,7 +47,9 @@ describe('CMS preview development middleware', () => {
     const jpeg = await sharp({ create: { width: 8, height: 6, channels: 3, background: '#336699' } }).jpeg().toBuffer();
     fs.writeFileSync(path.join(root, 'src/assets/photos/valid.jpg'), jpeg);
     let middleware: ((req: { url?: string }, res: TestResponse, next: () => void) => void) | undefined;
-    const setup = hook(integration(root), 'astro:server:setup');
+    const previewIntegration = integration();
+    await configure(previewIntegration, root);
+    const setup = hook(previewIntegration, 'astro:server:setup');
     await setup({ server: { middlewares: { use: (value: typeof middleware) => { middleware = value; } } } });
     if (!middleware) throw new TypeError('Middleware was not registered');
 
@@ -71,7 +73,9 @@ describe('CMS preview development middleware', () => {
   ('returns a path-free 404 for invalid owned URL %s', async (url) => {
     const root = createRoot();
     let middleware: ((req: { url?: string }, res: TestResponse, next: () => void) => void) | undefined;
-    await hook(integration(root), 'astro:server:setup')({
+    const previewIntegration = integration();
+    await configure(previewIntegration, root);
+    await hook(previewIntegration, 'astro:server:setup')({
       server: { middlewares: { use: (value: typeof middleware) => { middleware = value; } } },
     });
     if (!middleware) throw new TypeError('Middleware was not registered');
@@ -81,6 +85,56 @@ describe('CMS preview development middleware', () => {
     expect(response.statusCode).toBe(404);
     expect(Buffer.concat(response.chunks).toString()).toBe('Not Found');
     expect(response.next).toBe(false);
+  });
+});
+
+describe('CMS preview Astro root', () => {
+  it('resolves development and build assets from config.root when cwd differs', async () => {
+    const root = createRoot();
+    const otherCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'cms-preview-cwd-'));
+    roots.push(otherCwd);
+    const jpeg = await sharp({ create: { width: 8, height: 6, channels: 3, background: '#336699' } }).jpeg().toBuffer();
+    fs.writeFileSync(path.join(root, 'src/assets/photos/root.jpg'), jpeg);
+    const previewIntegration = integration();
+    const previousCwd = process.cwd();
+    process.chdir(otherCwd);
+    try {
+      await configure(previewIntegration, root);
+      let middleware: ((req: { url?: string }, res: TestResponse, next: () => void) => void) | undefined;
+      await hook(previewIntegration, 'astro:server:setup')({
+        server: { middlewares: { use: (value: typeof middleware) => { middleware = value; } } },
+      });
+      if (!middleware) throw new TypeError('Middleware was not registered');
+      const response = new TestResponse();
+      middleware({ url: '/src/assets/photos/root.jpg' }, response, () => { response.next = true; });
+      await response.finished;
+      expect(Buffer.concat(response.chunks)).toEqual(jpeg);
+
+      const dist = path.join(root, 'dist');
+      fs.mkdirSync(dist);
+      await hook(previewIntegration, 'astro:build:done')({
+        dir: pathToFileURL(`${dist}${path.sep}`), logger: { info: vi.fn(), warn: vi.fn() },
+      });
+      expect(fs.existsSync(path.join(dist, 'src/assets/photos/root.jpg'))).toBe(true);
+      expect(fs.existsSync(path.join(otherCwd, 'src/assets/photos/root.jpg'))).toBe(false);
+    } finally {
+      process.chdir(previousCwd);
+    }
+  });
+
+  it('fails clearly when server setup runs before config setup', () => {
+    const previewIntegration = integration();
+    expect(() => hook(previewIntegration, 'astro:server:setup')({
+      server: { middlewares: { use: vi.fn() } },
+    })).toThrow(/astro:config:setup/i);
+  });
+
+  it('fails clearly when build completion runs before config setup', async () => {
+    const previewIntegration = integration();
+    await expect(hook(previewIntegration, 'astro:build:done')({
+      dir: pathToFileURL(path.join(os.tmpdir(), 'dist')),
+      logger: { info: vi.fn(), warn: vi.fn() },
+    })).rejects.toThrow(/astro:config:setup/i);
   });
 });
 
@@ -106,7 +160,9 @@ describe('CMS preview build emission', () => {
     fs.writeFileSync(path.join(dist, 'unrelated.txt'), 'keep');
     const logger = { info: vi.fn(), warn: vi.fn() };
 
-    await hook(integration(root), 'astro:build:done')({ dir: pathToFileURL(`${dist}${path.sep}`), logger });
+    const previewIntegration = integration();
+    await configure(previewIntegration, root);
+    await hook(previewIntegration, 'astro:build:done')({ dir: pathToFileURL(`${dist}${path.sep}`), logger });
 
     for (const [name] of fixtures) {
       const output = path.join(dist, 'src/assets/photos', name);
@@ -137,13 +193,15 @@ describe('CMS preview build emission', () => {
     fs.mkdirSync(path.join(dist, 'src/assets/photos'), { recursive: true });
     const collision = path.join(dist, 'src/assets/photos/a.jpg');
     fs.writeFileSync(collision, 'owned by Astro');
-    await expect(hook(integration(root), 'astro:build:done')({
+    const previewIntegration = integration();
+    await configure(previewIntegration, root);
+    await expect(hook(previewIntegration, 'astro:build:done')({
       dir: pathToFileURL(`${dist}${path.sep}`), logger: { info: vi.fn(), warn: vi.fn() },
     })).rejects.toThrow(/collision/i);
     expect(fs.readFileSync(collision, 'utf8')).toBe('owned by Astro');
 
     fs.rmSync(path.join(root, 'src/assets/photos'), { recursive: true });
-    await expect(hook(integration(root), 'astro:build:done')({
+    await expect(hook(previewIntegration, 'astro:build:done')({
       dir: pathToFileURL(`${dist}${path.sep}`), logger: { info: vi.fn(), warn: vi.fn() },
     })).resolves.toBeUndefined();
   });

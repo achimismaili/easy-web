@@ -4,7 +4,7 @@ Decap CMS integration package for the [easy-web](https://github.com/achimismaili
 
 ## What's included
 
-- **`AdminPage` Astro component** — standalone HTML page loading Decap CMS from CDN (`unpkg.com/decap-cms@3.14.0`). No site layout, no MSAL.
+- **`AdminPage` Astro component** — standalone HTML page with no site layout or MSAL. Generated-config mode defaults to Decap CMS 3.16.3; legacy no-config mode remains on 3.14.0.
 - **Typed content definitions** — one model generates the Decap form, Astro schema, and TypeScript data type.
 - **`easyWebCmsPreviewAssets()`** — serves source images in development and emits bounded CMS preview renditions in production.
 - **Legacy frontmatter types and config scaffold utilities** — retained for 1.x compatibility.
@@ -30,7 +30,7 @@ export default defineConfig({
 });
 ```
 
-Party200 maps both `src/assets/galleries` and `src/assets/site`; Harley maps its one `src/assets/bikes` folder. The pilot stores editor images under `public/images`, so it does not need this integration.
+Party200 maps both `src/assets/images` and `src/assets/galleries`; Harley maps its one `src/assets/images` folder. The pilot stores editor images under `public/images`, so it does not need this integration.
 
 During local development, owned paths serve contained original browser images with `no-store` and `nosniff` headers. Production builds emit renditions at the same `/src/assets/...` paths: raster images are auto-oriented, fitted inside 1600x1600 without enlargement, and retain their extension; SVG and GIF files pass through unchanged. Inputs over 25 MiB, outputs over 5 MiB, videos (including MOV), unknown formats, malformed images, symlink escapes, and collisions are skipped or rejected as appropriate. Source and public suffixes must match exactly, and overlapping ownership is forbidden.
 
