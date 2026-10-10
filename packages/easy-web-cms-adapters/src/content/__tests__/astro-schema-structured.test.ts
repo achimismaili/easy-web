@@ -68,6 +68,19 @@ describe('Astro schema image parity', () => {
         expect(context.image).toHaveBeenCalledTimes(1);
     });
 
+    it('continues invoking Astro image context for nested /src asset paths', () => {
+        // Given
+        const imageContext = { image: vi.fn(() => z.object({ src: z.string(), width: z.number(), height: z.number(), format: z.string() })) };
+        const definition = defineSingleton({
+            name: 'fixture', label: 'Fixture', file: 'fixture.json', publicFolder: '/src/assets/galleries',
+            fields: [field.image('photo', { label: 'Photo', alt: 'decorative' })],
+        });
+        // When
+        toAstroSchema(definition)(imageContext).parse({ photo: { src: '/src/assets/galleries/photo.jpg', width: 10, height: 10, format: 'jpg' } });
+        // Then
+        expect(imageContext.image).toHaveBeenCalledOnce();
+    });
+
     it('parses image galleries with bounds, defaults and extra fields', () => {
         // Given
         const schema = schemaFor([field.images('photos', { label: 'Photos', min: 1, max: 2,
