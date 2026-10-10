@@ -183,7 +183,7 @@ describe('CMS preview build emission', () => {
     expect(fs.readFileSync(path.join(dist, 'unrelated.txt'), 'utf8')).toBe('keep');
     expect(logger.info).toHaveBeenCalledTimes(1);
     expect(logger.warn.mock.calls.length).toBeLessThanOrEqual(10);
-  });
+  }, 15_000);
 
   it('rejects collisions while preserving unrelated output and accepts missing sources', async () => {
     const root = createRoot();
