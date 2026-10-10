@@ -167,6 +167,8 @@ field.image('image', { label: 'Bild', required: false, alt: 'required' });
 
 Where images live is set by `mediaFolder` and `publicFolder` on the definition, or per field. A `publicFolder` under `/src/` makes them Astro image assets with responsive `srcset`; a public path keeps them plain strings.
 
+Decap requests `publicFolder` literally in its browser UI. If it points under `/src/assets`, enable [`easyWebCmsPreviewAssets()`](../../packages/cms-adapters/#cms-previews-for-srcassets) with an explicit matching folder mapping. This adds bounded editor-preview renditions without changing the page-facing `/_astro` optimization.
+
 ## Publish rules
 
 Publishing is explicit. Set `publish` on the definition and an optional `publishDate` field is added to the form and the schema:

@@ -16,6 +16,7 @@ pnpm add @easy-web/cms-adapters
 1. **Typed content definitions.** `field.*` builders, `fieldSets.*` and `defineContentType` / `defineSingleton` describe a content type once, in Decap's own field format.
 2. **Generators.** `toAstroSchema` turns a definition into the zod schema for `src/content.config.ts`; `buildDecapConfig` turns all definitions into the Decap config. `InferData` gives the TypeScript type.
 3. **`AdminPage`.** A standalone `/admin` page that loads Decap from a CDN and takes the generated config directly, so there's no hand-written `config.yml`.
+4. **Source-asset previews.** The opt-in `easyWebCmsPreviewAssets()` integration makes explicit `src/assets` mappings available to Decap without changing frontend image optimization.
 
 Because the form, the schema and the type come from one definition, they can't drift apart. Pair each definition with an `assertImplements` check against the [core contracts](../core/#content-contracts) and drift fails the build. [Writing content types](../../guides/content-types/) is the step-by-step guide.
 
@@ -153,6 +154,31 @@ const config = buildDecapConfig({
 | `title` | `string` | `Content Manager` |
 
 Keep tenant and app ids out of the repo: read them from the environment as above.
+
+## CMS previews for `src/assets`
+
+Astro does not serve `src/assets` at literal browser paths. `toAstroSchema()` intentionally turns a `/src/` image into `ImageMetadata`, so normal pages render optimized `/_astro/...` URLs. Decap uses `public_folder` literally and needs the same path to resolve in its editor.
+
+```ts
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import { easyWebCmsPreviewAssets } from '@easy-web/cms-adapters';
+
+export default defineConfig({
+  integrations: [easyWebCmsPreviewAssets({
+    folders: [
+      { source: 'src/assets/galleries', publicPath: '/src/assets/galleries' },
+      { source: 'src/assets/site', publicPath: '/src/assets/site' },
+    ],
+  })],
+});
+```
+
+That two-folder example matches Party200. Harley uses one mapping for `src/assets/bikes`. The pilot's `public/images` setup is already browser-addressable and does not need this integration. Mappings are always explicit; source and public suffixes must correspond one-to-one, while duplicate or overlapping public prefixes are rejected.
+
+In development, valid owned browser-image paths serve the contained original with `Cache-Control: no-store` and `X-Content-Type-Options: nosniff`. In production, raster images (`jpg`, `jpeg`, `png`, `webp`, `avif`) are auto-oriented and fitted inside 1600x1600 without enlargement. JPEG/WebP use quality 80, AVIF quality 50, and PNG uses lossless compression. SVG/GIF pass through only within the limits. Inputs over 25 MiB, emitted files over 5 MiB, MOV/video, unknown or malformed files, symlink escapes, and output collisions are never published. Warnings are summarized rather than logged per successful file.
+
+Add `sharp@^0.35.0` to the site when enabling the integration. It is an optional peer loaded lazily. Frontend rendering remains Astro-optimized at `/_astro/...`; the emitted files exist only for Decap's literal preview requests.
 
 ## Legacy API (deprecated)
 
