@@ -1,5 +1,15 @@
 # Changelog — @itci/easy-web-cms-adapters
 
+## 1.5.0
+
+### Minor Changes
+
+- f61fc69: Add the opt-in `easyWebCmsPreviewAssets()` Astro integration for secure local source-image previews and bounded production preview renditions at Decap's literal `/src/assets/...` paths.
+
+### Patch Changes
+
+- @easy-web/core@1.5.0
+
 ## 1.4.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # showcase
 
+## 0.0.17
+
+### Patch Changes
+
+- @easy-web/core@1.5.0
+
 ## 0.0.16
 
 ### Patch Changes

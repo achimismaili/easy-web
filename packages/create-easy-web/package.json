@@ -1,6 +1,6 @@
 {
   "name": "@easy-web/create",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "packageManager": "pnpm@10.34.4",
   "private": false,
   "description": "Placeholder package for the future easy-web project generator.",
