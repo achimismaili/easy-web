@@ -205,6 +205,7 @@ describe('CMS preview build emission', () => {
       dir: pathToFileURL(`${dist}${path.sep}`), logger: { info: vi.fn(), warn: vi.fn() },
     })).resolves.toBeUndefined();
   });
+
 });
 
 class TestResponse {

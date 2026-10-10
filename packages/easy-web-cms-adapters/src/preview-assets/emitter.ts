@@ -10,6 +10,14 @@ import {
 type SharpFactory = typeof import('sharp')['default'];
 type Emission = { readonly emitted: number; readonly skipped: number; readonly warnings: readonly string[] };
 
+class PreviewOutputPathError extends Error {
+  readonly name = 'PreviewOutputPathError';
+
+  constructor(readonly destination: string, reason: string) {
+    super(`[easy-web-cms-preview-assets] unsafe preview output path ${destination}: ${reason}`);
+  }
+}
+
 async function loadSharp(): Promise<SharpFactory> {
   try {
     return (await import('sharp')).default;
@@ -58,10 +66,41 @@ async function assertVacant(target: string): Promise<void> {
   }
 }
 
-async function atomicWrite(target: string, data: Uint8Array): Promise<void> {
+async function assertDirectory(directory: string): Promise<void> {
+  const stat = await fs.lstat(directory);
+  if (stat.isSymbolicLink()) throw new PreviewOutputPathError(directory, 'symlink directory is not allowed');
+  if (!stat.isDirectory()) throw new PreviewOutputPathError(directory, 'path component is not a directory');
+}
+
+async function ensureSecureParent(outputRoot: string, target: string): Promise<void> {
+  const relativeTarget = path.relative(outputRoot, target);
+  if (relativeTarget === '' || relativeTarget === '..' || relativeTarget.startsWith(`..${path.sep}`) || path.isAbsolute(relativeTarget)) {
+    throw new PreviewOutputPathError(target, 'target escapes the Astro output root');
+  }
+  await assertDirectory(outputRoot);
+  const parentParts = path.dirname(relativeTarget).split(path.sep).filter((part) => part.length > 0 && part !== '.');
+  let current = outputRoot;
+  for (const part of parentParts) {
+    current = path.join(current, part);
+    try {
+      await assertDirectory(current);
+    } catch (error) {
+      if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
+      try {
+        await fs.mkdir(current);
+      } catch (mkdirError) {
+        if (!(mkdirError instanceof Error && 'code' in mkdirError && mkdirError.code === 'EEXIST')) throw mkdirError;
+      }
+      await assertDirectory(current);
+    }
+  }
+}
+
+async function atomicWrite(outputRoot: string, target: string, data: Uint8Array): Promise<void> {
   if (data.byteLength > MAX_OUTPUT_BYTES) throw new RangeError('emitted rendition exceeds 5 MiB');
+  await ensureSecureParent(outputRoot, target);
   await assertVacant(target);
-  await fs.mkdir(path.dirname(target), { recursive: true });
+  await ensureSecureParent(outputRoot, target);
   const temporary = `${target}.easy-web-${process.pid}-${crypto.randomUUID()}.tmp`;
   try {
     await fs.writeFile(temporary, Buffer.from(data).toString('base64'), 'base64');
@@ -107,10 +146,10 @@ async function emitMapping(
         ? await rasterPipeline(sharp, original, extension).toBuffer()
         : original;
       const target = path.join(outputRoot, ...mapping.publicPath.slice(1).split('/'), relative);
-      await atomicWrite(target, data);
+      await atomicWrite(outputRoot, target, data);
       emitted += 1;
     } catch (error) {
-      if (error instanceof Error && error.message.includes('output collision')) throw error;
+      if (error instanceof PreviewOutputPathError || (error instanceof Error && error.message.includes('output collision'))) throw error;
       skipped += 1;
       warnings.push(`${relative}: ${error instanceof Error ? error.message : String(error)}`);
     }
