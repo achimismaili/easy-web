@@ -1,20 +1,22 @@
 import { readFileSync } from 'node:fs';
 import mri from 'mri';
+import { CreateError } from './create/errors.js';
 
 const INVALID_INPUT_EXIT_CODE = 3;
-const NOT_IMPLEMENTED_EXIT_CODE = 2;
+const CREATE_FAILED_EXIT_CODE = 4;
 
 const HELP = `easy-web - create easy-web sites
 
 Usage:
-  easy-web create [--json]
+  easy-web create --config <file.json> [--json]
   easy-web --help
   easy-web --version
 
 Commands:
-  create       Create a new easy-web site (not yet implemented)
+  create       Generate an empty-target site and one Git commit
 
 Options:
+  --config     JSON configuration (target and recipe options)
   --json       Emit machine-readable diagnostics
   -h, --help   Show this help message
   -v, --version  Show the CLI version`;
@@ -22,7 +24,7 @@ Options:
 interface Diagnostic {
   schemaVersion: 1;
   level: 'error';
-  code: 'INVALID_INPUT' | 'NOT_IMPLEMENTED';
+  code: 'INVALID_INPUT' | 'CREATE_FAILED';
   message: string;
   command?: string;
 }
@@ -48,14 +50,15 @@ function fail(diagnostic: Diagnostic, json: boolean, exitCode: number): never {
   process.exit(exitCode);
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const rawArguments = process.argv.slice(2);
-  const knownOptions = new Set(['--help', '-h', '--version', '-v', '--json']);
+  const knownOptions = new Set(['--help', '-h', '--version', '-v', '--json', '--config']);
   const unknownFlag = rawArguments.find(
     (argument) => argument.startsWith('-') && !knownOptions.has(argument),
   );
   const argv = mri(rawArguments, {
     boolean: ['help', 'version', 'json'],
+    string: ['config'],
     alias: { h: 'help', v: 'version' },
   });
   const json = argv.json === true;
@@ -106,17 +109,22 @@ function main(): void {
     );
   }
 
-  fail(
-    {
-      schemaVersion: 1,
-      level: 'error',
-      code: 'NOT_IMPLEMENTED',
-      message: 'The create command is not yet implemented.',
-      command: 'create',
-    },
-    json,
-    NOT_IMPLEMENTED_EXIT_CODE,
-  );
+  try {
+    if (typeof argv.config !== 'string' || !argv.config) {
+      throw new CreateError('INVALID_INPUT', 'create requires --config <file.json>');
+    }
+    const { readCreateConfig } = await import('./create/config.js');
+    const { createSite } = await import('./create/run.js');
+    const result = await createSite(await readCreateConfig(argv.config));
+    process.stdout.write(json
+      ? `${JSON.stringify({ schemaVersion: 1, ...result })}\n`
+      : `Created ${result.target}\nCommit: ${result.commit}\nBranch: ${result.branch}\n${result.graphJson}\n${result.graphMermaid}`);
+  } catch (error) {
+    const diagnostic = error instanceof CreateError ? error
+      : new CreateError('CREATE_FAILED', 'Site creation failed', { cause: error });
+    fail({ schemaVersion: 1, level: 'error', code: diagnostic.code, message: diagnostic.message, command: 'create' },
+      json, diagnostic.code === 'INVALID_INPUT' ? INVALID_INPUT_EXIT_CODE : CREATE_FAILED_EXIT_CODE);
+  }
 }
 
-main();
+await main();

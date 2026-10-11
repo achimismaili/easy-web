@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -73,17 +73,17 @@ describe('easy-web built CLI', () => {
     },
   );
 
-  it('reports create as an honest placeholder', async () => {
+  it('requires config input for create', async () => {
     const result = await execa(process.execPath, [builtCli, 'create', '--json'], {
       reject: false,
     });
 
-    expect(result.exitCode).toBe(2);
+    expect(result.exitCode).toBe(3);
     expect(JSON.parse(result.stderr)).toEqual({
       schemaVersion: 1,
       level: 'error',
-      code: 'NOT_IMPLEMENTED',
-      message: 'The create command is not yet implemented.',
+      code: 'INVALID_INPUT',
+      message: 'create requires --config <file.json>',
       command: 'create',
     });
   });
@@ -94,5 +94,19 @@ describe('easy-web built CLI', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('easy-web create');
     expect(result.stderr).toBe('');
+  });
+
+  it('creates a committed site through the built config-driven command', async () => {
+    const target = join(packDirectory, 'generated');
+    const configPath = join(packDirectory, 'create.json');
+    await writeFile(configPath, JSON.stringify({ target, recipes: { shell: { siteName: 'CLI Site' } } }));
+    const result = await execa(process.execPath, [builtCli, 'create', '--config', configPath, '--json'], {
+      reject: false,
+      env: { GIT_AUTHOR_NAME: 'CLI Test', GIT_AUTHOR_EMAIL: 'cli@example.invalid', GIT_COMMITTER_NAME: 'CLI Test', GIT_COMMITTER_EMAIL: 'cli@example.invalid' },
+    });
+    expect(result.exitCode).toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({ target, branch: 'main', schemaVersion: 1 });
+    const history = await execa('git', ['rev-list', '--count', 'HEAD'], { cwd: target, env: { GIT_MASTER: '1' } });
+    expect(history.stdout).toBe('1');
   });
 });
