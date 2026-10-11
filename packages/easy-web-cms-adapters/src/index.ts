@@ -4,3 +4,5 @@ export { field, fieldSets, fieldsForTraits, defineContentType, defineSingleton, 
 export type { FieldDef, ContentTypeDef, SingletonDef, InferData, TraitFieldOptions } from './content/index.js';
 export { easyWebCmsPreviewAssets } from './preview-assets/index.js';
 export type { CmsPreviewAssetFolder, CmsPreviewAssetOptions } from './preview-assets/index.js';
+export { CMS_MEDIA_RECIPE_ID, cmsMediaRecipe } from './recipe.js';
+export type { CmsMediaRecipeOptions } from './recipe.js';

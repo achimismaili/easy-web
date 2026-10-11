@@ -3,43 +3,131 @@ import * as path from 'node:path';
 import type { AstroIntegrationLogger } from 'astro';
 import type { Sharp } from 'sharp';
 import {
-  BROWSER_IMAGE_EXTENSIONS, MAX_INPUT_BYTES, MAX_OUTPUT_BYTES, RASTER_EXTENSIONS,
+  BROWSER_IMAGE_EXTENSIONS,
+  MAX_AGGREGATE_INPUT_BYTES,
+  MAX_INPUT_BYTES,
+  MAX_PREVIEW_FILES,
+  PREVIEW_MANIFEST,
+  RASTER_EXTENSIONS,
   type PreviewAssetMapping,
 } from './types.js';
 
 type SharpFactory = typeof import('sharp')['default'];
-type Emission = { readonly emitted: number; readonly skipped: number; readonly warnings: readonly string[] };
+type Candidate = { readonly input: string; readonly relative: string; readonly output: string; readonly size: number };
+type Manifest = { readonly version: 1; readonly files: readonly string[] };
 
-class PreviewOutputPathError extends Error {
-  readonly name = 'PreviewOutputPathError';
+export class CmsPreviewAssetSafetyError extends Error {
+  readonly name = 'CmsPreviewAssetSafetyError';
+}
 
-  constructor(readonly destination: string, reason: string) {
-    super(`[easy-web-cms-preview-assets] unsafe preview output path ${destination}: ${reason}`);
-  }
+function unsafe(message: string): never {
+  throw new CmsPreviewAssetSafetyError(`[easy-web-cms-preview-assets] ${message}`);
 }
 
 async function loadSharp(): Promise<SharpFactory> {
   try {
     return (await import('sharp')).default;
   } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ERR_MODULE_NOT_FOUND') {
-      throw new Error('[easy-web-cms-preview-assets] Sharp is required when this integration is enabled. Install "sharp@^0.35.0" in the site.', { cause: error });
+    throw new Error('[easy-web-cms-preview-assets] Sharp is required when this integration is enabled. Install "sharp@^0.35.0" in the site.', { cause: error });
+  }
+}
+
+function contained(root: string, target: string): boolean {
+  const relative = path.relative(root, target);
+  return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+}
+
+async function assertPlainDirectory(directory: string): Promise<void> {
+  const stat = await fs.lstat(directory);
+  if (stat.isSymbolicLink()) unsafe(`directory is a symlink or reparse point: ${directory}`);
+  if (!stat.isDirectory()) unsafe(`path component is not a directory: ${directory}`);
+}
+
+async function enumerate(sourceRoot: string, outputRoot: string, publicPath: string): Promise<readonly Candidate[]> {
+  try {
+    await assertPlainDirectory(sourceRoot);
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return [];
+    throw error;
+  }
+  const candidates: Candidate[] = [];
+  const walk = async (directory: string): Promise<void> => {
+    await assertPlainDirectory(directory);
+    const entries = await fs.readdir(directory, { withFileTypes: true });
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      const input = path.join(directory, entry.name);
+      const stat = await fs.lstat(input);
+      if (entry.isSymbolicLink() || stat.isSymbolicLink()) unsafe(`source contains a symlink or reparse point: ${input}`);
+      if (entry.isDirectory()) {
+        await walk(input);
+        continue;
+      }
+      if (!entry.isFile() || !stat.isFile()) unsafe(`source contains a non-regular file or reparse point: ${input}`);
+      const relative = path.relative(sourceRoot, input);
+      if (!contained(sourceRoot, input)) unsafe(`source file escapes configured root: ${input}`);
+      const extension = path.extname(relative).toLowerCase();
+      if (!BROWSER_IMAGE_EXTENSIONS.has(extension)) unsafe(`unsupported preview extension: ${relative}`);
+      if (stat.size > MAX_INPUT_BYTES) unsafe(`preview file exceeds 10 MiB: ${relative}`);
+      const output = path.join(outputRoot, ...publicPath.slice(1).split('/'), relative);
+      if (!contained(outputRoot, output)) unsafe(`preview output escapes build root: ${relative}`);
+      candidates.push({ input, relative, output, size: stat.size });
     }
+  };
+  await walk(sourceRoot);
+  return candidates;
+}
+
+function validateBounds(candidates: readonly Candidate[]): void {
+  if (candidates.length > MAX_PREVIEW_FILES) unsafe(`preview file count exceeds ${MAX_PREVIEW_FILES}`);
+  const aggregate = candidates.reduce((sum, file) => sum + file.size, 0);
+  if (aggregate > MAX_AGGREGATE_INPUT_BYTES) unsafe('preview files exceed 100 MiB aggregate');
+  const folded = new Map<string, string>();
+  for (const candidate of candidates) {
+    const key = candidate.output.toLocaleLowerCase('en-US');
+    const previous = folded.get(key);
+    if (previous && previous !== candidate.output) unsafe(`case-collision between ${previous} and ${candidate.output}`);
+    folded.set(key, candidate.output);
+  }
+}
+
+async function readManifest(outputRoot: string): Promise<ReadonlySet<string>> {
+  const manifestPath = path.join(outputRoot, PREVIEW_MANIFEST);
+  try {
+    const parsed = JSON.parse(await fs.readFile(manifestPath, 'utf8')) as Partial<Manifest>;
+    if (parsed.version !== 1 || !Array.isArray(parsed.files) || parsed.files.some((file) => typeof file !== 'string')) {
+      unsafe(`invalid preview manifest: ${manifestPath}`);
+    }
+    for (const file of parsed.files) {
+      const target = path.resolve(outputRoot, ...file.split('/'));
+      if (!contained(outputRoot, target)) unsafe(`manifest path escapes build root: ${file}`);
+    }
+    return new Set(parsed.files);
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return new Set();
     throw error;
   }
 }
 
-async function enumerate(root: string): Promise<readonly string[]> {
-  try {
-    const entries = await fs.readdir(root, { withFileTypes: true });
-    const nested = await Promise.all(entries.map(async (entry) => {
-      const fullPath = path.join(root, entry.name);
-      if (entry.isDirectory()) return enumerate(fullPath);
-      return entry.isFile() ? [fullPath] : [];
-    }));
-    return nested.flat().sort();
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return [];
+async function secureParent(outputRoot: string, target: string): Promise<void> {
+  if (!contained(outputRoot, target)) unsafe(`output escapes build root: ${target}`);
+  await assertPlainDirectory(outputRoot);
+  const parts = path.dirname(path.relative(outputRoot, target)).split(path.sep).filter((part) => part && part !== '.');
+  let current = outputRoot;
+  for (const part of parts) {
+    current = path.join(current, part);
+    try {
+      await assertPlainDirectory(current);
+    } catch (error) {
+      if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
+      await fs.mkdir(current);
+      await assertPlainDirectory(current);
+    }
+  }
+}
+
+async function exists(target: string): Promise<boolean> {
+  try { await fs.lstat(target); return true; } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return false;
     throw error;
   }
 }
@@ -51,110 +139,8 @@ function rasterPipeline(sharp: SharpFactory, input: Buffer, extension: string): 
     case '.jpeg': return pipeline.jpeg({ quality: 80 });
     case '.png': return pipeline.png({ compressionLevel: 9 });
     case '.webp': return pipeline.webp({ quality: 80 });
-    case '.avif': return pipeline.avif({ quality: 50 });
-    default: throw new TypeError(`[easy-web-cms-preview-assets] unsupported raster extension ${extension}`);
+    default: throw new TypeError(`unsupported raster extension ${extension}`);
   }
-}
-
-async function assertVacant(target: string): Promise<void> {
-  try {
-    await fs.lstat(target);
-    throw new Error(`[easy-web-cms-preview-assets] output collision at ${target}`);
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return;
-    throw error;
-  }
-}
-
-async function assertDirectory(directory: string): Promise<void> {
-  const stat = await fs.lstat(directory);
-  if (stat.isSymbolicLink()) throw new PreviewOutputPathError(directory, 'symlink directory is not allowed');
-  if (!stat.isDirectory()) throw new PreviewOutputPathError(directory, 'path component is not a directory');
-}
-
-async function ensureSecureParent(outputRoot: string, target: string): Promise<void> {
-  const relativeTarget = path.relative(outputRoot, target);
-  if (relativeTarget === '' || relativeTarget === '..' || relativeTarget.startsWith(`..${path.sep}`) || path.isAbsolute(relativeTarget)) {
-    throw new PreviewOutputPathError(target, 'target escapes the Astro output root');
-  }
-  await assertDirectory(outputRoot);
-  const parentParts = path.dirname(relativeTarget).split(path.sep).filter((part) => part.length > 0 && part !== '.');
-  let current = outputRoot;
-  for (const part of parentParts) {
-    current = path.join(current, part);
-    try {
-      await assertDirectory(current);
-    } catch (error) {
-      if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
-      try {
-        await fs.mkdir(current);
-      } catch (mkdirError) {
-        if (!(mkdirError instanceof Error && 'code' in mkdirError && mkdirError.code === 'EEXIST')) throw mkdirError;
-      }
-      await assertDirectory(current);
-    }
-  }
-}
-
-async function atomicWrite(outputRoot: string, target: string, data: Uint8Array): Promise<void> {
-  if (data.byteLength > MAX_OUTPUT_BYTES) throw new RangeError('emitted rendition exceeds 5 MiB');
-  await ensureSecureParent(outputRoot, target);
-  await assertVacant(target);
-  await ensureSecureParent(outputRoot, target);
-  const temporary = `${target}.easy-web-${process.pid}-${crypto.randomUUID()}.tmp`;
-  try {
-    await fs.writeFile(temporary, Buffer.from(data).toString('base64'), 'base64');
-    await fs.rename(temporary, target);
-  } catch (error) {
-    await fs.rm(temporary, { force: true });
-    throw error;
-  }
-}
-
-async function emitMapping(
-  sharp: SharpFactory,
-  outputRoot: string,
-  mapping: PreviewAssetMapping,
-): Promise<Emission> {
-  try {
-    const [realProjectRoot, realSourceRoot] = await Promise.all([
-      fs.realpath(mapping.projectRoot), fs.realpath(mapping.sourceRoot),
-    ]);
-    const relativeSource = path.relative(realProjectRoot, realSourceRoot);
-    if (relativeSource.startsWith(`..${path.sep}`) || relativeSource === '..' || path.isAbsolute(relativeSource)) {
-      throw new Error(`[easy-web-cms-preview-assets] source folder escapes the project root: ${mapping.source}`);
-    }
-  } catch (error) {
-    if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
-  }
-  const files = await enumerate(mapping.sourceRoot);
-  let emitted = 0;
-  let skipped = 0;
-  const warnings: string[] = [];
-  for (const input of files) {
-    const relative = path.relative(mapping.sourceRoot, input);
-    const extension = path.extname(input).toLowerCase();
-    const stat = await fs.stat(input);
-    if (!BROWSER_IMAGE_EXTENSIONS.has(extension) || stat.size > MAX_INPUT_BYTES) {
-      skipped += 1;
-      warnings.push(`${relative}: unsupported format or input exceeds 25 MiB`);
-      continue;
-    }
-    try {
-      const original = await fs.readFile(input);
-      const data = RASTER_EXTENSIONS.has(extension)
-        ? await rasterPipeline(sharp, original, extension).toBuffer()
-        : original;
-      const target = path.join(outputRoot, ...mapping.publicPath.slice(1).split('/'), relative);
-      await atomicWrite(outputRoot, target, data);
-      emitted += 1;
-    } catch (error) {
-      if (error instanceof PreviewOutputPathError || (error instanceof Error && error.message.includes('output collision'))) throw error;
-      skipped += 1;
-      warnings.push(`${relative}: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-  return { emitted, skipped, warnings };
 }
 
 export async function emitPreviewAssets(
@@ -162,14 +148,30 @@ export async function emitPreviewAssets(
   mappings: readonly PreviewAssetMapping[],
   logger: AstroIntegrationLogger,
 ): Promise<void> {
-  const sharp = await loadSharp();
-  const results = await Promise.all(mappings.map((mapping) => emitMapping(sharp, outputRoot, mapping)));
-  const emitted = results.reduce((sum, result) => sum + result.emitted, 0);
-  const skipped = results.reduce((sum, result) => sum + result.skipped, 0);
-  const warnings = results.flatMap((result) => result.warnings);
-  if (warnings.length > 0) {
-    const sample = warnings.slice(0, 8).join('; ');
-    logger.warn(`Skipped ${skipped} preview asset(s): ${sample}${warnings.length > 8 ? `; and ${warnings.length - 8} more` : ''}`);
+  await assertPlainDirectory(outputRoot);
+  const nested = await Promise.all(mappings.map((mapping) => enumerate(mapping.sourceRoot, outputRoot, mapping.publicPath)));
+  const candidates = nested.flat();
+  validateBounds(candidates);
+  const previous = await readManifest(outputRoot);
+  const next = new Set(candidates.map((candidate) => path.relative(outputRoot, candidate.output).split(path.sep).join('/')));
+  for (const stale of previous) {
+    if (!next.has(stale)) await fs.rm(path.resolve(outputRoot, ...stale.split('/')), { force: true });
   }
-  logger.info(`Emitted ${emitted} CMS preview asset(s); skipped ${skipped}.`);
+  const sharp = candidates.some((candidate) => RASTER_EXTENSIONS.has(path.extname(candidate.relative).toLowerCase()))
+    ? await loadSharp() : undefined;
+  for (const candidate of candidates) {
+    const relativeOutput = path.relative(outputRoot, candidate.output).split(path.sep).join('/');
+    await secureParent(outputRoot, candidate.output);
+    if (await exists(candidate.output) && !previous.has(relativeOutput)) unsafe(`output collision with unowned file: ${relativeOutput}`);
+    const original = await fs.readFile(candidate.input);
+    const extension = path.extname(candidate.relative).toLowerCase();
+    const data = RASTER_EXTENSIONS.has(extension) ? await rasterPipeline(sharp!, original, extension).toBuffer() : original;
+    const temporary = `${candidate.output}.easy-web-${process.pid}-${crypto.randomUUID()}.tmp`;
+    await fs.writeFile(temporary, data);
+    if (previous.has(relativeOutput)) await fs.rm(candidate.output, { force: true });
+    await fs.rename(temporary, candidate.output);
+  }
+  const manifest: Manifest = { version: 1, files: [...next].sort() };
+  await fs.writeFile(path.join(outputRoot, PREVIEW_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  logger.info(`Emitted ${candidates.length} bounded CMS preview asset(s).`);
 }
