@@ -1,9 +1,13 @@
 # @easy-web/cli
 
-Private Phase-1 create-only CLI. No install, network, cloud or existing-project mutations.
+Private Phase-1 create-only CLI. Generation is offline by default; installation is explicit.
 
 ```sh
 easy-web create --config ./create.json --json
+# Equivalent explicit offline form:
+easy-web create --config ./create.json --no-install
+# Opt in to dependency resolution through pnpm's ambient registry configuration:
+easy-web create --config ./create.json --install
 ```
 
 ```json
@@ -32,8 +36,24 @@ exclusive publication and one initial commit. Git identity must already be
 available; the CLI never changes Git configuration.
 
 Validation checks exact recipe output sets, JSON/JS syntax, package schemas,
-recipe validators and an additions-only allow-listed index. It does not install
-dependencies or run generated-site type/build/E2E checks in this task. Auth files
+recipe validators, dependency sources and an additions-only allow-listed index.
+Dependency values must be registry-compatible version ranges; URL, Git, local-file
+and workspace sources are rejected before target writes.
+
+With no flag or `--no-install`, the CLI does not invoke a package manager or make a
+network request. It commits a deterministic Phase-1 `pnpm-lock.yaml` placeholder
+containing lockfile version/settings and importer specifiers, but no resolved package
+snapshots. This is deliberately not represented as a fully resolved lockfile: run
+`pnpm install` separately before typechecking or building. Missing offline artifacts
+cannot occur with this self-contained placeholder approach, so the reserved exit-4
+scenario is unreachable in Phase 1; a future bundled-metadata resolver must fail with
+exit 4 before writes when its verified artifact is absent.
+
+With `--install`, the same source validation and committed generation happen first,
+then the CLI runs `pnpm install` in the returned target. It passes no registry flag or
+hardcoded URL, so pnpm honors the user's ambient `.npmrc`/proxy configuration. The
+install may complete/update the placeholder lockfile after the creation commit.
+Generated-site type/build/E2E checks remain outside this command. Auth files
 are generated as declared; wiring the auth mount and React integration is not
 performed by this composer. Graph JSON and Mermaid are returned in diagnostics,
 not extra generated files. Retain the returned task worktree until human review.

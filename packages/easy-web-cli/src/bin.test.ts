@@ -108,5 +108,18 @@ describe('easy-web built CLI', () => {
     expect(JSON.parse(result.stdout)).toMatchObject({ target, branch: 'main', schemaVersion: 1 });
     const history = await execa('git', ['rev-list', '--count', 'HEAD'], { cwd: target, env: { GIT_MASTER: '1' } });
     expect(history.stdout).toBe('1');
+    expect(await readFile(join(target, 'pnpm-lock.yaml'), 'utf8')).toContain("lockfileVersion: '9.0'");
+  });
+
+  it('accepts --no-install as the explicit alias for default offline generation', async () => {
+    const target = join(packDirectory, 'generated-no-install');
+    const configPath = join(packDirectory, 'create-no-install.json');
+    await writeFile(configPath, JSON.stringify({ target }));
+    const result = await execa(process.execPath, [builtCli, 'create', '--config', configPath, '--no-install', '--json'], {
+      reject: false,
+      env: { GIT_AUTHOR_NAME: 'CLI Test', GIT_AUTHOR_EMAIL: 'cli@example.invalid', GIT_COMMITTER_NAME: 'CLI Test', GIT_COMMITTER_EMAIL: 'cli@example.invalid' },
+    });
+    expect(result.exitCode).toBe(0);
+    expect(await readFile(join(target, 'pnpm-lock.yaml'), 'utf8')).toContain("lockfileVersion: '9.0'");
   });
 });

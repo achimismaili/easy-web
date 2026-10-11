@@ -8,7 +8,7 @@ const CREATE_FAILED_EXIT_CODE = 4;
 const HELP = `easy-web - create easy-web sites
 
 Usage:
-  easy-web create --config <file.json> [--json]
+  easy-web create --config <file.json> [--install | --no-install] [--json]
   easy-web --help
   easy-web --version
 
@@ -18,6 +18,8 @@ Commands:
 Options:
   --config     JSON configuration (target and recipe options)
   --json       Emit machine-readable diagnostics
+  --install    Run pnpm install after the generated commit (default: false)
+  --no-install Explicit alias for the offline default
   -h, --help   Show this help message
   -v, --version  Show the CLI version`;
 
@@ -52,12 +54,12 @@ function fail(diagnostic: Diagnostic, json: boolean, exitCode: number): never {
 
 async function main(): Promise<void> {
   const rawArguments = process.argv.slice(2);
-  const knownOptions = new Set(['--help', '-h', '--version', '-v', '--json', '--config']);
+  const knownOptions = new Set(['--help', '-h', '--version', '-v', '--json', '--config', '--install', '--no-install']);
   const unknownFlag = rawArguments.find(
     (argument) => argument.startsWith('-') && !knownOptions.has(argument),
   );
   const argv = mri(rawArguments, {
-    boolean: ['help', 'version', 'json'],
+    boolean: ['help', 'version', 'json', 'install'],
     string: ['config'],
     alias: { h: 'help', v: 'version' },
   });
@@ -115,7 +117,7 @@ async function main(): Promise<void> {
     }
     const { readCreateConfig } = await import('./create/config.js');
     const { createSite } = await import('./create/run.js');
-    const result = await createSite(await readCreateConfig(argv.config));
+    const result = await createSite(await readCreateConfig(argv.config), undefined, { install: argv.install === true });
     process.stdout.write(json
       ? `${JSON.stringify({ schemaVersion: 1, ...result })}\n`
       : `Created ${result.target}\nCommit: ${result.commit}\nBranch: ${result.branch}\n${result.graphJson}\n${result.graphMermaid}`);

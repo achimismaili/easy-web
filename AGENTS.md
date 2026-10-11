@@ -63,7 +63,7 @@ Since ADR 0018 the family has one **base** package and optional **add-ons**:
 | `packages/easy-web-swa/` | `@easy-web/swa` — **add-on**. AstroIntegration merging a sentinel-marked `staticwebapp.config.json` slice for shared 404 handling on Azure Static Web Apps |
 | `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` - **add-on**. Decap CMS integration per ADR 0006: typed content definitions (`field`, `fieldSets`, `defineContentType`, `defineSingleton`), generators (`toAstroSchema`, `buildDecapConfig`, `InferData`), the `AdminPage` component (takes a generated `config`). The older `generateDecapConfig*` and frontmatter types are superseded |
 | `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline. **Reserved placeholder**, ships no `src/` |
-| `packages/easy-web-cli/` | Independent `@easy-web/cli`; `src/create/` owns config input, recipe composition and Git-backed staging. `create --config` generates new empty targets; no installation or cloud operations. |
+| `packages/easy-web-cli/` | Independent `@easy-web/cli`; `src/create/` owns config input, recipe composition and Git-backed staging. `create --config` generates new empty targets offline with a placeholder lockfile; `--install` explicitly runs pnpm through ambient registry configuration. No cloud operations. |
 | `apps/showcase/` | Live component gallery on the contract-based components; reference consumer of core |
 | `apps/docs/` | Starlight documentation site (core reference, content-types guide, migration guide) |
 | `apps/contract-fixture/` | Test site for the per-site conformance gate: definitions plus `assertImplements`, must fail on broken contracts |

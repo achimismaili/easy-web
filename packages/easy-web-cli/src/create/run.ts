@@ -8,8 +8,10 @@ import { CreateError } from './errors.js';
 import { git } from './git.js';
 import { checkAncestors, checkTargetRace, planTarget } from './target.js';
 import { listFiles, writeAndValidate } from './stage.js';
+import { installDependencies, withPlaceholderLockfile } from './install.js';
+import type { InstallOptions } from './install.js';
 
-export async function createSite(config: CreateConfig, selections: readonly RecipeSelection[] = selectionsFor(config)) {
+export async function createSite(config: CreateConfig, selections: readonly RecipeSelection[] = selectionsFor(config), installOptions: InstallOptions = {}) {
     const plan = await planTarget(config.target);
     const staging = await mkdtemp(join(dirname(plan.path), '.easy-web-create-'));
     const branch = `easy-web-create-${randomUUID()}`;
@@ -20,8 +22,9 @@ export async function createSite(config: CreateConfig, selections: readonly Reci
     let ownedMetadata = false;
     const published: string[] = [];
     const directories: string[] = [];
+    let result: { target: string; commit: string; branch: string; graphJson: string; graphMermaid: string } | undefined;
     try {
-        const site = await composeRecipes(selections);
+        const site = withPlaceholderLockfile(await composeRecipes(selections));
         await checkTargetRace(plan);
         if (plan.gitRoot) {
             await git(plan.path, ['worktree', 'add', '-b', branch, root, plan.head ?? 'HEAD']);
@@ -62,7 +65,7 @@ export async function createSite(config: CreateConfig, selections: readonly Reci
         await git(commitRoot, ['commit', '-m', 'Create easy-web site']);
         const commit = await git(commitRoot, ['rev-parse', 'HEAD']);
         retained = plan.gitRoot;
-        return { target: plan.gitRoot ? root : plan.path, commit, branch: plan.gitRoot ? branch : 'main', graphJson: site.graphJson, graphMermaid: site.graphMermaid };
+        result = { target: plan.gitRoot ? root : plan.path, commit, branch: plan.gitRoot ? branch : 'main', graphJson: site.graphJson, graphMermaid: site.graphMermaid };
     } catch (error) {
         for (const path of published.reverse()) await rm(path);
         for (const path of directories.reverse()) await rmdir(path);
@@ -84,4 +87,7 @@ export async function createSite(config: CreateConfig, selections: readonly Reci
             await rm(staging, { recursive: true });
         }
     }
+    if (!result) throw new CreateError('CREATE_FAILED', 'Site creation produced no result');
+    await installDependencies(result.target, installOptions);
+    return result;
 }

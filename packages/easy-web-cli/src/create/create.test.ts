@@ -8,6 +8,7 @@ import { parseCreateConfig, selectionsFor } from './config.js';
 import { createSite } from './run.js';
 import { git } from './git.js';
 import { listFiles } from './stage.js';
+import type { InstallRunner } from './install.js';
 
 let root: string;
 vi.setConfig({ testTimeout: 30_000 });
@@ -33,7 +34,7 @@ describe('create Git boundary', () => {
         const result = await createSite(config);
         // Then
         expect(await git(target, ['rev-list', '--count', 'HEAD'])).toBe('1');
-        expect(await listFiles(target)).toEqual(shellRecipe.outputContributions.map(outputPath).sort());
+        expect(await listFiles(target)).toEqual([...shellRecipe.outputContributions.map(outputPath), 'pnpm-lock.yaml'].sort());
         expect(await git(target, ['status', '--porcelain'])).toBe('');
         expect(result.target).toBe(target);
         expect(await readdir(root)).toEqual(['site']);
@@ -50,7 +51,7 @@ describe('create Git boundary', () => {
         expect(manifest.dependencies).toMatchObject({ '@easy-web/core': '^1.5.0', '@easy-web/auth': '^1.5.0', react: '^19.1.1' });
         expect(manifest.scripts.build).toBe('astro build');
         expect(manifest.devDependencies.typescript).toBe('^5.5.0');
-        expect(await listFiles(target)).toEqual([...new Set(selectionsFor(config).flatMap(({ recipe }) => recipe.outputContributions.map(outputPath)))].sort());
+        expect(await listFiles(target)).toEqual([...new Set([...selectionsFor(config).flatMap(({ recipe }) => recipe.outputContributions.map(outputPath)), 'pnpm-lock.yaml'])].sort());
         expect(await git(target, ['rev-list', '--count', 'HEAD'])).toBe('1');
     });
 
@@ -175,6 +176,34 @@ describe('create Git boundary', () => {
         expect(await readdir(target)).toEqual([]);
         expect(await readdir(root)).toEqual(['site']);
     });
+
+    it.each([undefined, false])('stages a placeholder lockfile without spawning an installer when install=%s', async (install) => {
+        // Given
+        const target = join(root, 'site');
+        const runner = vi.fn<InstallRunner>();
+        // When
+        await createSite(parseCreateConfig({ target }), undefined, { install, runner });
+        // Then
+        expect(runner).not.toHaveBeenCalled();
+        const lockfile = await readFile(join(target, 'pnpm-lock.yaml'), 'utf8');
+        expect(lockfile).toContain("lockfileVersion: '9.0'");
+        expect(lockfile).toContain("'@easy-web/core':");
+        expect(await git(target, ['show', 'HEAD:pnpm-lock.yaml'])).toBe(lockfile.trim());
+    });
+
+    it('runs pnpm install only when explicitly requested and only after the site commit exists', async () => {
+        // Given
+        const target = join(root, 'site');
+        const runner = vi.fn<InstallRunner>(async (cwd, command, args) => {
+            expect(await git(cwd, ['rev-list', '--count', 'HEAD'])).toBe('1');
+            expect(command).toBe(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm');
+            expect(args).toEqual(['install']);
+        });
+        // When
+        await createSite(parseCreateConfig({ target }), undefined, { install: true, runner });
+        // Then
+        expect(runner).toHaveBeenCalledOnce();
+    });
 });
 
 describe('composer boundaries', () => {
@@ -216,6 +245,22 @@ describe('composer boundaries', () => {
         const broken = { ...selection, recipe: { ...selection.recipe, outputContributions: [{ kind: 'file' as const, id: 'test.path', target: path }] } };
         // When
         await expect(composeRecipes([broken])).rejects.toMatchObject({ code: 'INVALID_INPUT' });
+        // Then
+        expect(await readdir(root)).toEqual([]);
+    });
+
+    it.each(['https://evil.example/pkg.tgz', 'git+https://example.invalid/repo.git', 'file:../package', 'workspace:*'])('rejects dependency source %s before target writes', async (source) => {
+        // Given
+        const target = join(root, 'site');
+        const selection = selectionsFor(parseCreateConfig({ target }))[0];
+        const unsafe = { ...selection, recipe: { ...selection.recipe, generate: async (context: Parameters<typeof selection.recipe.generate>[0]) => {
+            const output = await selection.recipe.generate(context);
+            return { files: output.files.map((file) => file.path === 'package.json'
+                ? { ...file, content: JSON.stringify({ dependencies: { unsafe: source } }) }
+                : file) };
+        } } };
+        // When
+        await expect(createSite(parseCreateConfig({ target }), [unsafe], { install: true, runner: vi.fn() })).rejects.toMatchObject({ code: 'INVALID_INPUT' });
         // Then
         expect(await readdir(root)).toEqual([]);
     });
