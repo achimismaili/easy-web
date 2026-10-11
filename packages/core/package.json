@@ -11,6 +11,18 @@
       "types": "./dist/contracts/index.d.ts",
       "import": "./dist/contracts/index.js"
     },
+    "./recipes": {
+      "types": "./dist/recipes/index.d.ts",
+      "import": "./dist/recipes/index.js"
+    },
+    "./recipes/schema": {
+      "types": "./dist/recipes/schema.d.ts",
+      "import": "./dist/recipes/schema.js"
+    },
+    "./recipes/registry": {
+      "types": "./dist/recipes/registry.d.ts",
+      "import": "./dist/recipes/registry.js"
+    },
     "./theme": {
       "types": "./dist/theme/index.d.ts",
       "import": "./dist/theme/index.js"
