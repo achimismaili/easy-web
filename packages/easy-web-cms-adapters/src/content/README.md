@@ -43,6 +43,13 @@ package's normal tsconfig. `type-tests.ts` is also checked by the normal package
 typecheck and contains the negative conformance assertions. Its function is
 neither exported nor called. No schema generation or config assembly lives here.
 
+## Trait field sets
+
+`fieldsForTraits()` is the CMS-admin binding path for the generic content traits
+from `@easy-web/core/contracts`. It emits fields in the selected trait order and
+uses the same canonical field names as the core trait data schemas. Image traits
+accept `mediaFolder` and `publicFolder` through the shared field options.
+
 ## Gallery variants
 
 `fieldSets.galleryVariants({ uiLocale: 'de' })` returns the six gallery branches

@@ -53,7 +53,6 @@ export type FormatLocale = z.infer<typeof formatLocaleSchema>
 export const ianaTimeZoneSchema = z.string().refine(isTimeZone, 'Invalid IANA timezone').brand<'IanaTimeZone'>()
 export type IanaTimeZone = z.infer<typeof ianaTimeZoneSchema>
 
-// TODO(task-7): Wire this optional primitive ONLY into content selections with the money trait.
 // Intl accepts any three-letter code, so check its ISO 4217 catalog as well as shape.
 export const currencyCodeSchema = z.string().regex(/^[A-Z]{3}$/).refine(
     (value) => Intl.supportedValuesOf('currency').includes(value),

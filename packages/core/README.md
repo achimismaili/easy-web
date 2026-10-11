@@ -44,4 +44,18 @@ before importing executable code; admission checks its receipt against the
 CLI-owned registry, not a registry supplied by the target. A receipt schema alone
 is not cryptographic verification. No loader or recipe implementation ships here.
 
+## Generic content composition
+
+Content types select additive traits from `title`, `slug`, `summary`, `body`,
+`image`, `photos`, `order`, `taxonomy`, `publication`, `schedule`, `location`,
+`cta`, `money`, and `featured`. They opt into the closed bindings `homepage`,
+`list`, `detail`, `navigation`, and `cms-admin`; each binding has exported trait
+requirements enforced by `contentCompositionSchema`. Labels and complete public
+routes are declared per configured content locale. A content type exposes a
+`primary` marker, while aggregate validation permits at most one primary type.
+
+Only a money-enabled selection accepts `currency`, validated by the shared ISO
+4217 input schema. `homepage` requires `featured`, so a type cannot occupy that
+featured presentation slot merely by defining an image.
+
 This package is private while the consolidation is in progress and is made publishable only by the family release task.
