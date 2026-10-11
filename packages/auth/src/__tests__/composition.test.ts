@@ -9,8 +9,7 @@
 //
 // Profiles NOT exercisable yet (documented, not faked):
 //   - money:               the `money` trait exists but no recipe consumes it.
-//   - primary/additional:  no recipe emits `content` contributions targeting `primary`/`additional`
-//                          (cms emits kind 'content' with a file-path target, which is a different thing).
+//   - primary/additional:  no recipe emits `content` contributions targeting `primary`/`additional`.
 //   - full multilingual:   shell options have no `contentLocales`; only `defaultLocale` varies.
 import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -44,23 +43,6 @@ const cmsOptions = {
 
 const optionsFor = (recipe: AnyRecipe): unknown =>
   recipe.id === cmsMediaRecipe.id ? cmsOptions : recipe.id === shellRecipe.id ? { siteName: 'Composition Site' } : {};
-
-// Test-local adapter: cms.decap-media requires 'site.astro-shell', but shell provides 'site.shell'.
-// See the pinned "defect" test below.
-const shellAliasFixture: AnyRecipe = {
-  ...shellRecipe,
-  id: 'test.shell-alias',
-  provides: ['site.astro-shell'],
-  outputContributions: [],
-  order: { priority: 1, key: 'shell-alias' },
-};
-
-// Test-local copy of the cms recipe: its content contribution targets a file path, which the resolver
-// rejects (content targets must be 'primary'|'additional'). Reclassified as 'file' to let composition proceed.
-const cmsComposable: AnyRecipe = {
-  ...cmsMediaRecipe,
-  outputContributions: cmsMediaRecipe.outputContributions.map((c) => c.id === 'cms.definitions' ? { ...c, kind: 'file' as const } : c),
-};
 
 const sortText = (values: readonly string[]): string[] => [...values].sort((a, b) => a.localeCompare(b, 'en'));
 const contributionKey = (c: { kind: string; id: string; target: string }): string => `${c.kind}|${c.id}|${c.target}`;
@@ -106,7 +88,11 @@ function assertGraphMatchesRecipes(recipes: readonly AnyRecipe[]): void {
 }
 
 const fixtureRoot = mkdtempSync(join(process.cwd(), '.composition-fixture-'));
-afterAll(() => { if (!process.env.KEEP_FIXTURE) rmSync(fixtureRoot, { recursive: true, force: true }); });
+afterAll(() => {
+  if (!process.env.KEEP_FIXTURE) {
+    rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
 const authSourcePath = resolve(process.cwd(), 'src/index.ts').replaceAll('\\', '/');
 
 function writeText(path: string, content: string | Uint8Array): void {
@@ -121,11 +107,15 @@ function runAstro(root: string, command: 'check' | 'build'): Promise<void> {
     });
     let output = '';
     child.stdout.on('data', (chunk) => { output += chunk; });
-    child.stderr.on('data', (chunk) => { output += chunk; });
+    child.stderr.on('data', (chunk) => { output = output.concat(String(chunk)); });
     const timer = setTimeout(() => { child.kill(); fail(new Error(`astro ${command} timed out\n${output}`)); }, 150_000);
     child.on('close', (code) => {
       clearTimeout(timer);
-      code === 0 ? done() : fail(new Error(`astro ${command} exit ${code}\n${output}`));
+      if (code === 0) {
+        done();
+      } else {
+        fail(new Error(`astro ${command} exit ${code}\n${output}`));
+      }
     });
   });
 }
@@ -133,10 +123,7 @@ function runAstro(root: string, command: 'check' | 'build'): Promise<void> {
 function writeFixture(root: string, files: readonly RecipeGeneratedFile[], withAuth: boolean, dependencies: Record<string, string> = {}): void {
   for (const file of files) {
     if (file.path === 'package.json') continue;
-    // DEFECT WORKAROUND: shell emits import { easyWebSeo } but @easy-web/core/seo only has a default export.
-    const content = file.path === 'astro.config.mjs' && typeof file.content === 'string'
-      ? file.content.replace('import { easyWebSeo }', 'import easyWebSeo') : file.content;
-    writeText(join(root, file.path), content);
+    writeText(join(root, file.path), file.content);
   }
   writeText(join(root, 'package.json'), `${JSON.stringify({ name: 'composition-fixture', private: true, type: 'module', dependencies }, null, 2)}\n`);
   writeText(join(root, 'tsconfig.json'), `${JSON.stringify({
@@ -167,28 +154,27 @@ describe('recipe composition: resolved profiles', () => {
     expect('contentLocales' in (shellRecipe.optionsSchema as unknown as { shape: object }).shape).toBe(false);
     const { files } = await shellRecipe.generate({ options: { defaultLocale: 'de' }, capabilities: [], contributions: [] });
     const layout = files.find((file) => file.path === 'src/layouts/Base.astro')!;
-    expect(String(layout.content)).toContain('lang="de"');
+    expect(String(layout.content)).toContain('const currentLang = "de"');
     assertGraphMatchesRecipes([shellRecipe]);
   });
 
-  it('DEFECT PIN: cms.decap-media requires "site.astro-shell" but shell only provides "site.shell"', () => {
-    expect(cmsMediaRecipe.requires).toEqual(['site.astro-shell']);
+  it('cms.decap-media requires the capability provided by the shell recipe', () => {
+    expect(cmsMediaRecipe.requires).toEqual(['site.shell']);
     expect(shellRecipe.provides).toEqual(['site.shell']);
-    const resolved = resolveCapabilityGraph([shellRecipe, cmsMediaRecipe]);
-    expect(resolved).toEqual({ ok: false, error: { code: 'missing-requirement', recipeId: 'cms.decap-media', capability: 'site.astro-shell' } });
   });
 
-  it('DEFECT PIN: even with the capability satisfied, cms.definitions (kind content, file target) is rejected by the resolver', () => {
-    const resolved = resolveCapabilityGraph([shellRecipe, shellAliasFixture, cmsMediaRecipe]);
-    expect(resolved).toEqual({ ok: false, error: { code: 'invalid-content-role', contributionId: 'cms.definitions', target: 'src/content/definitions.ts' } });
+  it('cms.definitions declares its generated TypeScript output as a file', () => {
+    expect(cmsMediaRecipe.outputContributions).toContainEqual({
+      kind: 'file', id: 'cms.definitions', target: 'src/content/definitions.ts',
+    });
   });
 
-  it('cms: shell + cms (via test-local capability alias) resolves with matching graph and 1:1 files', async () => {
-    assertGraphMatchesRecipes([shellRecipe, shellAliasFixture, cmsComposable]);
+  it('cms: shell + cms resolves with matching graph and 1:1 files', async () => {
+    assertGraphMatchesRecipes([shellRecipe, cmsMediaRecipe]);
     await assertContributionsMatchFiles(cmsMediaRecipe);
-    const graph = resolveCapabilityGraph([shellRecipe, shellAliasFixture, cmsComposable]);
+    const graph = resolveCapabilityGraph([shellRecipe, cmsMediaRecipe]);
     expect(graph.ok && graph.value.requirements).toContainEqual({
-      capability: 'site.astro-shell', consumerRecipeId: 'cms.decap-media', providerRecipeId: 'test.shell-alias',
+      capability: 'site.shell', consumerRecipeId: 'cms.decap-media', providerRecipeId: 'site.shell',
     });
   });
 
@@ -198,13 +184,13 @@ describe('recipe composition: resolved profiles', () => {
   });
 
   it('all three together resolve deterministically regardless of input order and serialize', () => {
-    const set = [shellRecipe, shellAliasFixture, cmsComposable, authRecipe];
+    const set = [shellRecipe, cmsMediaRecipe, authRecipe];
     const forward = resolveCapabilityGraph(set);
     const reverse = resolveCapabilityGraph([...set].reverse());
     expect(forward.ok && reverse.ok).toBe(true);
     if (!forward.ok || !reverse.ok) return;
     expect(forward.value).toEqual(reverse.value);
-    expect(forward.value.recipes.map((node) => node.id)).toEqual(['site.shell', 'test.shell-alias', 'cms.decap-media', 'auth.single-island']);
+    expect(forward.value.recipes.map((node) => node.id)).toEqual(['site.shell', 'cms.decap-media', 'auth.single-island']);
     const doc = toCapabilityGraphDocument(forward.value);
     expect(doc.ok).toBe(true);
     if (doc.ok) {
@@ -213,12 +199,13 @@ describe('recipe composition: resolved profiles', () => {
     }
   });
 
-  it('DEFECT PIN: shell astro.config.mjs uses a named easyWebSeo import that @easy-web/core/seo does not export', async () => {
+  it('shell astro.config.mjs uses the default easyWebSeo export', async () => {
     const { files } = await shellRecipe.generate({ options: {}, capabilities: [], contributions: [] });
-    expect(String(files.find((file) => file.path === 'astro.config.mjs')!.content)).toContain("import { easyWebSeo } from '@easy-web/core/seo'");
+    const config = String(files.find((file) => file.path === 'astro.config.mjs')!.content);
+    expect(config).toContain("import easyWebSeo from '@easy-web/core/seo'");
+    expect(config).not.toContain('import { easyWebSeo }');
     const seo = await import('@easy-web/core/seo') as Record<string, unknown>;
     expect(typeof seo.default).toBe('function');
-    expect(seo.easyWebSeo).toBeUndefined();
   });
 
   it('GAP PIN: composed generation collides on shared outputs (package.json / astro.config.mjs) - merge is not yet planned', async () => {
@@ -227,7 +214,7 @@ describe('recipe composition: resolved profiles', () => {
     const overlap = shell.files.map((file) => file.path).filter((path) => cms.files.some((file) => file.path === path)).sort();
     expect(overlap).toEqual(['astro.config.mjs', 'package.json']);
     // The resolver does not flag it: dependency/configuration kinds are not output-conflict checked.
-    expect(resolveCapabilityGraph([shellRecipe, shellAliasFixture, cmsComposable]).ok).toBe(true);
+    expect(resolveCapabilityGraph([shellRecipe, cmsMediaRecipe]).ok).toBe(true);
   });
 });
 
@@ -250,7 +237,7 @@ describe('recipe composition: conflict profile (real recipe shapes, local confli
 });
 
 describe('recipe composition: mutation checks (test-local copies; harness must genuinely fail)', () => {
-  const recipes: readonly AnyRecipe[] = [shellRecipe, authRecipe, cmsComposable];
+  const recipes: readonly AnyRecipe[] = [shellRecipe, authRecipe, cmsMediaRecipe];
 
   for (const recipe of recipes) {
     it(`${recipe.id}: dropping a declared contribution fails the 1:1 file assertion`, async () => {
@@ -264,7 +251,7 @@ describe('recipe composition: mutation checks (test-local copies; harness must g
 
     it(`${recipe.id}: a mutated requirement claim fails graph resolution assertions`, () => {
       const mutant = { ...recipe, requires: [...recipe.requires, 'mutant.missing-capability'] };
-      expect(() => assertGraphMatchesRecipes([mutant, ...[shellRecipe, shellAliasFixture].filter((item) => item.id !== mutant.id)])).toThrow();
+      expect(() => assertGraphMatchesRecipes([mutant, ...[shellRecipe].filter((item) => item.id !== mutant.id)])).toThrow();
     });
 
     it(`${recipe.id}: a mutated conflict claim against a co-resolved recipe fails graph assertions`, () => {
@@ -298,13 +285,8 @@ describe('recipe composition: emitted fixtures parse, type-check and build (boun
     const authDeps = (JSON.parse(String(authFiles.find((file) => file.path === 'package.json')!.content)) as { dependencies: Record<string, string> }).dependencies;
     writeFixture(authRoot, [...shellFiles.filter((file) => file.path !== 'package.json'), ...authFiles.filter((file) => file.path !== 'package.json')], true, authDeps);
 
-    // DEFECT PIN: the shell recipe's generated output neither type-checks (wrong component props,
-    // LocalizedPathGroup imported from '@easy-web/core' root) nor builds (LanguageSwitch throws on missing props).
-    // Pinned so a fix to the shell recipe flips this test deliberately.
-    const shellCheck = await runAstro(minimalRoot, 'check').then(() => 'ok', (error: unknown) => String(error));
-    expect(shellCheck).toMatch(/PageShellProps|HeaderProps|NotFoundProps|LocalizedPathGroup/);
-    const shellBuild = await runAstro(minimalRoot, 'build').then(() => 'ok', (error: unknown) => String(error));
-    expect(shellBuild).toMatch(/Caught error rendering/);
+    await runAstro(minimalRoot, 'check');
+    await runAstro(minimalRoot, 'build');
 
     // Composition proof on the parts that are sound: shell's config/public files + auth's files, with the
     // broken shell-owned component files (Base layout, 404, localized-paths) replaced by test-local stand-ins.

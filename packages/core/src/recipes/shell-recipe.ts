@@ -15,7 +15,7 @@ const PLACEHOLDER_SITE_URL = 'https://replace-with-your-domain.example';
 
 function astroConfig(options: ShellRecipeOptions): string {
     return `import { defineConfig } from 'astro/config';
-import { easyWebSeo } from '@easy-web/core/seo';
+import easyWebSeo from '@easy-web/core/seo';
 
 export default defineConfig({
   site: ${JSON.stringify(PLACEHOLDER_SITE_URL)},
@@ -44,15 +44,36 @@ interface Props {
 }
 const { title } = Astro.props;
 const siteName = ${JSON.stringify(options.siteName)};
+const currentLang = ${JSON.stringify(options.defaultLocale)};
+const navItems = [{ label: 'Home', href: '/' }];
 ---
-<PageShell title={title} lang=${JSON.stringify(options.defaultLocale)}>
-  <Header slot="header" siteName={siteName} navItems={[{ label: 'Home', href: '/' }]} />
-  <slot />
-  <Footer slot="footer" siteName={siteName} legalLinks={[
-    { label: 'Imprint (sample)', href: '/imprint' },
-    { label: 'Privacy (sample)', href: '/privacy' },
-  ]} />
-</PageShell>
+<!doctype html>
+<html lang=${JSON.stringify(options.defaultLocale)}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <PageShell lang={currentLang}>
+      <Header
+        slot="header"
+        lang={currentLang}
+        siteName={siteName}
+        navItems={navItems}
+        currentLang={currentLang}
+        pathname={Astro.url.pathname}
+        brandHref="/"
+        locales={[currentLang]}
+      />
+      <slot />
+      <Footer slot="footer" lang={currentLang} siteName={siteName} legalLinks={[
+        { label: 'Imprint (sample)', href: '/imprint' },
+        { label: 'Privacy (sample)', href: '/privacy' },
+      ]} />
+    </PageShell>
+  </body>
+</html>
 `;
 }
 
@@ -67,13 +88,18 @@ import Base from '../layouts/Base.astro';
 `;
 }
 
-const notFoundPage = `---
+function notFoundPage(options: ShellRecipeOptions): string {
+    return `---
+import Base from '../layouts/Base.astro';
 import NotFound from '@easy-web/core/components/NotFound.astro';
 ---
-<NotFound />
+<Base title="Page not found">
+  <NotFound currentLang=${JSON.stringify(options.defaultLocale)} defaultLocale=${JSON.stringify(options.defaultLocale)} />
+</Base>
 `;
+}
 
-const localizedPaths = `import type { LocalizedPathGroup } from '@easy-web/core';
+const localizedPaths = `import type { LocalizedPathGroup } from '@easy-web/core/i18n';
 
 export const localizedPaths: readonly LocalizedPathGroup[] = [];
 `;
@@ -94,7 +120,7 @@ export function buildShellFiles(rawOptions: unknown): readonly { path: string; c
         { path: 'package.json', content: packageJsonFragment },
         { path: 'src/layouts/Base.astro', content: baseLayout(options) },
         { path: 'src/pages/index.astro', content: homePage(options) },
-        { path: 'src/pages/404.astro', content: notFoundPage },
+        { path: 'src/pages/404.astro', content: notFoundPage(options) },
         { path: 'src/lib/localized-paths.ts', content: localizedPaths },
         { path: 'public/robots.txt', content: robotsTxt },
         { path: '.gitignore', content: gitignore },
