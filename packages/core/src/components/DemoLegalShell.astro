@@ -1,0 +1,36 @@
+---
+/**
+ * DemoLegalShell - sample legal/privacy page shell with a prominent disclaimer.
+ * Reuses LegalLayout. Structural placeholder only, never legal advice.
+ */
+import LegalLayout from './LegalLayout.astro';
+import type { DemoLegalShell } from '../demo/legal-shells.js';
+
+export interface Props {
+  shell: DemoLegalShell;
+}
+
+const { shell } = Astro.props;
+---
+
+<LegalLayout title={shell.title}>
+  <div class="ew-demo-disclaimer" role="alert" data-demo-disclaimer>
+    <strong>{shell.disclaimer}</strong>
+  </div>
+  {shell.sections.map((s) => (
+    <section>
+      <h2>{s.heading}</h2>
+      <p>{s.body}</p>
+    </section>
+  ))}
+</LegalLayout>
+
+<style>
+  .ew-demo-disclaimer {
+    border: 3px solid var(--ew-danger, #b00020);
+    background: var(--ew-surface, #fff);
+    padding: var(--ew-space-4, 1rem);
+    margin: 0 0 var(--ew-space-6, 2rem);
+    text-align: center;
+  }
+</style>
