@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.0
+
+### Patch Changes
+
+- Updated dependencies [91878a0]
+  - @easy-web/core@1.6.0
+
 ## 1.5.0
 
 ### Patch Changes
