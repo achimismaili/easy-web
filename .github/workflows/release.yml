@@ -51,18 +51,20 @@ jobs:
       # "nothing to do": its per-package registry probe false-negatives on this
       # runner and reattempts every package, which npm rejects. Comparing a
       # bellwether package against the registry keeps that case unreachable.
-      # All @easy-web/* packages are a `fixed` version group, so any one of them
-      # is a faithful proxy for the whole family. README.md is docs, not a
-      # changeset.
+      # The fixed @easy-web/* family and independently-versioned @easy-web/cli
+      # are two version groups, so each needs its own bellwether. README.md is
+      # docs, not a changeset.
       - name: Determine release action
         id: release-state
         shell: bash
         run: |
           COUNT=$(find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d '[:space:]')
-          LOCAL=$(node -p "require('./packages/i18n/package.json').version")
-          REMOTE=$(npm view @easy-web/i18n version 2>/dev/null || echo "none")
+          FIXED_LOCAL=$(node -p "require('./packages/i18n/package.json').version")
+          FIXED_REMOTE=$(npm view @easy-web/i18n version 2>/dev/null || echo "none")
+          CLI_LOCAL=$(node -p "require('./packages/easy-web-cli/package.json').version")
+          CLI_REMOTE=$(npm view @easy-web/cli version 2>/dev/null || echo "none")
 
-          if [ "$LOCAL" != "$REMOTE" ]; then NEEDS_PUBLISH=true; else NEEDS_PUBLISH=false; fi
+          if [ "$FIXED_LOCAL" != "$FIXED_REMOTE" ] || [ "$CLI_LOCAL" != "$CLI_REMOTE" ]; then NEEDS_PUBLISH=true; else NEEDS_PUBLISH=false; fi
 
           {
             echo "changesets=$COUNT"
@@ -70,7 +72,8 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
           echo "Pending changesets: $COUNT"
-          echo "Bellwether @easy-web/i18n - local: $LOCAL, npm: $REMOTE, needs publish: $NEEDS_PUBLISH"
+          echo "Bellwether @easy-web/i18n - local: $FIXED_LOCAL, npm: $FIXED_REMOTE"
+          echo "Bellwether @easy-web/cli - local: $CLI_LOCAL, npm: $CLI_REMOTE, needs publish: $NEEDS_PUBLISH"
 
       - name: Create Release Pull Request or Publish
         id: changesets
