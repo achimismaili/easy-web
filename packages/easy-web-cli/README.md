@@ -58,5 +58,11 @@ are generated as declared; wiring the auth mount and React integration is not
 performed by this composer. Graph JSON and Mermaid are returned in diagnostics,
 not extra generated files. Retain the returned task worktree until human review.
 
+Decision, Git rollback boundary and deferred roadmap: ADR 0019 in the websites meta-repo
+(`docs/decisions/0019-create-only-easy-web-cli.md`). Operator summary with a real
+resolved graph diagram: `docs/architecture/create-cli-phase-1.md` there. To undo a
+successful run, remove the returned task worktree and delete its branch; the CLI never
+resets or rewrites history.
+
 Exit codes: 0 success, 3 invalid config/target/composition, 4 generation/Git/staging
 failure. `--json` emits versioned diagnostics on stderr and a result on stdout.
