@@ -67,12 +67,19 @@ export async function createSite(config: CreateConfig, selections: readonly Reci
         retained = plan.gitRoot;
         result = { target: plan.gitRoot ? root : plan.path, commit, branch: plan.gitRoot ? branch : 'main', graphJson: site.graphJson, graphMermaid: site.graphMermaid };
     } catch (error) {
-        for (const path of published.reverse()) await rm(path);
-        for (const path of directories.reverse()) await rmdir(path);
-        if (ownedMetadata) await rm(join(plan.path, '.git'), { recursive: true });
-        if (ownedTarget) await rmdir(plan.path);
-        if (error instanceof CreateError) throw error;
-        throw new CreateError('CREATE_FAILED', 'Site generation/staging failed', { cause: error });
+        const original = error instanceof CreateError
+            ? error
+            : new CreateError('CREATE_FAILED', 'Site generation/staging failed', { cause: error });
+        const cleanupErrors: unknown[] = [];
+        const cleanup = async (operation: () => Promise<unknown>): Promise<void> => {
+            try { await operation(); } catch (cleanupError) { cleanupErrors.push(cleanupError); }
+        };
+        for (const path of published.reverse()) await cleanup(() => rm(path));
+        for (const path of directories.reverse()) await cleanup(() => rmdir(path));
+        if (ownedMetadata) await cleanup(() => rm(join(plan.path, '.git'), { recursive: true }));
+        if (ownedTarget) await cleanup(() => rmdir(plan.path));
+        if (cleanupErrors.length) Object.defineProperty(original, 'cleanupErrors', { value: cleanupErrors });
+        throw original;
     } finally {
         if (!retained) {
             if (worktree) {
