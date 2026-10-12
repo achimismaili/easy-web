@@ -45,7 +45,7 @@ async function workspace(label) {
   await cp(join(repository, 'packages', 'easy-web-cms-adapters'), join(root, 'packages', 'easy-web-cms-adapters'), { recursive: true, filter: copySource });
   await cp(join(repository, 'tsconfig.base.json'), join(root, 'tsconfig.base.json'));
   await writeFile(join(root, 'tsconfig.json'), '{"extends":"./tsconfig.base.json","include":[],"exclude":["node_modules"]}\n');
-  await writeFile(join(root, 'pnpm-workspace.yaml'), 'packages:\n  - "packages/*"\n  - "apps/*"\n');
+  await writeFile(join(root, 'pnpm-workspace.yaml'), 'packages:\n  - "packages/*"\n  - "apps/*"\nallowBuilds:\n  esbuild: true\n  sharp: true\n');
   await writeFile(join(root, 'package.json'), '{"name":"contract-conformance-workspace","private":true,"packageManager":"pnpm@10.34.4"}\n');
   requireStatus(`${label} install`, run(`${label} install`, root, 'pnpm', ['install', '--prefer-offline']), 0);
   requireStatus(`${label} core build`, run(`${label} core build`, root, 'pnpm', ['--filter', '@easy-web/core', 'build']), 0);
