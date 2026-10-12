@@ -1,5 +1,13 @@
 # contract-fixture
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [91878a0]
+  - @easy-web/core@1.6.0
+  - @easy-web/cms-adapters@1.6.0
+
 ## 0.0.3
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # showcase
 
+## 0.0.18
+
+### Patch Changes
+
+- Updated dependencies [91878a0]
+  - @easy-web/core@1.6.0
+
 ## 0.0.17
 
 ### Patch Changes
