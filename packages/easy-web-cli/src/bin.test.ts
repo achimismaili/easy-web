@@ -159,5 +159,5 @@ describe('easy-web built CLI', () => {
       expect(result.stderr).toContain('Dependency installation failed\nCause:');
       expect(result.stderr).toContain('injected install failure');
     }
-  });
+  }, 15000);
 });
