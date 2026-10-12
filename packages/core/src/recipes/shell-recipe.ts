@@ -29,9 +29,14 @@ export default defineConfig({
 const packageJsonFragment = `${JSON.stringify({
     type: 'module',
     scripts: { dev: 'astro dev', build: 'astro build', preview: 'astro preview' },
-    dependencies: { '@easy-web/core': '^1.5.0', astro: '^5.0.0' },
+    dependencies: { '@easy-web/core': '^1.5.0', astro: '^7.3.5' },
     devDependencies: { typescript: '^5.5.0' },
 }, null, 2)}\n`;
+
+const pnpmWorkspace = `allowBuilds:
+  esbuild: true
+  sharp: true
+`;
 
 function baseLayout(options: ShellRecipeOptions): string {
     return `---
@@ -118,6 +123,7 @@ export function buildShellFiles(rawOptions: unknown): readonly { path: string; c
     return [
         { path: 'astro.config.mjs', content: astroConfig(options) },
         { path: 'package.json', content: packageJsonFragment },
+        { path: 'pnpm-workspace.yaml', content: pnpmWorkspace },
         { path: 'src/layouts/Base.astro', content: baseLayout(options) },
         { path: 'src/pages/index.astro', content: homePage(options) },
         { path: 'src/pages/404.astro', content: notFoundPage(options) },
@@ -141,6 +147,7 @@ export const shellRecipe = {
     outputContributions: [
         { kind: 'configuration', id: 'shell.astro-config', target: 'astro.config.mjs' },
         { kind: 'dependency', id: 'shell.dependencies', target: 'package.json' },
+        { kind: 'configuration', id: 'shell.pnpm-workspace', target: 'pnpm-workspace.yaml' },
         { kind: 'file', id: 'shell.base-layout', target: 'src/layouts/Base.astro' },
         { kind: 'route', id: 'shell.home', target: '/' },
         { kind: 'route', id: 'shell.404', target: '/404' },

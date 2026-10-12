@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import corePackage from '../../../package.json' with { type: 'json' };
 import { buildShellFiles, shellRecipe } from '../shell-recipe.js';
 
 const CONTRIBUTION_FILE_PATH: Record<string, string> = {
     'shell.astro-config': 'astro.config.mjs',
     'shell.dependencies': 'package.json',
+    'shell.pnpm-workspace': 'pnpm-workspace.yaml',
     'shell.base-layout': 'src/layouts/Base.astro',
     'shell.home': 'src/pages/index.astro',
     'shell.404': 'src/pages/404.astro',
@@ -49,5 +51,25 @@ describe('shell recipe', () => {
         const files = buildShellFiles({});
         const gitignore = files.find((file) => file.path === '.gitignore')!;
         expect(gitignore.content).toContain('node_modules');
+    });
+
+    it('keeps the generated Astro range inside the core peer range', () => {
+        const files = buildShellFiles({});
+        const manifestFile = files.find((file) => file.path === 'package.json')!;
+        const manifest = JSON.parse(manifestFile.content) as { dependencies: { astro: string } };
+        const generatedMinimum = Number(/^\^(\d+)\./.exec(manifest.dependencies.astro)?.[1]);
+        const peerBounds = /^>=(\d+)\.0\.0 <(\d+)\.0\.0$/.exec(corePackage.peerDependencies.astro);
+
+        expect(peerBounds, 'core Astro peer range must retain explicit major bounds').not.toBeNull();
+        expect(generatedMinimum).toBeGreaterThanOrEqual(Number(peerBounds![1]));
+        expect(generatedMinimum).toBeLessThan(Number(peerBounds![2]));
+        expect(manifest.dependencies.astro).toBe('^7.3.5');
+    });
+
+    it('allows required dependency builds under pnpm 11', () => {
+        const files = buildShellFiles({});
+        const workspace = files.find((file) => file.path === 'pnpm-workspace.yaml')!;
+
+        expect(workspace.content).toBe('allowBuilds:\n  esbuild: true\n  sharp: true\n');
     });
 });
