@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -121,5 +121,43 @@ describe('easy-web built CLI', () => {
     });
     expect(result.exitCode).toBe(0);
     expect(await readFile(join(target, 'pnpm-lock.yaml'), 'utf8')).toContain("lockfileVersion: '9.0'");
+  });
+
+  it.each([true, false])('reports the install failure cause when json=%s', async (json) => {
+    const target = join(packDirectory, `generated-install-failure-${json}`);
+    const configPath = join(packDirectory, `create-install-failure-${json}.json`);
+    const binDirectory = join(packDirectory, `failing-pnpm-${json}`);
+    const commandPath = join(binDirectory, process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm');
+    await mkdir(binDirectory);
+    await writeFile(configPath, JSON.stringify({ target }));
+    await writeFile(commandPath, process.platform === 'win32'
+      ? '@echo off\necho injected install failure 1>&2\nexit /b 27\n'
+      : '#!/bin/sh\necho "injected install failure" >&2\nexit 27\n');
+    if (process.platform !== 'win32') await chmod(commandPath, 0o755);
+
+    const arguments_ = [builtCli, 'create', '--config', configPath, '--install'];
+    if (json) arguments_.push('--json');
+    const result = await execa(process.execPath, arguments_, {
+      reject: false,
+      env: {
+        PATH: `${binDirectory}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH ?? ''}`,
+        GIT_AUTHOR_NAME: 'CLI Test',
+        GIT_AUTHOR_EMAIL: 'cli@example.invalid',
+        GIT_COMMITTER_NAME: 'CLI Test',
+        GIT_COMMITTER_EMAIL: 'cli@example.invalid',
+      },
+    });
+
+    expect(result.exitCode).toBe(4);
+    if (json) {
+      expect(JSON.parse(result.stderr)).toMatchObject({
+        code: 'CREATE_FAILED',
+        message: 'Dependency installation failed',
+        cause: expect.stringContaining('injected install failure'),
+      });
+    } else {
+      expect(result.stderr).toContain('Dependency installation failed\nCause:');
+      expect(result.stderr).toContain('injected install failure');
+    }
   });
 });

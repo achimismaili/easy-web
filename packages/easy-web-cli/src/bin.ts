@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import mri from 'mri';
-import { CreateError } from './create/errors.js';
+import { causeMessage, CreateError } from './create/errors.js';
 
 const INVALID_INPUT_EXIT_CODE = 3;
 const CREATE_FAILED_EXIT_CODE = 4;
@@ -28,6 +28,7 @@ interface Diagnostic {
   level: 'error';
   code: 'INVALID_INPUT' | 'CREATE_FAILED';
   message: string;
+  cause?: string;
   command?: string;
 }
 
@@ -43,7 +44,9 @@ function getVersion(): string {
 }
 
 function writeDiagnostic(diagnostic: Diagnostic, json: boolean): void {
-  const output = json ? JSON.stringify(diagnostic) : diagnostic.message;
+  const output = json
+    ? JSON.stringify(diagnostic)
+    : [diagnostic.message, diagnostic.cause && `Cause: ${diagnostic.cause}`].filter(Boolean).join('\n');
   process.stderr.write(`${output}\n`);
 }
 
@@ -124,7 +127,7 @@ async function main(): Promise<void> {
   } catch (error) {
     const diagnostic = error instanceof CreateError ? error
       : new CreateError('CREATE_FAILED', 'Site creation failed', { cause: error });
-    fail({ schemaVersion: 1, level: 'error', code: diagnostic.code, message: diagnostic.message, command: 'create' },
+    fail({ schemaVersion: 1, level: 'error', code: diagnostic.code, message: diagnostic.message, cause: causeMessage(diagnostic), command: 'create' },
       json, diagnostic.code === 'INVALID_INPUT' ? INVALID_INPUT_EXIT_CODE : CREATE_FAILED_EXIT_CODE);
   }
 }

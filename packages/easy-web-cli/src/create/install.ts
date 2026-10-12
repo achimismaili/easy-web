@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { RecipeGeneratedFile } from '@easy-web/core/recipes';
 import type { ComposedSite } from './compose.js';
-import { invalid } from './errors.js';
+import { CreateError, invalid } from './errors.js';
 
 const execute = promisify(execFile);
 const dependencyRange = /^(?:[~^]?\d+(?:\.\d+){0,2}(?:-[0-9A-Za-z.-]+)?|[<>=*xX| .\d~^-]+)$/;
@@ -78,11 +78,15 @@ export function withPlaceholderLockfile(site: ComposedSite): ComposedSite {
 }
 
 const defaultRunner: InstallRunner = async (cwd, command, args) => {
-    await execute(command, [...args], { cwd });
+    await execute(command, [...args], { cwd, shell: process.platform === 'win32' });
 };
 
 export async function installDependencies(target: string, options: InstallOptions = {}): Promise<void> {
     if (options.install !== true) return;
     const command = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-    await (options.runner ?? defaultRunner)(target, command, ['install']);
+    try {
+        await (options.runner ?? defaultRunner)(target, command, ['install']);
+    } catch (error) {
+        throw new CreateError('CREATE_FAILED', 'Dependency installation failed', { cause: error });
+    }
 }
