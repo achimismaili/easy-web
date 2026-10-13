@@ -9,8 +9,8 @@ sidebar:
 
 Everything else is an add-on: [`@easy-web/cms-adapters`](../cms-adapters/) for Decap CMS and typed content definitions, `@easy-web/swa` for Azure Static Web Apps, [`@easy-web/auth`](../auth/) for MSAL sign-in, and `@easy-web/brand` for favicons. `@easy-web/create` is a reserved name for the future scaffold CLI.
 
-:::caution[Pending first publish]
-`@easy-web/core` is reserved on npm and pending its first publish. Until it's released, the five compatibility packages (`theme-core`, `i18n`, `content-blocks`, `seo`, `markdown`) are the installable form of the same code. See [Migrating to core](../../guides/migrating-to-core/).
+:::note[Published]
+`@easy-web/core` is published on npm. Install it with `pnpm add @easy-web/core`. The five compatibility packages (`theme-core`, `i18n`, `content-blocks`, `seo`, `markdown`) re-export from it and stay through 1.x. See [Migrating to core](../../guides/migrating-to-core/).
 :::
 
 ## Installation

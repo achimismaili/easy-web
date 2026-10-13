@@ -20,7 +20,7 @@ Install `@easy-web/core` for a working site. Everything else is opt-in.
 
 | Package | Description |
 | :--- | :--- |
-| `@easy-web/core` | Theme tokens, i18n, SEO integration, markdown plugin, 31 Astro components (page chrome, sections, cards, galleries, media, `<NotFound>`, `<SeoHead>`) and the content contracts (`Item`, `Article`, `Event`, `HasImage`, `assertImplements`, ...). Subpaths: `/contracts`, `/theme`, `/i18n`, `/seo`, `/markdown`, `/components/*`, `/schemas/*`, `/styles/*`. **Reserved on npm, pending its first publish** |
+| `@easy-web/core` | Theme tokens, i18n, SEO integration, markdown plugin, 31 Astro components (page chrome, sections, cards, galleries, media, `<NotFound>`, `<SeoHead>`) and the content contracts (`Item`, `Article`, `Event`, `HasImage`, `assertImplements`, ...). Subpaths: `/contracts`, `/theme`, `/i18n`, `/seo`, `/markdown`, `/components/*`, `/schemas/*`, `/styles/*`. |
 
 **Add-ons**
 

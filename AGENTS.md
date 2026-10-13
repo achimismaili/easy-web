@@ -48,7 +48,7 @@ Since ADR 0018 the family has one **base** package and optional **add-ons**:
 - **Reserved:** `@easy-web/create`.
 - **Deprecated compatibility packages:** `@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo`, `@easy-web/markdown`. They hold no implementation any more, only `@deprecated` re-exports of core subpaths. Never add code to them. They stay for all of 1.x and are removed in 2.0, once every site (darts included) has migrated.
 
-**Core bootstrap status:** the `@easy-web/core` package exists in this workspace and the name is reserved on npm, but it is **pending its first publish** (its `package.json` still carries `"private": true`, and `npm view @easy-web/core version` does not resolve yet). Follow *Bootstrapping a brand-new package* below for the first publish; don't claim it is published until `npm view` resolves.
+**Core status:** `@easy-web/core` is published on npm and released through the normal OIDC flow like the rest of the family. *Bootstrapping a brand-new package* below still applies to any future new package.
 
 | Path | Purpose |
 | :--- | :--- |
