@@ -1,3 +1,4 @@
+/** @deprecated Define content with `field`, `fieldSets`, `defineContentType`, and `defineSingleton` instead. */
 export interface LinkFrontmatter {
   title: string;
   url: string;

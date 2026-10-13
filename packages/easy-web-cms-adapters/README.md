@@ -42,6 +42,17 @@ See the documentation site and `docs/entra-cms-setup.md` in your instance repo f
 
 ```ts
 import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
+```
+
+## Deprecated scaffold API
+
+The old `src/scaffold/generate-config.ts` and `src/scaffold/config-template.yml` scaffold path, together with the hand-written interfaces under `src/types/`, is deprecated. Define content once with `field`, `fieldSets`, `defineContentType`, and `defineSingleton`; then use `buildDecapConfig` for Decap configuration and `toAstroSchema` for Astro validation.
+
+The deprecated API remains available throughout the 1.x line for compatibility and is removed in 2.0.
+
+The following imports are legacy examples:
+
+```ts
 import type { BlogFrontmatter } from '@easy-web/cms-adapters';
 import { generateDecapConfig } from '@easy-web/cms-adapters';
 ```

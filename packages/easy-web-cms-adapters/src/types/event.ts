@@ -1,3 +1,4 @@
+/** @deprecated Define content with `field`, `fieldSets`, `defineContentType`, and `defineSingleton` instead. */
 export interface EventFrontmatter {
   title: string;
   description: string;

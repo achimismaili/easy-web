@@ -38,6 +38,7 @@ function buildBlogCollection(locale: string): string {
   );
 }
 
+/** @deprecated Define content types and pass them to `buildDecapConfig` or `toDecapCollections` instead. */
 export function generateDecapConfigString(options: DecapConfigOptions): string {
   const {
     tenantId,
@@ -100,6 +101,7 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
+/** @deprecated Define content types and pass them to `buildDecapConfig` or `toDecapCollections` instead. */
 export async function generateDecapConfig(
   options: DecapConfigWriteOptions,
 ): Promise<DecapConfigWriteResult> {

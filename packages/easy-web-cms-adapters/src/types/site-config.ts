@@ -1,3 +1,4 @@
+/** @deprecated Define content with `field`, `fieldSets`, `defineContentType`, and `defineSingleton` instead. */
 export interface NavItem {
   label: string;
   href: string;
@@ -5,17 +6,20 @@ export interface NavItem {
   children?: NavItem[];
 }
 
+/** @deprecated Define content with `field`, `fieldSets`, `defineContentType`, and `defineSingleton` instead. */
 export interface FooterColumn {
   title: string;
   links: NavItem[];
 }
 
+/** @deprecated Define content with `field`, `fieldSets`, `defineContentType`, and `defineSingleton` instead. */
 export interface SocialLink {
   label: string;
   href: string;
   icon?: string;
 }
 
+/** @deprecated Define content with `field`, `fieldSets`, `defineContentType`, and `defineSingleton` instead. */
 export interface SiteConfig {
   companyName: string;
   defaultTitle: string;

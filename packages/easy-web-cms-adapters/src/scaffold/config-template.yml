@@ -1,3 +1,5 @@
+# Deprecated scaffold template. Define content types and generate config with
+# buildDecapConfig instead; this compatibility path is removed in 2.0.
 # Decap CMS config.yml — template for @achimismaili/easy-web instances
 #
 # Tokens wrapped in {{...}} are replaced at generation time.
