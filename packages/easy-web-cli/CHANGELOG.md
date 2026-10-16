@@ -1,5 +1,15 @@
 # @easy-web/cli
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [9d6a2f2]
+- Updated dependencies [9d6a2f2]
+  - @easy-web/core@1.7.1
+  - @easy-web/cms-adapters@1.7.1
+  - @easy-web/auth@1.7.1
+
 ## 0.1.1
 
 ### Patch Changes

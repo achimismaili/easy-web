@@ -1,5 +1,12 @@
 # @achimismaili/easy-web-i18n
 
+## 1.7.1
+
+### Patch Changes
+
+- Updated dependencies [9d6a2f2]
+  - @easy-web/core@1.7.1
+
 ## 1.7.0
 
 ### Patch Changes
