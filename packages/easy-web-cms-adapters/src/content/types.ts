@@ -79,6 +79,7 @@ export interface ImageOptions extends FieldOptions, Folders, ImageLabels {
     readonly alt: AltRule;
 }
 export interface ListOptions extends FieldOptions {
+    readonly hint?: string;
     readonly labelSingular?: string;
     readonly fields: readonly FieldDef[];
     readonly min?: number;

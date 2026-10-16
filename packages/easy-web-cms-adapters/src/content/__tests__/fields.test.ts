@@ -25,8 +25,8 @@ describe('Decap field builders', () => {
         [() => field.image('photo', { label: 'Foto', alt: { from: 'title' }, mediaFolder: '/media', publicFolder: '/assets' }), { name: 'photo', label: 'Foto', widget: 'image', required: true, media_folder: '/media', public_folder: '/assets' }],
         [() => field.image('photo', { label: 'Foto', alt: 'decorative', required: false }), { name: 'photo', label: 'Foto', widget: 'image', required: false }],
         [() => field.images('photos', { label: 'Fotos' }), { name: 'photos', label: 'Fotos', label_singular: 'Foto', widget: 'list', required: false, summary: '{{fields.alt}}', fields: [src, alt] }],
-        [() => field.list('items', { label: 'Liste', labelSingular: 'Eintrag', fields: [], min: 1, max: 4, required: true }), { name: 'items', label: 'Liste', label_singular: 'Eintrag', widget: 'list', required: true, fields: [], min: 1, max: 4 }],
-        [() => field.object('entry', { label: 'Eintrag', fields: [], required: false }), { name: 'entry', label: 'Eintrag', widget: 'object', required: false, fields: [] }],
+        [() => field.list('items', { label: 'Liste', hint: 'Hinweis', labelSingular: 'Eintrag', fields: [], min: 1, max: 4, required: true }), { name: 'items', label: 'Liste', hint: 'Hinweis', label_singular: 'Eintrag', widget: 'list', required: true, fields: [], min: 1, max: 4 }],
+        [() => field.object('entry', { label: 'Eintrag', hint: 'Hinweis', fields: [], required: false }), { name: 'entry', label: 'Eintrag', hint: 'Hinweis', widget: 'object', required: false, fields: [] }],
     ])('emits documented configuration when builder %# is called', (build, expected) => {
         // Given / When: a builder and its documented options.
         const result = build();

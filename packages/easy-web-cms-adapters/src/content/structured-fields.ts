@@ -5,8 +5,9 @@ export type ScalarListOptions = Omit<ListOptions, 'fields'> & { readonly field: 
 export function list<const N extends string, const O extends ListOptions>(name: N, options: O): FieldDef<N, OptionalValue<InferFields<O['fields']>[], O>, 'list'>;
 export function list<const N extends string, const O extends ScalarListOptions>(name: N, options: O): FieldDef<N, OptionalValue<FieldData<O['field']>[], O>, 'list'>;
 export function list(name: string, options: ListOptions | ScalarListOptions): FieldDef {
-    const { label, labelSingular, required = false, min, max } = options;
+    const { label, hint, labelSingular, required = false, min, max } = options;
     const common = { name, label, widget: 'list', required,
+        ...(hint !== undefined ? { hint } : {}),
         ...(labelSingular !== undefined ? { label_singular: labelSingular } : {}),
         ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}) } as const;
     return 'fields' in options
@@ -14,12 +15,12 @@ export function list(name: string, options: ListOptions | ScalarListOptions): Fi
         : Object.freeze({ name, kind: 'list', required, itemField: options.field, decap: { ...common, field: options.field.decap } });
 }
 
-type ObjectOptions = FieldOptions & { readonly fields: readonly FieldDef[] };
+type ObjectOptions = FieldOptions & { readonly hint?: string; readonly fields: readonly FieldDef[] };
 export function object<const N extends string, const O extends ObjectOptions>(name: N, options: O): FieldDef<N, RequiredValue<InferFields<O['fields']>, O>, 'object'>;
 export function object(name: string, options: ObjectOptions): FieldDef {
-    const { label, fields, required = true } = options;
+    const { label, hint, fields, required = true } = options;
     return Object.freeze({ name, kind: 'object', required, fields,
-        decap: { name, label, widget: 'object', required, fields: fields.map(f => f.decap) } } as const);
+        decap: { name, label, widget: 'object', required, ...(hint !== undefined ? { hint } : {}), fields: fields.map(f => f.decap) } } as const);
 }
 
 type NavEntry = { readonly label: string; readonly href: string; readonly order?: number };
