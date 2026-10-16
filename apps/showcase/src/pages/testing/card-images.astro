@@ -1,0 +1,55 @@
+---
+import BlogPostCard from '@easy-web/core/components/BlogPostCard.astro';
+import Card from '@easy-web/core/components/Card.astro';
+import CardGrid from '@easy-web/core/components/CardGrid.astro';
+import '@easy-web/core/styles/tokens.css';
+import landscape from '../../assets/hills.jpg';
+import portrait from '../../assets/peaks.jpg';
+import { base } from '../../lib/showcase';
+
+const sources = [
+  { name: 'landscape', asset: landscape, path: `${base}images/lake.jpg`, pathRatio: 3 / 2 },
+  { name: 'portrait', asset: portrait, path: `${base}images/meadow.jpg`, pathRatio: 4 / 5 },
+];
+const kinds = ['metadata', 'string', 'legacy'] as const;
+const date = new Date('2026-01-01T12:00:00Z');
+const imageSizes = '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Card image geometry fixture</title>
+  </head>
+  <body>
+    <main>
+      <h1>Card image geometry</h1>
+      {/* No global image reset: each card must override intrinsic HTML heights itself. */}
+      <CardGrid>
+        {sources.flatMap(({ name, asset, path, pathRatio }) => kinds.map(kind => {
+          const title = `${kind} ${name}`;
+          const image = { src: kind === 'metadata' ? asset : path, alt: name };
+          const dimensions = kind === 'metadata' ? { 'data-width': asset.width, 'data-height': asset.height } : {};
+          const sourceRatio = kind === 'metadata' ? asset.width / asset.height : pathRatio;
+          return (
+            <>
+              <section data-card-case={`card-${kind}-${name}`} data-source-ratio={sourceRatio} {...dimensions}>
+                {kind === 'legacy'
+                  ? <Card title={title} image={path} imageAlt={name} />
+                  : <Card item={{ title, image, href: '#' }} imageSizes={imageSizes} />}
+              </section>
+              <section data-card-case={`blog-${kind}-${name}`} data-source-ratio={sourceRatio} {...dimensions}>
+                {kind === 'legacy'
+                  ? <BlogPostCard title={title} description="Legacy card" href="#" pubDate={date} heroImage={path} heroImageAlt={name} locale="en" />
+                  : <BlogPostCard item={{ title, image, href: '#', datePublished: date }} imageSizes={imageSizes} locale="en" />}
+              </section>
+            </>
+          );
+        }))}
+      </CardGrid>
+    </main>
+  </body>
+</html>
