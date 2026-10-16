@@ -1,5 +1,12 @@
 # @itci/easy-web-auth
 
+## 1.7.0
+
+### Patch Changes
+
+- Updated dependencies [7ffb156]
+  - @easy-web/core@1.7.0
+
 ## 1.6.0
 
 ### Minor Changes
