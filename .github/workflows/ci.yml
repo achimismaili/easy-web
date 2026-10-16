@@ -40,5 +40,11 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Browser QA
+        timeout-minutes: 5
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm test:browser
+
       - name: Contract conformance
         run: pnpm --filter contract-fixture test:conformance
