@@ -1,5 +1,8 @@
 ---
 // Standalone Decap CMS admin page - no site layout, no MSAL
+import type { AdminShellContent } from '../content/admin-content.js';
+import { isSafePublicHref } from '../content/admin-content.js';
+
 export interface Props {
   /** Plain Decap config object; when set, Decap is started via manual init instead of /admin/config.yml. */
   config?: object;
@@ -7,23 +10,142 @@ export interface Props {
   decapVersion?: string;
   lang?: string;
   title?: string;
+  /** Opt-in editor shell: a notice above Decap, one scrolling #nc-root, editor-managed footer links below. */
+  admin?: AdminShellContent;
 }
-const { config, decapVersion, lang = 'en', title = 'Content Manager' } = Astro.props;
+type Level = AdminShellContent['notice']['level'];
+const { config, decapVersion, lang = 'en', title = 'Content Manager', admin } = Astro.props;
 const src = `https://unpkg.com/decap-cms@${config ? (decapVersion ?? '3.16.3') : '3.14.0'}/dist/decap-cms.js`;
 const init = config
   ? `window.initCMS({ config: ${JSON.stringify(config).replace(/</g, '\\u003c')} });`
   : '';
+
+// Built-in shell strings: one language per render, German for `de` and `de-*`, English otherwise.
+const COPY = {
+  de: { levels: { info: 'Information', warning: 'Warnung', critical: 'Kritisch' }, links: 'Editor-Links' },
+  en: { levels: { info: 'Information', warning: 'Warning', critical: 'Critical' }, links: 'Editor links' },
+} satisfies Record<'de' | 'en', { levels: Record<Level, string>; links: string }>;
+const ROLES = { info: 'status', warning: 'alert', critical: 'alert' } satisfies Record<Level, string>;
+const copy = /^de(?:-|$)/i.test(lang) ? COPY.de : COPY.en;
+const notice = admin?.notice;
+const link = notice?.link?.label && isSafePublicHref(notice.link.href) ? notice.link : undefined;
+const footerLinks = admin?.footerLinks.filter(item => item.label.trim() && isSafePublicHref(item.href)) ?? [];
+
+// Emitted only with `admin`, so output without it stays identical. Token defaults sit in :where() on <html>
+// (specificity 0) so a real tokens.css or site override always wins; the values are the DESIGN.md light theme.
+// #nc-root is a <div>: Decap renders its own <main>, and a second one here would nest landmarks.
+const SHELL_CSS = `
+:where(.ew-admin-page) {
+  --ew-surface: #ffffff;
+  --ew-surface-muted: #f3f4f6;
+  --ew-on-surface: #111827;
+  --ew-muted: #6b7280;
+  --ew-border: #d1d5db;
+  --ew-primary: #2563eb;
+  --ew-danger: #dc2626;
+  --ew-accent: #f59e0b;
+  --ew-space-1: 0.25rem;
+  --ew-space-2: 0.5rem;
+  --ew-space-3: 0.75rem;
+  --ew-space-4: 1rem;
+  --ew-space-5: 1.5rem;
+  --ew-radius-md: 0.375rem;
+  --ew-font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ew-text-sm: clamp(0.875rem, 0.84rem + 0.14vw, 0.9375rem);
+  --ew-leading-normal: 1.5;
+}
+.ew-admin-page, .ew-admin-page body { margin: 0; overflow: hidden; }
+.ew-admin-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  block-size: 100vh;
+  block-size: 100dvh;
+  block-size: 100dvb;
+}
+.ew-admin-notice, .ew-admin-footer {
+  padding: var(--ew-space-3) var(--ew-space-5);
+  color: var(--ew-on-surface);
+  font-family: var(--ew-font-sans);
+  font-size: var(--ew-text-sm);
+  line-height: var(--ew-leading-normal);
+  overflow-wrap: anywhere;
+  overflow: auto;
+}
+.ew-admin-notice { grid-row: 1; max-block-size: 25dvb; background: var(--ew-surface-muted); border-block-end: 1px solid var(--ew-border); }
+.ew-admin-root { grid-row: 2; min-block-size: 0; overflow: auto; }
+.ew-admin-footer { grid-row: 3; max-block-size: 25dvb; background: var(--ew-surface); border-block-start: 1px solid var(--ew-border); }
+.ew-admin-notice__text { margin: 0; }
+.ew-admin-notice__label {
+  display: inline-block;
+  margin-inline-end: var(--ew-space-1);
+  padding: 0 var(--ew-space-2);
+  background: var(--ew-surface);
+  border: 1px solid var(--ew-border);
+  border-radius: var(--ew-radius-md);
+  font-weight: inherit;
+}
+.ew-admin-notice[data-level="warning"], .ew-admin-notice[data-level="critical"] { font-weight: 600; }
+.ew-admin-notice[data-level="critical"] { color: var(--ew-danger); }
+.ew-admin-notice__glyph {
+  display: inline-block;
+  inline-size: var(--ew-space-2);
+  block-size: var(--ew-space-2);
+  margin-inline-end: var(--ew-space-2);
+  border-radius: 50%;
+  background: var(--ew-muted);
+  vertical-align: middle;
+}
+.ew-admin-notice[data-level="warning"] .ew-admin-notice__glyph { border-radius: 0; background: var(--ew-accent); transform: rotate(45deg); }
+.ew-admin-notice[data-level="critical"] .ew-admin-notice__glyph { border-radius: 0; background: var(--ew-danger); }
+.ew-admin-notice__link { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+.ew-admin-notice__link:hover { text-decoration-thickness: 2px; }
+.ew-admin-footer__list { display: flex; flex-wrap: wrap; gap: var(--ew-space-1) var(--ew-space-4); margin: 0; padding: 0; list-style: none; }
+.ew-admin-footer__link { display: inline-block; padding: var(--ew-space-1) var(--ew-space-2); border-radius: var(--ew-radius-md); color: var(--ew-muted); text-decoration: none; }
+.ew-admin-footer__link:hover { background: var(--ew-surface-muted); color: var(--ew-on-surface); }
+.ew-admin-notice__link:focus-visible, .ew-admin-footer__link:focus-visible {
+  outline: 2px solid var(--ew-primary);
+  outline-offset: 2px;
+  border-radius: var(--ew-radius-md);
+}
+`;
 ---
 <!DOCTYPE html>
-<html lang={lang}>
+<html lang={lang} class={admin ? 'ew-admin-page' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
     <title>{title}</title>
     {!config && <link rel="cms-config-url" href="/admin/config.yml" type="text/yaml" />}
+    {admin && <style is:inline set:html={SHELL_CSS}></style>}
   </head>
   <body>
+    {admin && (
+      <div class="ew-admin-shell">
+        {notice?.enabled && (
+          <header class="ew-admin-notice" data-level={notice.level}>
+            <p class="ew-admin-notice__text" role={ROLES[notice.level]}>
+              <span class="ew-admin-notice__label"><span class="ew-admin-notice__glyph" aria-hidden="true"></span>{copy.levels[notice.level]}</span>
+              {' '}{notice.message}{' '}
+              {link && <a class="ew-admin-notice__link" href={link.href}>{link.label}</a>}
+            </p>
+          </header>
+        )}
+        <div class="ew-admin-root" id="nc-root"></div>
+        {footerLinks.length > 0 && (
+          <footer class="ew-admin-footer">
+            <nav aria-label={copy.links}>
+              <ul class="ew-admin-footer__list">
+                {footerLinks.map((item) => (
+                  <li><a class="ew-admin-footer__link" href={item.href}>{item.label}</a></li>
+                ))}
+              </ul>
+            </nav>
+          </footer>
+        )}
+      </div>
+    )}
     {config && <script is:inline set:html="window.CMS_MANUAL_INIT = true;"></script>}
     <script src={src} is:inline></script>
     {config && <script is:inline set:html={init}></script>}
