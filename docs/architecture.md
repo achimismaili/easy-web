@@ -9,9 +9,9 @@ Diagrams are Mermaid and render inline on GitHub.
 
 ## Package graph
 
-One base package, four add-ons, one reserved name, and five deprecated
-compatibility packages (ADR 0018). A site installs `core` and gets a working
-site; everything else is opt-in.
+One base package, four add-ons, a create-only CLI, one reserved name, and five
+deprecated compatibility packages (ADR 0018). A site installs `core` and gets a
+working site; everything else is opt-in.
 
 ```mermaid
 graph TD
@@ -24,6 +24,10 @@ graph TD
     swa["swa<br/><i>SWA 404 config</i>"]
     auth["auth<br/><i>MSAL, Graph</i>"]
     brand["brand<br/><i>favicon CLI</i>"]
+  end
+
+  subgraph tooling["tooling, versioned on its own"]
+    cli["cli<br/><i>create-only generator,<br/>Node 24 or later</i>"]
   end
 
   subgraph shims["deprecated re-export shims, removed in 2.0"]
@@ -39,6 +43,10 @@ graph TD
   end
 
   cms --> core
+  auth --> core
+  cli --> core
+  cli --> cms
+  cli --> auth
   theme -.-> core
   i18n -.-> core
   blocks -.-> core
@@ -47,19 +55,23 @@ graph TD
 
   classDef prim fill:#7b2d8b,color:#fff,stroke:#4a1a54
   classDef ship fill:#2d4a8b,color:#fff,stroke:#1a2d54
+  classDef tool fill:#2d6a6a,color:#fff,stroke:#1a4040
   classDef shim fill:#8b5a2d,color:#fff,stroke:#54341a,stroke-dasharray:4 3
   classDef stub fill:#555,color:#fff,stroke:#333,stroke-dasharray:4 3
   class core prim
   class cms,swa,auth,brand ship
+  class cli tool
   class theme,i18n,blocks,seo,md shim
   class create stub
 ```
 
 `cms-adapters` depends on `core` for the content contracts its definitions are
-checked against. `swa`, `auth` and `brand` stand alone. Each shim is a regular
-dependency on `core` that re-exports one subpath with `@deprecated` markers, so
-existing imports keep working through 1.x. 2.0 removes the shims once every site
-has migrated.
+checked against, and `auth` depends on it for the recipe protocol. `swa` and
+`brand` stand alone. The CLI composes the create recipes of `core`, `auth` and
+`cms-adapters`; it runs only on the machine that generates a site and never
+ships inside one. Each shim is a regular dependency on `core` that re-exports one
+subpath with `@deprecated` markers, so existing imports keep working through 1.x.
+2.0 removes the shims once every site has migrated.
 
 Everything else each package needs is supplied by the consuming instance as a
 peer dependency:
@@ -69,7 +81,7 @@ peer dependency:
 | `core`, `swa`, `cms-adapters`, `seo`, `markdown` | `astro` |
 | `content-blocks` | `astro`, `zod` |
 | `i18n` | `astro`, `@inlang/paraglide-js` |
-| `auth` | `react`, `react-dom` |
+| `auth` | `astro`, `react`, `react-dom` |
 | `theme-core`, `brand` | none |
 
 **Why `core` is a dependency rather than a peer.** Under Changesets `fixed`
@@ -103,9 +115,10 @@ flowchart LR
   class pilot,cust,future site
 ```
 
-All 11 packages share one version (`fixed` grouping), so "which versions work
-together?" has a single answer. Pilot-first is a policy, not a mechanism:
-`dev.ismaili.de` takes a new version before any customer site does.
+All 11 packages in the fixed group share one version (`fixed` grouping), so
+"which versions work together?" has a single answer. The CLI is versioned on its
+own and is never installed alongside them in a site. Pilot-first is a policy, not
+a mechanism: `dev.ismaili.de` takes a new version before any customer site does.
 
 ## Release flow
 

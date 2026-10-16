@@ -1,0 +1,112 @@
+---
+title: Technology Map
+description: Which technologies each easy-web package and app is built on, which Node.js and Astro versions are recommended or supported, and which validation lane checks each one.
+---
+
+easy-web produces static sites. This page ties every technology in the repository to the package or app that uses it, the capability it provides, the versions it is expected to run on, and the validation lane that checks it. Use it to answer three questions: what a new site should start on, what keeps working for a site that has not upgraded, and what exists only inside this repository.
+
+:::tip[Tables on narrow screens]
+Swipe or scroll each table horizontally to reveal the remaining columns.
+:::
+
+## Version tiers
+
+| Tier | Node.js | pnpm | Astro | Applies to |
+| :--- | :--- | :--- | :--- | :--- |
+| Recommended baseline | 24 | 10 | 7 | New sites, and everything in this repository. The documentation, the examples and the workspace are written and run against it. |
+| Supported consumer floor | 22 | not prescribed | 6 | Existing sites that have not upgraded. Supported for the packages that the compatibility lane builds on this pairing (see [Validation lanes](#validation-lanes)). |
+| Repository-only tooling | 24 | 10 | not applicable | What builds, tests and releases this repository. Never installed into a site. |
+
+A tier names what we recommend. A lane names what we have actually run. If the Compatibility lane is not listed in a package's row below, that package's Node.js 22 and Astro 6 support is declared by a peer range, not proven by a build.
+
+The peer range is wider than the tested floor. Every package that depends on Astro declares `astro >=6.0.0 <8.0.0`. Astro 7 itself runs on Node.js 22.12 or later, so Node.js 22 with Astro 7 is also expected to work, but the lanes test the two pairings named in [Validation lanes](#validation-lanes), not every combination.
+
+`@easy-web/cli` is the one exception to the floor. It requires Node.js 24 or later (`engines.node` is `>=24`) because it only ever runs on the machine that generates a site. It is never a dependency of a site.
+
+:::note[Node.js is a build-time requirement]
+easy-web produces static output. Node.js runs while you develop (`astro dev`) and build (`astro build`). The result in `dist/` is plain HTML, CSS and JavaScript, so a static host such as Azure Static Web Apps or GitHub Pages serves it without a Node.js process. The Node.js version therefore decides which toolchain builds your site, never what your visitors need.
+
+Code that runs in Node.js at build time: the `easyWebSeo()` and `@easy-web/swa` integrations, the markdown plugin, the content definitions in `@easy-web/cms-adapters`, `@easy-web/brand` and `@easy-web/cli`. Code that runs in the browser: the small scripts inside components (menu, theme toggle, galleries) and the React island of `@easy-web/auth`.
+:::
+
+## Base
+
+One install gives a working site.
+
+| Package | Built on | Provides | Runs on | Validated by |
+| :--- | :--- | :--- | :--- | :--- |
+| [`@easy-web/core`](../../packages/core/) | Astro components, TypeScript, CSS custom properties, remark | Design tokens and theme helpers, i18n, the SEO integration, the markdown plugin, the page components, the content contracts and the recipe protocol | Build: Node.js 24 recommended, 22 floor, with Astro 6 or 7. Browser: small component scripts | Workspace, Conformance, Compatibility |
+
+## Add-ons
+
+Opt in to what the site needs.
+
+| Package | Built on | Provides | Runs on | Validated by |
+| :--- | :--- | :--- | :--- | :--- |
+| [`@easy-web/cms-adapters`](../../packages/cms-adapters/) | Decap CMS, TypeScript, Astro content collections, optional sharp | Typed content definitions that generate both the Decap form and the Astro schema, the admin page and CMS preview assets | Build: as core, and it depends on core. Browser: Decap CMS in the admin page | Workspace, Conformance, Compatibility |
+| `@easy-web/swa` | Astro integration, Azure Static Web Apps | A shared 404 slice merged into `staticwebapp.config.json` without overwriting the rest | Build only, with Astro 6 or 7 | Workspace |
+| [`@easy-web/auth`](../../packages/auth/) | React 18 or later, MSAL.js, Microsoft Graph client, Astro islands | Sign-in provider and hooks, protected content, SharePoint components, the create recipe | Browser: one React island per page. Build: as core, and it depends on core | Workspace |
+| `@easy-web/brand` | sharp, png-to-ico, a Node.js command line | Favicon and icon generation through `easy-web-brand` | Node.js at build or development time, with no Astro peer | Workspace |
+
+The compatibility lane packs and builds `core`, `cms-adapters` and the five compatibility packages. `swa`, `auth` and `brand` are checked by their own unit tests in the workspace lane, so their Node.js 22 and Astro 6 support is declared by peer ranges rather than proven by a build. Keep the [single auth island](../#single-auth-island-important) rule in mind when you adopt `auth`.
+
+## Tooling
+
+| Package | Built on | Provides | Runs on | Validated by |
+| :--- | :--- | :--- | :--- | :--- |
+| `@easy-web/cli` | Node.js 24 or later, TypeScript, tsup, Git. pnpm only with `--install` | A config-driven, create-only site generator: `easy-web create --config`. It composes recipes from core, auth and cms-adapters | Node.js 24 or later on the machine that runs it. Never part of a site | Workspace |
+| [`@easy-web/create`](../../packages/create-easy-web/) | none: a reserved name with no source | Nothing yet. The name is reserved for a future `pnpm create` entry point. Do not depend on it | not applicable | none, because it ships no code |
+
+`@easy-web/cli` is versioned on its own. Every other `@easy-web/*` package shares one fixed version. See [Create a New Site](../../getting-started/create-new-site/) for the command.
+
+## Compatibility packages
+
+Deprecated, removed in 2.0. Each one depends on core and only re-exports a subpath of it, so existing imports keep working through 1.x. See [Migrating to core](../../guides/migrating-to-core/).
+
+| Package | Re-exports | Peer dependencies |
+| :--- | :--- | :--- |
+| `@easy-web/theme-core` | `@easy-web/core/theme` and the token stylesheets | none |
+| `@easy-web/i18n` | `@easy-web/core/i18n` | `astro`, `@inlang/paraglide-js` |
+| `@easy-web/content-blocks` | `@easy-web/core/components/*` and `schemas/*` | `astro`, `zod` |
+| `@easy-web/seo` | `@easy-web/core/seo` and `SeoHead` | `astro` |
+| `@easy-web/markdown` | `@easy-web/core/markdown` | `astro` |
+
+Validated by: Workspace (each shim has parity tests against core), Compatibility. The `compat-fixture` app builds every legacy import path the live sites use.
+
+## Docs, showcase and fixtures
+
+Apps in this repository. None of them is published.
+
+| App | Built on | Purpose | Validated by |
+| :--- | :--- | :--- | :--- |
+| `apps/docs` | Astro 7, Starlight with its Pagefind search, MDX, `@easy-web/core` for live previews | This documentation site | Workspace: it is built by `pnpm build` |
+| `apps/showcase` | Astro 7, `@easy-web/core` from the workspace, sharp | The component gallery, theme gallery and guide, in English and German | Workspace: `astro build`, then Vitest assertions over the built `dist/` |
+| `apps/contract-fixture` | Astro 7, core, cms-adapters | A test site proving the per-site conformance gate fails on broken contracts | Conformance |
+| `apps/compat-fixture` | Astro 7, the compatibility packages, cms-adapters | A test site proving the legacy import paths still build | Workspace; copied into the packed consumer of the Compatibility lane |
+
+## Repository-only tooling
+
+These never reach a site.
+
+| Tool | Role | Runs in |
+| :--- | :--- | :--- |
+| pnpm 10 workspaces | Install and link the monorepo | Every lane |
+| Turborepo | Orders and caches `build`, `test`, `typecheck` and `lint` | Workspace |
+| TypeScript | Type-checks and builds the packages | Workspace |
+| Vitest | Unit, render and build-output tests | Workspace |
+| ESLint with the TypeScript and Astro plugins | Lint | Workspace |
+| Prettier | Formatting | Local only, not part of a lane |
+| tsup | Bundles `@easy-web/brand` and `@easy-web/cli` | Workspace |
+| Changesets | Versions and changelogs. One fixed version for every `@easy-web/*` package except the CLI | The release workflow, not a validation lane |
+| GitHub Actions | Runs the lanes, the release (npm trusted publishing) and the GitHub Pages deploy | Not applicable |
+| Volta | Pins Node.js for contributors through the root `package.json` | Local only |
+
+## Validation lanes
+
+| Lane | Where it runs | What it checks |
+| :--- | :--- | :--- |
+| Workspace | [`ci.yml`](https://github.com/achimismaili/easy-web/blob/main/.github/workflows/ci.yml), job `workspace`: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` | Every package lints, type-checks, builds and passes its Vitest suite against the workspace on the recommended baseline, Node.js 24 with Astro 7. The docs and showcase builds and the showcase `dist/` assertions are part of it |
+| Conformance | The same job: `pnpm --filter contract-fixture test:conformance` | The per-site gate accepts a conforming site and fails a broken one |
+| Compatibility | `ci.yml`, job `packed-consumer`, driven by [`scripts/packed-consumer-compat.mjs`](https://github.com/achimismaili/easy-web/blob/main/scripts/packed-consumer-compat.mjs) | Packs `core`, `cms-adapters` and the five compatibility packages, installs the tarballs into an isolated consumer, and builds a static site on Node.js 22 with Astro 6 and on Node.js 24 with Astro 7. It also asserts that `@easy-web/cli` is not installed |
+
+The exact Node.js and Astro versions of each pairing are pinned in `ci.yml`. The sources of truth are the root `package.json` (`packageManager` and the Volta pin), the `peerDependencies` and `engines` of each package, and that workflow. If this page disagrees with them, they win; please fix the page.

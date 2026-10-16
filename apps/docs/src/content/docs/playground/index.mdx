@@ -1,11 +1,14 @@
 ---
 title: Component Playground
-description: Visual examples of easy-web UI components
+description: Live previews of easy-web UI components, rendered by @easy-web/core
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import CorePreview from '../../../components/CorePreview.astro';
+import EwCard from '@easy-web/core/components/Card.astro';
+import EwCardGrid from '@easy-web/core/components/CardGrid.astro';
 
-Browse the easy-web UI component examples below. Each example shows the component's visual output alongside the source code.
+Browse the easy-web UI component examples below. Each live preview is rendered by the real `@easy-web/core` component, next to the code that produces it. The previews are pictures of the components: they are not interactive and they do not take part in this page's navigation. For working behaviour such as menus, galleries and the theme toggle, use the [component gallery](/easy-web/components/).
 
 ## Available Components
 
@@ -35,20 +38,14 @@ The `Hero` component renders a full-width introductory section.
 import Hero from '@easy-web/core/components/Hero';
 ---
 <Hero
-  title="Welcome to My Site"
-  subtitle="Built on the easy-web platform"
-  ctaLabel="Get Started"
-  ctaHref="/docs"
+  title="Build multilingual sites on one set of components"
+  subtitle="Design tokens, bilingual routing and accessible Astro components from @easy-web/core."
+  ctaLabel="Read the installation guide"
+  ctaHref="/easy-web/docs/getting-started/installation/"
 />
 ```
 
-### Visual Preview
-
-<div style="background: var(--sl-color-bg-nav); border: 1px solid var(--sl-color-gray-5); border-radius: 8px; padding: 2rem; margin: 1rem 0; text-align: center;">
-  <h2 style="margin: 0 0 0.5rem; font-size: 2rem;">Welcome to My Site</h2>
-  <p style="margin: 0 0 1.5rem; color: var(--sl-color-gray-2);">Built on the easy-web platform</p>
-  <a href="#" style="display: inline-block; background: var(--sl-color-accent); color: white; padding: 0.5rem 1.5rem; border-radius: 4px; text-decoration: none; font-weight: 600;">Get Started</a>
-</div>
+The Hero owns a page-level `<h1>`, so this documentation page shows its source rather than embedding a second document heading. The [component gallery](/easy-web/components/#hero) renders the live component on its own page surface.
 
 ## ThemeToggle Component
 
@@ -71,15 +68,19 @@ The toggle switches the `data-theme` attribute on `<html>` between `light` and `
 ```css
 /* tokens.css applies tokens like this: */
 [data-theme="dark"] {
-  --ew-color-bg: #1a1a2e;
-  --ew-color-surface: #16213e;
+  --ew-surface: #111827;
+  --ew-on-surface: #f9fafb;
   /* ... */
 }
 ```
 
+:::note[Not rendered on this page]
+This site uses Starlight's own theme switcher, which owns the `data-theme` attribute on `<html>`, so a working `ThemeToggle` is left out here. Both switchers use the same attribute: when you change the theme of this site, every preview on the page follows it. See the toggle itself in the [component gallery](/easy-web/components/#theme-toggle).
+:::
+
 ## CardGrid Component
 
-The `CardGrid` component renders a responsive grid of cards.
+The `CardGrid` component renders a responsive grid of cards. Each `Card` takes one `item`: a title, an optional description, an optional image with its alt text, and an optional `href` that turns the card into a link.
 
 ### Usage
 
@@ -89,24 +90,21 @@ import CardGrid from '@easy-web/core/components/CardGrid';
 import Card from '@easy-web/core/components/Card';
 ---
 <CardGrid>
-  <Card item={{ title: 'Feature One', description: 'Description of this feature', href: '/docs/feature-one' }} />
-  <Card item={{ title: 'Feature Two', description: 'Another great feature', href: '/docs/feature-two' }} />
+  <Card item={{ title: 'Design tokens', description: 'One stylesheet of --ew-* custom properties themes every component, in light and dark.' }} />
+  <Card item={{ title: 'Content contracts', description: 'Cards, galleries and structured data read one shared shape.' }} />
+  <Card item={{ title: 'Static output', description: 'Components render to HTML at build time, so a built site is plain static files.' }} />
 </CardGrid>
 ```
 
-### Visual Preview
+### Live preview
 
-<CardGrid>
-  <Card title="Feature One" icon="star">
-    Description of this feature — click to learn more.
-  </Card>
-  <Card title="Feature Two" icon="rocket">
-    Another great feature with detailed documentation.
-  </Card>
-  <Card title="Feature Three" icon="puzzle">
-    Integrates seamlessly with your Astro project.
-  </Card>
-</CardGrid>
+<CorePreview label="Live preview: CardGrid with three Cards">
+  <EwCardGrid>
+    <EwCard item={{ title: 'Design tokens', description: 'One stylesheet of --ew-* custom properties themes every component, in light and dark.' }} />
+    <EwCard item={{ title: 'Content contracts', description: 'Cards, galleries and structured data read one shared shape.' }} />
+    <EwCard item={{ title: 'Static output', description: 'Components render to HTML at build time, so a built site is plain static files.' }} />
+  </EwCardGrid>
+</CorePreview>
 
 ## Section Component
 
@@ -118,8 +116,8 @@ The `Section` component wraps content in a semantically correct `<section>` elem
 ---
 import Section from '@easy-web/core/components/Section';
 ---
-<Section title="About Us" id="about">
-  <p>Content goes here...</p>
+<Section title="Why easy-web" id="why">
+  <p>One change to a shared component reaches every site that installs it.</p>
 </Section>
 ```
 

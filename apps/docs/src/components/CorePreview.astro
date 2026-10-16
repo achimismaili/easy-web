@@ -1,0 +1,61 @@
+---
+/**
+ * CorePreview - frame for a live `@easy-web/core` specimen inside a Starlight page.
+ *
+ * Starlight keeps ownership of the page: navigation, search, table of contents,
+ * theme switcher and mobile menu are untouched. This component only draws a
+ * labelled box around a specimen and isolates it from Starlight's Markdown
+ * styles, so a core component renders here exactly as it does on a site.
+ *
+ * - `not-content` switches off Starlight's prose styles inside the frame.
+ * - The stage is `inert`. A specimen is a picture of the component, so it must
+ *   not add a second <h1>, a landmark or a link that goes nowhere to the page.
+ * - `data-pagefind-ignore` keeps sample copy out of the search index.
+ * - The token stylesheet is imported here rather than through `customCss`, so
+ *   only pages that render a preview load it.
+ * - Colours, spacing, type and radius come from `--ew-*` tokens (see DESIGN.md).
+ */
+import '@easy-web/core/styles/tokens.css';
+
+interface Props {
+  /** Caption of the frame and accessible name of the figure, e.g. "Live preview: Hero". */
+  label: string;
+  /** Drop the stage padding so a full-width band (Hero, Section) fills the frame. */
+  flush?: boolean;
+}
+
+const { label, flush = false } = Astro.props;
+---
+
+<figure class="not-content core-preview" data-pagefind-ignore>
+  <figcaption class="core-preview__caption">{label}</figcaption>
+  <div class:list={['core-preview__stage', { 'core-preview__stage--flush': flush }]} inert>
+    <slot />
+  </div>
+</figure>
+
+<style>
+  .core-preview {
+    margin: 0;
+    background: var(--ew-surface);
+    color: var(--ew-on-surface);
+    font-family: var(--ew-font-sans);
+    border: 1px solid var(--ew-border);
+    border-radius: var(--ew-radius-lg);
+    overflow: hidden;
+  }
+  .core-preview__caption {
+    padding: var(--ew-space-3) var(--ew-space-4);
+    background: var(--ew-surface-muted);
+    color: var(--ew-on-surface);
+    font-size: var(--ew-text-sm);
+    line-height: var(--ew-leading-tight);
+  }
+  .core-preview__stage {
+    padding: var(--ew-space-5) var(--ew-space-4);
+    border-top: 1px solid var(--ew-border);
+  }
+  .core-preview__stage--flush {
+    padding: 0;
+  }
+</style>

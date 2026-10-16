@@ -7,7 +7,7 @@ sidebar:
 
 `@easy-web/core` is the base of the `@easy-web/*` family. One install gives a working site: design tokens, theme helpers, i18n routing and formatting, the SEO integration, the markdown image plugin, every page component, and the content contracts those components accept.
 
-Everything else is an add-on: [`@easy-web/cms-adapters`](../cms-adapters/) for Decap CMS and typed content definitions, `@easy-web/swa` for Azure Static Web Apps, [`@easy-web/auth`](../auth/) for MSAL sign-in, and `@easy-web/brand` for favicons. `@easy-web/create` is a reserved name for the future scaffold CLI.
+Everything else is an add-on: [`@easy-web/cms-adapters`](../cms-adapters/) for Decap CMS and typed content definitions, `@easy-web/swa` for Azure Static Web Apps, [`@easy-web/auth`](../auth/) for MSAL sign-in, and `@easy-web/brand` for favicons. `@easy-web/cli` generates a new site from a config file, and `@easy-web/create` is a reserved name that ships no code.
 
 :::note[Published]
 `@easy-web/core` is published on npm. Install it with `pnpm add @easy-web/core`. The five compatibility packages (`theme-core`, `i18n`, `content-blocks`, `seo`, `markdown`) re-export from it and stay through 1.x. See [Migrating to core](../../guides/migrating-to-core/).
@@ -19,7 +19,7 @@ Everything else is an add-on: [`@easy-web/cms-adapters`](../cms-adapters/) for D
 pnpm add @easy-web/core
 ```
 
-`astro` (6 or 7) is the only peer dependency.
+`astro` (6 or 7) is the only peer dependency. Start new sites on Node.js 24 with Astro 7; the packed consumer lane also builds core on Node.js 22 with Astro 6. See the [Technology Map](../../architecture/technology-map/).
 
 ## Subpath exports
 
@@ -45,6 +45,49 @@ import Header from '@easy-web/core/components/Header';
 import type { Event, Linkable } from '@easy-web/core/contracts';
 ---
 ```
+
+## Public build information
+
+`easyWebSeo()` can opt a site into two prerendered diagnostic routes generated from one closed manifest:
+
+- `/version` is a human-readable page built from core components and tokens.
+- `/version.json` is the same information as deterministic JSON for monitoring and support tooling, but it is disabled by default.
+
+```ts
+import easyWebSeo from '@easy-web/core/seo';
+
+easyWebSeo({
+  buildInfo: {
+    site: 'Example Site',
+    packages: ['cms-adapters', 'swa'],
+    releaseId: 'public-release-label',
+    json: true,
+  },
+});
+```
+
+The package reads the exact installed core version and verifies every named add-on is installed at that same fixed-family version. `core` is always included. The only add-ons accepted in this public contract are `auth`, `cms-adapters` and `swa`; individual UI components do not have separate versions.
+
+Both routes are public. They are omitted from the sitemap, and the HTML route carries `noindex`. The JSON route emits `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`, but only hosts with path-specific response-header control can preserve that contract. Therefore JSON generation is an explicit `json: true` opt-in; leave it disabled on GitHub Pages and other plain static-file hosts. `robots.txt` does not block these paths because a crawler must fetch a route before it can observe `noindex`. This is search-index control, not authentication.
+
+The manifest deliberately excludes Node.js, Astro, React, dependency lists, source-control details, CI links, cloud identifiers, environment variables and arbitrary metadata. Static hosts that do not preserve prerendered response headers need an equivalent host-level `X-Robots-Tag` rule for `/version.json`.
+
+### Should a public site expose its version?
+
+Use a public version surface only when it solves an operational need such as confirming a rollout, correlating a support report, or detecting a stale static client. The recommended pattern is a narrow product or package-family release identity, not a software inventory.
+
+Common implementations include:
+
+- a small `/version` or `/version.json` response with an application release identifier;
+- a response header containing the same opaque release label;
+- an observability release tag kept in monitoring tooling;
+- a minimal `/health` response for an application that has a runtime service. A purely static site usually does not need health or readiness diagnostics.
+
+Mature projects use these identifiers for deployment traceability while keeping dependency inventories and infrastructure details in SBOMs, release attestations or restricted operator systems. For example, [Safe publishes a static version manifest](https://github.com/safe-global/safe-wallet-monorepo/pull/7918), while [Mako uses a build identifier to detect stale clients](https://github.com/mako-ai/mako/pull/491).
+
+OWASP treats detailed framework and server versions as useful fingerprinting data. Its [Web Security Testing Guide](https://owasp.org/www-project-web-security-testing-guide/stable/4-Web_Application_Security_Testing/01-Information_Gathering/02-Fingerprint_Web_Server) recommends limiting that detail while keeping systems patched. Hiding versions is not a substitute for updates, and `noindex` is not privacy or access control.
+
+Therefore easy-web exposes one exact fixed-family version and intentionally enabled easy-web capabilities only. It does not publish framework versions, the dependency tree, per-component versions, infrastructure identifiers or source-control metadata.
 
 ## Content contracts
 

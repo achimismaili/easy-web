@@ -24,7 +24,7 @@ export default defineConfig({
         {
           label: 'Getting Started',
           items: [
-            { label: 'Introduction', link: '/easy-web/' },
+            { label: 'Introduction', link: '/' },
             { label: 'Installation', slug: 'getting-started/installation' },
             { label: 'Create a New Site', slug: 'getting-started/create-new-site' },
           ],
@@ -42,7 +42,10 @@ export default defineConfig({
         },
         {
           label: 'Architecture',
-          items: [{ autogenerate: { directory: 'architecture' } }],
+          items: [
+            { slug: 'architecture' },
+            { slug: 'architecture/technology-map' },
+          ],
         },
         {
           label: 'Playground',

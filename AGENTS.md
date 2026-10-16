@@ -78,6 +78,14 @@ whole family — read it from the npm badge in `README.md`, or from any
 `packages/<name>/package.json`. A hand-maintained version column in this file drifted
 for several releases before it was removed.
 
+Core SEO's opt-in public build-information implementation lives in
+`packages/core/src/seo/build-info.ts` (artifact resolution),
+`build-info-manifest.ts` (closed contract/serializer), and
+`routes/version.astro` plus `routes/version-json.ts` (prerendered outputs).
+The contract fixture's `scripts/assert-build-info.mjs` checks the real HTML/JSON
+artifacts and crawl exclusions. Never add environment or infrastructure metadata
+to this public contract; crawler directives are not authorization.
+
 ## Pilot-first workflow
 
 Every change to a real package follows the same path:

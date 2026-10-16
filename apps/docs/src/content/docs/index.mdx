@@ -6,7 +6,7 @@ hero:
   tagline: A shared library for building ismaili.de web instances with Astro
   actions:
     - text: Get Started
-      link: /easy-web/getting-started/installation/
+      link: /easy-web/docs/getting-started/installation/
       icon: right-arrow
     - text: View on GitHub
       link: https://github.com/achimismaili/easy-web
@@ -25,9 +25,12 @@ easy-web is one base package plus optional add-ons:
 | `@easy-web/swa` | Add-on | Azure Static Web Apps 404 integration |
 | `@easy-web/auth` | Add-on | MSAL.js authentication, Microsoft Graph integration |
 | `@easy-web/brand` | Add-on | Favicon and icon generation |
-| `@easy-web/create` | Reserved | Future scaffold CLI |
+| `@easy-web/cli` | Tooling | Create-only site generator: `easy-web create --config`. Needs Node.js 24 or later |
+| `@easy-web/create` | Reserved | A reserved name that ships no code. Use `@easy-web/cli` |
 
 `@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo` and `@easy-web/markdown` are deprecated compatibility packages that re-export core. See [Migrating to core](./guides/migrating-to-core/).
+
+New sites start on Node.js 24, pnpm 10 and Astro 7. The packed consumer lane also proves Node.js 22 with Astro 6 for core, CMS adapters and the compatibility packages. The [Technology Map](./architecture/technology-map/) ties each package to the technologies it uses and its exact validation boundary.
 
 ## Why easy-web?
 

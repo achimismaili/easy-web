@@ -5,9 +5,17 @@ description: Install easy-web packages in your Astro project
 
 ## Prerequisites
 
-- **Node.js 22** or later (pin with [Volta](https://volta.sh): `volta install node@22`)
-- **pnpm 9** or later
-- An **Astro 6 or 7** project
+New sites start on the recommended baseline:
+
+- **Node.js 24**, pinned per project with [Volta](https://volta.sh): `volta pin node@24`
+- **pnpm 10**
+- An **Astro 7** project
+
+Existing sites using core, CMS adapters or the compatibility packages keep working on the tested floor: **Node.js 22** with **Astro 6**. Their Astro-facing manifests declare `astro >=6.0.0 <8.0.0`, and the compatibility lane builds those packed artifacts on Node.js 22 with Astro 6. Other add-ons retain their declared peer ranges but are not covered by that consumer build. The [Technology Map](../../architecture/technology-map/) shows each package's validation boundary.
+
+:::note
+Node.js only matters at build time. easy-web sites are static output, so Node.js builds your site but is not needed to serve it.
+:::
 
 ## Install the base package
 
@@ -67,3 +75,4 @@ pnpm add -D @easy-web/brand
 - [Browse the core API reference →](../../packages/core/)
 - [Write your first content type →](../../guides/content-types/)
 - [Architecture overview →](../../architecture/)
+- [Technology map →](../../architecture/technology-map/)

@@ -1,26 +1,46 @@
 ---
 title: Create a New Site
-description: Scaffold a new site instance with the easy-web CLI
+description: Generate a new site with the easy-web CLI, or set one up by hand
 ---
 
-## Using the Scaffold CLI
+## Generate with the CLI
 
-The `@easy-web/create` CLI scaffolds a new Astro site pre-configured with all easy-web packages:
+`@easy-web/cli` is a config-driven, create-only generator. It requires **Node.js 24 or later** and runs on the machine that creates the site. Nothing from it ships inside the site you generate, and it never deploys anything or touches a cloud resource.
 
-```bash
-pnpm create @easy-web my-site
-cd my-site
-pnpm install
-pnpm dev
+Describe the site in a JSON file:
+
+```json
+{
+  "target": "./new-site",
+  "recipes": {
+    "shell": { "siteName": "Example Site", "defaultLocale": "en", "noIndex": false },
+    "auth": {}
+  }
+}
 ```
 
-:::note[In development]
-The scaffold CLI is in active development. Check the [GitHub repo](https://github.com/achimismaili/easy-web) for the latest status.
+Then run the command:
+
+```bash
+easy-web create --config ./create.json
+```
+
+Install the package to get the `easy-web` command, or run it once with `pnpm dlx @easy-web/cli create --config ./create.json`.
+
+What to expect:
+
+- **Recipes.** The `shell` recipe is always selected. Leave out `auth` to skip sign-in. Selecting the `cms` recipe currently fails before generation, because the shell and the CMS recipe both contribute `astro.config.mjs`.
+- **Offline by default.** Generation runs no package manager and makes no network request. It writes a placeholder `pnpm-lock.yaml` and makes one initial Git commit. Run `pnpm install` before you type-check or build, or pass `--install` to let the CLI run it through your own registry configuration.
+- **A safe target.** The target must be a new or empty directory whose parent exists. Git needs an identity configured already; the CLI never changes your Git configuration.
+- **Exit codes.** `0` is success, `3` is an invalid config, target or composition, and `4` is a generation, Git or staging failure. `--json` prints versioned diagnostics.
+
+:::note[`@easy-web/create` is reserved]
+The package name `@easy-web/create` is reserved for a future `pnpm create` entry point and ships no code, so `pnpm create @easy-web` does not generate a site today. Use `@easy-web/cli`. See the [`@easy-web/create` page](../../packages/create-easy-web/).
 :::
 
 ## Manual Setup
 
-Bootstrap a new site instance manually:
+Bootstrap a new site instance manually. Start from the recommended baseline: Node.js 24, pnpm 10 and Astro 7 (see [Installation](../installation/)).
 
 ### 1. Create an Astro project
 
