@@ -13,6 +13,7 @@
     "test": "turbo run test -- --passWithNoTests",
     "test:browser": "playwright test",
     "build": "turbo run build",
+    "compat:packed": "node scripts/packed-consumer-compat.mjs",
     "docs:build": "turbo run docs:build",
     "publish-packages": "turbo run publish-packages"
   },

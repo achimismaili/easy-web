@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  ci:
-    name: CI
+  workspace:
+    name: Recommended - Node 24 / Astro 7 workspace
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 24.21.0
           cache: pnpm
 
       - name: Install dependencies
@@ -46,5 +46,56 @@ jobs:
           pnpm exec playwright install --with-deps chromium
           pnpm test:browser
 
+      - name: Pack compatibility artifacts
+        run: node scripts/packed-consumer-compat.mjs --pack-only compat-tarballs
+
+      - name: Upload compatibility artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: easy-web-compat-tarballs
+          path: compat-tarballs/*.tgz
+          if-no-files-found: error
+
       - name: Contract conformance
         run: pnpm --filter contract-fixture test:conformance
+
+      - name: Assert workspace remained unchanged
+        run: git diff --exit-code
+
+  packed-consumer:
+    name: Compatibility - Node ${{ matrix.node }} / Astro ${{ matrix.astro }}
+    needs: workspace
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - node: 22.22.0
+            minimum-node: 22.22.0
+            astro: 6.4.8
+          - node: 24.21.0
+            minimum-node: 24.0.0
+            astro: 7.3.5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10.34.4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Download compatibility artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: easy-web-compat-tarballs
+          path: compat-tarballs
+
+      - name: Test packed packages in an isolated consumer
+        run: node scripts/packed-consumer-compat.mjs --archives compat-tarballs --astro ${{ matrix.astro }} --node ${{ matrix.minimum-node }}
+
+      - name: Assert workspace remained unchanged
+        run: git diff --exit-code
