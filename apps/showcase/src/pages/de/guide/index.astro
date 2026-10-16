@@ -1,36 +1,40 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import Section from '@easy-web/core/components/Section.astro';
+import Prose from '@easy-web/core/components/Prose.astro';
 import Card from '@easy-web/core/components/Card.astro';
 import CardGrid from '@easy-web/core/components/CardGrid.astro';
+import { base, href } from '../../../lib/showcase';
+
+// Die Technologie-Übersicht liegt auf der Docs-Seite, die neben der Showcase ausgeliefert wird.
+const technologyMap = `${base}docs/architecture/technology-map/`;
 ---
 
-<Base 
-  title="Erste Schritte — easy-web" 
-  lang="de" 
+<Base
+  title="Erste Schritte — easy-web"
+  lang="de"
   description="Lerne, wie du dein erstes easy-web-Projekt in 5 Minuten einrichtest."
 >
   <article class="guide">
-    <header class="guide-header">
+    <Prose>
       <h1>Erste Schritte mit easy-web</h1>
       <p class="lead">Richte dein erstes easy-web-Projekt in 5 Minuten ein.</p>
-    </header>
 
-    <Section title="1. Voraussetzungen" id="voraussetzungen">
+      <h2 id="voraussetzungen">1. Voraussetzungen</h2>
       <p>Bevor du beginnst, stelle sicher, dass Folgendes auf deinem System installiert ist:</p>
       <ul>
-        <li>Node.js 18 oder höher</li>
-        <li>pnpm (empfohlener Paketmanager)</li>
-        <li>Ein bestehendes Astro-Projekt (oder erstelle ein neues)</li>
+        <li>Node.js 24 und pnpm 10 (empfohlen)</li>
+        <li>Ein Astro-7-Projekt (oder erstelle ein neues)</li>
+        <li>Bestehende Websites können bei Node.js 22 mit Astro 6 bleiben, das weiterhin unterstützt wird. Die <a href={technologyMap}>Technologie-Übersicht</a> (auf Englisch) zeigt, wofür jedes Paket geprüft wird.</li>
       </ul>
+      <p>Node.js baut deine Website nur. Das Ergebnis ist statisch, daher braucht niemand Node.js, um es auszuliefern.</p>
       <p>Überprüfe deine Installation mit diesen Befehlen im Terminal:</p>
       <pre><code>node --version
 pnpm --version</code></pre>
       <p>Falls du ganz neu starten möchtest, führe diesen Befehl aus:</p>
       <pre><code>pnpm create astro@latest my-site</code></pre>
-    </Section>
 
-    <Section title="2. Pakete installieren" id="installation">
+      <h2 id="installation">2. Pakete installieren</h2>
       <p>Installiere das Kernpaket von easy-web in deinem Projekt. Es bietet Design-Tokens, i18n-Helfer und UI-Komponenten.</p>
       <pre><code>pnpm add @easy-web/core</code></pre>
       <ul>
@@ -38,12 +42,10 @@ pnpm --version</code></pre>
         <li><strong>i18n</strong>: Bilinguales Routing und Übersetzungs-Utilities.</li>
         <li><strong>components</strong>: Barrierefreie, thematisierte Astro-Komponenten.</li>
       </ul>
-    </Section>
 
-    <Section title="3. Design Tokens hinzufügen" id="tokens">
+      <h2 id="tokens">3. Design Tokens hinzufügen</h2>
       <p>Importiere die globalen Design-Tokens in deinem Haupt-Layout und füge das <code>noFlashScript</code> hinzu, um ein Flackern des Dark-Modes beim Laden der Seite zu verhindern.</p>
-      <pre><code>
-// Tokens importieren
+      <pre><code>// Tokens importieren
 import '@easy-web/core/styles/tokens.css';
 import &#123; noFlashScript &#125; from '@easy-web/core/theme';
 
@@ -52,12 +54,10 @@ import &#123; noFlashScript &#125; from '@easy-web/core/theme';
     &lt;script is:inline set:html=&#123;noFlashScript&#125;&gt;&lt;/script&gt;
   &lt;/head&gt;
 &lt;/html&gt;</code></pre>
-    </Section>
 
-    <Section title="4. Komponenten nutzen" id="komponenten">
+      <h2 id="komponenten">4. Komponenten nutzen</h2>
       <p>Beginne damit, deine Seiten mit den bereitgestellten Inhaltsblöcken aufzubauen. Diese Komponenten nutzen automatisch deine Theme-Tokens.</p>
-      <pre><code>
-// Komponenten nutzen
+      <pre><code>// Komponenten nutzen
 import Hero from '@easy-web/core/components/Hero.astro';
 import ThemeToggle from '@easy-web/core/components/ThemeToggle.astro';
 
@@ -68,25 +68,31 @@ import ThemeToggle from '@easy-web/core/components/ThemeToggle.astro';
   ctaHref="/ueber-uns"
 /&gt;
 &lt;ThemeToggle /&gt;</code></pre>
-    </Section>
+    </Prose>
 
     <Section title="5. Nächste Schritte" id="naechste-schritte">
       <p>Jetzt, wo alles eingerichtet ist, kannst du das restliche Ökosystem erkunden, um noch schneller zu entwickeln.</p>
       <CardGrid>
-        <Card 
-          title="Komponentengalerie" 
-          description="Durchstöbere alle verfügbaren UI-Blöcke und deren Variationen." 
-          href={`${import.meta.env.BASE_URL}components/`} 
+        <Card
+          item={{
+            title: 'Komponentengalerie',
+            description: 'Durchstöbere alle verfügbaren UI-Blöcke und deren Variationen.',
+            href: href('de', 'components/'),
+          }}
         />
-        <Card 
-          title="Theme-Galerie" 
-          description="Sieh dir an, wie verschiedene Design-Systeme auf denselben Komponenten wirken." 
-          href={`${import.meta.env.BASE_URL}themes/`} 
+        <Card
+          item={{
+            title: 'Theme-Galerie',
+            description: 'Sieh dir an, wie verschiedene Design-Systeme auf denselben Komponenten wirken.',
+            href: `${base}themes/`,
+          }}
         />
-        <Card 
-          title="API-Dokumentation" 
-          description="Tauche tief in die Props und Interna jedes Pakets ein." 
-          href={`${import.meta.env.BASE_URL}docs/`} 
+        <Card
+          item={{
+            title: 'API-Dokumentation',
+            description: 'Tauche tief in die Props und Interna jedes Pakets ein.',
+            href: `${base}docs/`,
+          }}
         />
       </CardGrid>
     </Section>
@@ -94,14 +100,20 @@ import ThemeToggle from '@easy-web/core/components/ThemeToggle.astro';
 </Base>
 
 <style>
-.guide { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
-.guide-header { margin-bottom: 3rem; }
-.lead { font-size: 1.25rem; color: var(--ew-on-surface); }
-pre { background: var(--ew-surface-muted); padding: 1rem 1.5rem; border-radius: 0.375rem; overflow-x: auto; margin: 1rem 0; }
-code { font-family: var(--ew-font-mono); font-size: 0.875rem; color: var(--ew-on-surface); }
-ul { margin: 1rem 0; padding-left: 1.5rem; }
-li { margin-bottom: 0.5rem; color: var(--ew-on-surface); }
-p { color: var(--ew-on-surface); line-height: 1.6; }
-strong { color: var(--ew-primary); }
+  /* Hält die Karten der nächsten Schritte in derselben Spalte wie den Prose-Text darüber:
+     die 45rem breite Lesespalte plus der seitliche Abstand von Prose und Section. */
+  .guide {
+    max-width: calc(45rem + 2 * var(--ew-space-5));
+    margin: 0 auto;
+  }
+  .lead {
+    font-size: var(--ew-text-lg);
+  }
+  /* Der fixierte Header würde sonst eine über ihren Anker erreichte Überschrift verdecken. */
+  h2[id] {
+    scroll-margin-top: var(--ew-space-9);
+  }
+  strong {
+    color: var(--ew-primary);
+  }
 </style>
-

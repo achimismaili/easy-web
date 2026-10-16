@@ -5,65 +5,59 @@ import Section from '@easy-web/core/components/Section.astro';
 import CardGrid from '@easy-web/core/components/CardGrid.astro';
 import Card from '@easy-web/core/components/Card.astro';
 import CtaSection from '@easy-web/core/components/CtaSection.astro';
+import { base, href } from '../../lib/showcase';
+
+// Ein dekoratives Foto begleitet jede "Entdecken"-Karte. Der Kartentitel nennt das Ziel
+// und der Karten-Vertrag fällt nie auf den Titel zurück, daher bleibt der Alternativtext leer.
+const exploreImage = {
+  src: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80',
+  alt: '',
+};
 ---
 <Base title="easy-web — Schöne mehrsprachige Websites erstellen" lang="de">
   <Hero
     title="Schöne mehrsprachige Websites erstellen"
-    subtitle="easy-web ist ein Paket-Ökosystem für Astro. Design-Token, zweisprachige i18n und über 16 wiederverwendbare Komponenten."
+    subtitle="easy-web ist ein Paket-Ökosystem für Astro. Design-Token, zweisprachige i18n und über 30 wiederverwendbare Komponenten."
     ctaLabel="Jetzt starten"
-    ctaHref={`${import.meta.env.BASE_URL}guide/`}
+    ctaHref={href('de', 'guide/')}
   />
 
   <Section title="Was ist easy-web?">
     <CardGrid>
       <Card
-        title="Design-Token"
-        description="Konsistente Farben, Typografie und Abstände über CSS Custom Properties. Light/Dark Mode integriert."
+        item={{
+          title: 'Design-Token',
+          description: 'Konsistente Farben, Typografie und Abstände über CSS Custom Properties. Light/Dark Mode integriert.',
+        }}
       />
       <Card
-        title="Zweisprachige i18n"
-        description="EN/DE out of the box über Paraglide.js. Locale-aware Routing, Alternate Links und Formatters."
+        item={{
+          title: 'Zweisprachige i18n',
+          description: 'EN/DE out of the box über Paraglide.js. Locale-aware Routing, Alternate Links und Formatters.',
+        }}
       />
       <Card
-        title="16+ Komponenten"
-        description="Hero, Header, Footer, Card, Gallery und mehr — kombinierbare Astro-Komponenten."
+        item={{
+          title: '30+ Komponenten',
+          description: 'Hero, Header, Footer, Card, Gallery und mehr — kombinierbare Astro-Komponenten.',
+        }}
       />
     </CardGrid>
   </Section>
 
   <Section title="Entdecken">
     <CardGrid>
-      <Card
-        title="Themes"
-        href={`${import.meta.env.BASE_URL}themes/`}
-        image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
-        imageAlt="Abstract tech themes"
-      />
-      <Card
-        title="Komponenten"
-        href={`${import.meta.env.BASE_URL}components/`}
-        image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
-        imageAlt="Komponenten"
-      />
-      <Card
-        title="Guide"
-        href={`${import.meta.env.BASE_URL}guide/`}
-        image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
-        imageAlt="Guide"
-      />
-      <Card
-        title="Docs"
-        href={`${import.meta.env.BASE_URL}docs/`}
-        image="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80"
-        imageAlt="Docs"
-      />
+      <Card item={{ title: 'Themes', href: `${base}themes/`, image: exploreImage }} />
+      <Card item={{ title: 'Komponenten', href: href('de', 'components/'), image: exploreImage }} />
+      <Card item={{ title: 'Guide', href: href('de', 'guide/'), image: exploreImage }} />
+      <Card item={{ title: 'Docs', href: `${base}docs/`, image: exploreImage }} />
     </CardGrid>
   </Section>
 
   <CtaSection
     heading="Heute noch starten"
     buttonLabel="Beginne noch heute mit easy-web"
-    buttonHref={`${import.meta.env.BASE_URL}guide/`}
+    buttonHref={href('de', 'guide/')}
     variant="primary"
   />
 </Base>
