@@ -1,6 +1,7 @@
 import { field } from './fields.js';
 import { navigation, notFound } from './localized-field-sets.js';
 import { galleryVariants } from './gallery-field-sets.js';
+import { admin } from './admin-content.js';
 
 export type UiOptions = { readonly uiLocale?: 'de' | 'en' };
 
@@ -67,4 +68,4 @@ function siteSettings({ uiLocale = 'de' }: UiOptions = {}) {
     return [field.string('siteName', { label: uiLocale === 'en' ? 'Site name' : 'Seitenname' })] as const;
 }
 
-export const fieldSets = Object.freeze({ item, page, article, event, organization, person, product, navigation, siteSettings, notFound, galleryVariants });
+export const fieldSets = Object.freeze({ item, page, article, event, organization, person, product, navigation, siteSettings, notFound, galleryVariants, admin });

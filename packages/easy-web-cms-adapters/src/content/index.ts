@@ -1,5 +1,6 @@
 export { field } from './fields.js';
 export { fieldSets } from './field-sets.js';
+export { defaultAdminContent, isSafePublicHref, type AdminNoticeLevel, type AdminShellContent } from './admin-content.js';
 export { fieldsForTraits, type TraitFieldOptions } from './trait-field-sets.js';
 export { defineContentType, defineSingleton } from './define.js';
 export { toAstroSchema } from './astro-schema.js';
