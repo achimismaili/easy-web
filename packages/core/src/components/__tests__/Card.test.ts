@@ -56,6 +56,8 @@ describe('<Card item>', () => {
     expect(img).toContain('alt="A touring bicycle"');
     expect(img).toContain('class="ew-card__image"');
     expect(img).toContain('loading="lazy"');
+    expect(img).toContain('width="1600"');
+    expect(img).toContain('height="900"');
     expect(html).toContain('<h3 class="ew-card__title">Touring bicycle</h3>');
     expect(html).toContain('<p class="ew-card__description">Ready for long rides</p>');
   });
@@ -129,6 +131,8 @@ describe('<BlogPostCard item>', () => {
     expect(img).toContain(`sizes="${gridSizes}"`);
     expect(img).toContain('alt="Players at the oche"');
     expect(img).toContain('class="ew-blog-card__image"');
+    expect(img).toContain('width="1600"');
+    expect(img).toContain('height="900"');
     expect(html).toContain('<h3 class="ew-blog-card__title">Season opener</h3>');
     expect(html).toContain('<time class="ew-blog-card__date" datetime="2025-03-15T12:00:00.000Z">15.03.2025</time>');
     expect(html).toContain('<p class="ew-blog-card__description">The first match day of the season</p>');
