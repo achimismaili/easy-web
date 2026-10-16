@@ -1,4 +1,5 @@
 ---
 import AdminPage from '@easy-web/cms-adapters/src/components/AdminPage.astro';
+import { defaultAdminContent } from '@easy-web/cms-adapters';
 ---
-<AdminPage />
+<AdminPage admin={defaultAdminContent({ uiLocale: 'en' })} />

@@ -12,9 +12,9 @@ for (const width of [375, 768, 1280]) {
       const name = await fixture.getAttribute('data-card-case');
       const image = fixture.locator('img');
       await image.scrollIntoViewIfNeeded();
-      await expect.poll(() => image.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+      await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 
-      const geometry = await image.evaluate(img => {
+      const geometry = await image.evaluate((img: HTMLImageElement) => {
         const card = img.parentElement!;
         const bounds = img.getBoundingClientRect();
         return {
