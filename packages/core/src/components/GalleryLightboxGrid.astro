@@ -245,7 +245,7 @@ const ratioClass = `ew-lightbox-grid__img--ratio-${aspectRatio.replace('/', '-')
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: var(--ew-z-modal, 1300);
     padding: var(--ew-space-5);
   }
   .ew-lightbox[data-open='false'] {

@@ -1,0 +1,44 @@
+---
+import PageShell from '@easy-web/core/components/PageShell.astro';
+import Header from '@easy-web/core/components/Header.astro';
+import HeaderCentered from '@easy-web/core/components/HeaderCentered.astro';
+import HeaderHideOnScroll from '@easy-web/core/components/HeaderHideOnScroll.astro';
+import HeaderFlyout from '@easy-web/core/components/HeaderFlyout.astro';
+import GalleryLightboxGrid from '@easy-web/core/components/GalleryLightboxGrid.astro';
+import Card from '@easy-web/core/components/Card.astro';
+import '@easy-web/core/styles/tokens.css';
+import { base } from '../../../lib/showcase';
+
+export function getStaticPaths() {
+  return [
+    { params: { header: 'standard' }, props: { component: Header } },
+    { params: { header: 'centered' }, props: { component: HeaderCentered } },
+    { params: { header: 'hide-on-scroll' }, props: { component: HeaderHideOnScroll } },
+    { params: { header: 'flyout' }, props: { component: HeaderFlyout } },
+  ];
+}
+const { component: HeaderComponent } = Astro.props;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>PageShell keyboard fixture</title>
+  </head>
+  <body>
+    <PageShell lang="de">
+      <HeaderComponent slot="header" siteName="Example" navItems={[{ label: 'Galerie', href: '#gallery' }]} currentLang="de" pathname="/" locales={['de']} />
+      <h1>Galerie</h1>
+      <Card item={{ title: 'Bilder', href: '#gallery' }} headingLevel="h2" />
+      <GalleryLightboxGrid lang="de" title="Galeriebilder" columns={3} gap="md" aspectRatio="square" items={[{ src: `${base}images/lake.jpg`, alt: 'See' }]} />
+      <a id="gallery" href="#main-content">Zur Galerie</a>
+    </PageShell>
+  </body>
+</html>
+
+<style>
+  :global(body) { margin: 0; }
+</style>

@@ -223,6 +223,11 @@ All 31 components are plain `.astro` files imported by path: `import Card from '
 
 **`PageShell`** (L): skip link plus `<main>`. Named slots `header` and `footer`.
 
+Keep the header in the `header` slot: `PageShell` owns the first-focusable skip link
+and the single main landmark. Headers use `--ew-z-sticky` (1100), the skip link uses
+`--ew-z-overlay` (1200), and lightboxes use `--ew-z-modal` (1300). Custom layer
+overrides must preserve this order so keyboard focus is not obscured.
+
 | Prop | Type | Default |
 | :--- | :--- | :--- |
 | `mainId` | `string` | `main-content` |
@@ -278,9 +283,14 @@ All 31 components are plain `.astro` files imported by path: `import Card from '
 | :--- | :--- | :--- |
 | `item` | `Item & Partial<Linkable>` | yes |
 | `imageSizes` | `string` (used for local image assets) | no |
+| `headingLevel` | `'h1' \| 'h2' \| 'h3' \| 'h4' \| 'h5' \| 'h6'` (default `'h3'`) | no |
 | `class` | `string` | no |
 
 The legacy props `title`, `description`, `href`, `image` and `imageAlt` still work and are deprecated.
+
+Use `<Card item={gallery} headingLevel="h2" />` for cards directly below the page's
+`h1`, or keep the default `h3` below a section's `h2`. `headingLevel` also works
+with legacy props and changes semantics only, not title styling.
 
 **`BlogPostCard`** takes `item: Article & Linkable`, plus `imageSizes`, `locale` (date format) and `class`. Legacy props `title`, `description`, `href`, `pubDate`, `heroImage` and `heroImageAlt` are deprecated.
 
@@ -318,6 +328,13 @@ Items are `GalleryItem` (an `Image` plus optional `caption`, `title`, `subtitle`
 | `SeoHead` | `title`, `pathname`, `locale`, `siteName` (required); `description`, `ogType`, `ogImage`, `themeColor`, `manifest`, `noIndex`, `twitterCard`, `twitterSite`, `alternates`, `trailingSlash`, `structuredData` |
 | `StructuredData` | `data: object \| object[]`, rendered as JSON-LD |
 | `NotFound` | `currentLang`, `defaultLocale` (required); `rootHref`, `alternateHref`, `heading`, `message`, `image` (`AnyImage` or a legacy path string). Ships its own German and English copy |
+
+`SeoHead` derives `og:locale:alternate` only from `alternates` (the existing
+`{ hreflang, href }[]` links). Empty or omitted alternates emit no OG alternate.
+`x-default`, the normalized current locale and duplicate locales are excluded from
+OG metadata without changing the hreflang links. Language/region tags normalize to
+OG underscores and casing (for example `en-GB` to `en_GB`); bare `de` and `en`
+retain their historical `de_DE` and `en_US` mappings.
 
 ## Related
 

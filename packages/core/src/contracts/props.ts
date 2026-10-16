@@ -23,6 +23,8 @@ export type GalleryItem = Image & {
  */
 export interface ItemCardProps {
   item: Item & Partial<Linkable>;
+  /** Title heading tag. Defaults to `h3`; use `h2` directly below a page heading. */
+  headingLevel?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   /**
    * `sizes` attribute of the responsive image. Only `ImageMetadata` sources
    * get a `srcset`; a string source renders a plain `<img>` and ignores it.
@@ -38,6 +40,8 @@ export interface ItemCardProps {
 
 /** `Card` rendered from individual props, exactly as before the content contracts. */
 export interface LegacyCardProps {
+  /** Title heading tag, with the same `h3` default as the item API. */
+  headingLevel?: ItemCardProps['headingLevel'];
   /** @deprecated Pass `item`; `item.title` is rendered. */
   title: string;
   /** @deprecated Pass `item`; `item.description` is rendered. */

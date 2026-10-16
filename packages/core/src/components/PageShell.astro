@@ -56,7 +56,7 @@ const { mainId = 'main-content', skipLabel = labels.skipToMainContent, class: cl
     position: absolute;
     left: -9999px;
     top: 0;
-    z-index: 100;
+    z-index: var(--ew-z-overlay, 1200);
     padding: var(--ew-space-2) var(--ew-space-4);
     background: var(--ew-surface);
     color: var(--ew-on-surface);

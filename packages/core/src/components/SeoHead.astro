@@ -77,9 +77,27 @@ const shouldNoIndex = (noIndex ?? policyNoIndex) || isNotFoundRoute;
 
 const canonical = new URL(servedPath, site).href;
 const absoluteOgImage = ogImage ? new URL(ogImage, site).href : undefined;
-// Map locale to OG locale format: 'de' → 'de_DE', 'en' → 'en_US'
-const ogLocale = locale === 'en' ? 'en_US' : locale === 'de' ? 'de_DE' : locale.replace('-', '_');
-const ogLocaleAlternate = locale === 'en' ? 'de_DE' : 'en_US';
+function toOgLocale(value: string): string {
+  const [language, ...subtags] = value.replaceAll('_', '-').split('-');
+  const normalizedLanguage = language.toLowerCase();
+  // Preserve the historical defaults for unqualified German and English.
+  if (subtags.length === 0) {
+    return normalizedLanguage === 'en' ? 'en_US' : normalizedLanguage === 'de' ? 'de_DE' : normalizedLanguage;
+  }
+  return [normalizedLanguage, ...subtags.map((subtag) =>
+    subtag.length === 4
+      ? subtag[0].toUpperCase() + subtag.slice(1).toLowerCase()
+      : subtag.toUpperCase()
+  )].join('_');
+}
+
+const ogLocale = toOgLocale(locale);
+const ogLocaleAlternates = [...new Set(
+  alternates
+    .filter(({ hreflang }) => hreflang.toLowerCase() !== 'x-default')
+    .map(({ hreflang }) => toOgLocale(hreflang))
+    .filter((alternate) => alternate !== ogLocale)
+)];
 ---
 <title>{title}</title>
 {description && <meta name="description" content={description} />}
@@ -93,7 +111,7 @@ const ogLocaleAlternate = locale === 'en' ? 'de_DE' : 'en_US';
 <meta property="og:url" content={canonical} />
 <meta property="og:type" content={ogType} />
 <meta property="og:locale" content={ogLocale} />
-<meta property="og:locale:alternate" content={ogLocaleAlternate} />
+{ogLocaleAlternates.map((alternate) => <meta property="og:locale:alternate" content={alternate} />)}
 <meta property="og:site_name" content={siteName} />
 {absoluteOgImage && <meta property="og:image" content={absoluteOgImage} />}
 <!-- Twitter Cards -->
