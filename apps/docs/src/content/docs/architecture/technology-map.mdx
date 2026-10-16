@@ -19,7 +19,7 @@ Swipe or scroll each table horizontally to reveal the remaining columns.
 
 A tier names what we recommend. A lane names what we have actually run. If the Compatibility lane is not listed in a package's row below, that package's Node.js 22 and Astro 6 support is declared by a peer range, not proven by a build.
 
-The peer range is wider than the tested floor. Every package that depends on Astro declares `astro >=6.0.0 <8.0.0`. Astro 7 itself runs on Node.js 22.12 or later, so Node.js 22 with Astro 7 is also expected to work, but the lanes test the two pairings named in [Validation lanes](#validation-lanes), not every combination.
+The peer range is wider than the tested floor. Every site-facing package that declares Astro as a peer uses `astro >=6.0.0 <8.0.0`. The create-only CLI is different: it depends directly on Astro 7 and requires Node.js 24. Astro 7 itself runs on Node.js 22.12 or later, so Node.js 22 with Astro 7 is also expected to work, but the lanes test the two pairings named in [Validation lanes](#validation-lanes), not every combination.
 
 `@easy-web/cli` is the one exception to the floor. It requires Node.js 24 or later (`engines.node` is `>=24`) because it only ever runs on the machine that generates a site. It is never a dependency of a site.
 
@@ -105,7 +105,7 @@ These never reach a site.
 
 | Lane | Where it runs | What it checks |
 | :--- | :--- | :--- |
-| Workspace | [`ci.yml`](https://github.com/achimismaili/easy-web/blob/main/.github/workflows/ci.yml), job `workspace`: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` | Every package lints, type-checks, builds and passes its Vitest suite against the workspace on the recommended baseline, Node.js 24 with Astro 7. The docs and showcase builds and the showcase `dist/` assertions are part of it |
+| Workspace | [`ci.yml`](https://github.com/achimismaili/easy-web/blob/main/.github/workflows/ci.yml), job `workspace`: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` | Turborepo runs each package's defined lint, typecheck, test and build tasks on the recommended baseline, Node.js 24 with Astro 7. Packages that do not define a task are skipped. The docs and showcase builds and the showcase `dist/` assertions are part of it |
 | Conformance | The same job: `pnpm --filter contract-fixture test:conformance` | The per-site gate accepts a conforming site and fails a broken one |
 | Compatibility | `ci.yml`, job `packed-consumer`, driven by [`scripts/packed-consumer-compat.mjs`](https://github.com/achimismaili/easy-web/blob/main/scripts/packed-consumer-compat.mjs) | Packs `core`, `cms-adapters` and the five compatibility packages, installs the tarballs into an isolated consumer, and builds a static site on Node.js 22 with Astro 6 and on Node.js 24 with Astro 7. It also asserts that `@easy-web/cli` is not installed |
 
