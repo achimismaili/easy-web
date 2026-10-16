@@ -138,11 +138,15 @@ async function assertPackages(testCase, consumer, archives) {
 
 async function assertOutput(testCase, consumer) {
   const html = await readFile(join(consumer, 'dist', 'index.html'), 'utf8');
+  const admin = await readFile(join(consumer, 'dist', 'admin', 'index.html'), 'utf8');
   const robots = await readFile(join(consumer, 'dist', 'robots.txt'), 'utf8');
   if (!html.includes('data-page="index"') || !html.includes('Compat fixture')) {
     throw new CompatibilityError(testCase, 'representative HTML was not rendered');
   }
   if (!robots.includes('Disallow: /')) throw new CompatibilityError(testCase, 'robots.txt does not enforce noIndex');
+  if (!admin.includes('id="nc-root"') || !admin.includes('You can change this editor notice') || !admin.includes('href="/version"')) {
+    throw new CompatibilityError(testCase, 'AdminPage did not render its notice and safe footer links from packed helpers');
+  }
 }
 
 try {

@@ -284,6 +284,8 @@ The legacy props `title`, `description`, `href`, `image` and `imageAlt` still wo
 
 **`BlogPostCard`** takes `item: Article & Linkable`, plus `imageSizes`, `locale` (date format) and `class`. Legacy props `title`, `description`, `href`, `pubDate`, `heroImage` and `heroImageAlt` are deprecated.
 
+Both cards crop images to a responsive 16:9 frame with `object-fit: cover`, regardless of the source proportions. This applies to local assets, string paths and legacy image props. Local assets retain their intrinsic HTML `width` and `height` attributes; the card's scoped CSS controls the displayed proportions without requiring a global image reset.
+
 **`CardGrid`**: responsive grid wrapper, `class`.
 
 ### Media

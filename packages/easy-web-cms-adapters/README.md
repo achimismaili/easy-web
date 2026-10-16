@@ -44,6 +44,8 @@ See the documentation site and `docs/entra-cms-setup.md` in your instance repo f
 import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
 ```
 
+`AdminPage` uses the compiled helpers shipped in `dist`, so packed consumers do not need unpublished TypeScript sources. Build the package before consuming it directly from a workspace checkout.
+
 ### Editor notice and admin footer
 
 An instance can expose one public, editor-managed notice and a list of footer links around Decap's dedicated mount. Define the singleton once, use the same definition for Decap and Astro validation, and pass the validated entry to `AdminPage`:
