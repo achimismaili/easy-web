@@ -44,6 +44,43 @@ See the documentation site and `docs/entra-cms-setup.md` in your instance repo f
 import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
 ```
 
+### Editor notice and admin footer
+
+An instance can expose one public, editor-managed notice and a list of footer links around Decap's dedicated mount. Define the singleton once, use the same definition for Decap and Astro validation, and pass the validated entry to `AdminPage`:
+
+```ts
+import {
+  defaultAdminContent,
+  defineSingleton,
+  fieldSets,
+} from '@easy-web/cms-adapters';
+
+export const admin = defineSingleton({
+  name: 'admin',
+  label: 'Editor notice and footer',
+  file: 'src/content/data/admin.json',
+  fields: fieldSets.admin({ uiLocale: 'en' }),
+});
+
+export const initialAdminContent = defaultAdminContent({ uiLocale: 'en' });
+```
+
+```astro
+---
+import AdminPage from '@easy-web/cms-adapters/components/AdminPage.astro';
+import { getEntry } from 'astro:content';
+
+const adminEntry = await getEntry('admin', 'admin');
+if (!adminEntry) throw new Error('Missing admin singleton');
+---
+
+<AdminPage config={config} lang="en" admin={adminEntry.data} />
+```
+
+`notice.level` is typed as `info | warning | critical`, so editors get a constrained select and developers get IDE completion. Notice copy is plain text; the optional notice link and footer links allow only root-relative paths or `https://` URLs. The generated default links to the website, `/version`, the editor-focused Decap features page, and the singleton editor at `/admin/#/edit/site_config/admin`.
+
+The selected `uiLocale` controls the CMS labels and starter copy only. It does not create multilingual notice data. Values rendered around Decap are publicly visible on `/admin` and are not protected by the CMS login; never place confidential information there. Changes become visible after the next successful site deployment.
+
 ## Deprecated scaffold API
 
 The old `src/scaffold/generate-config.ts` and `src/scaffold/config-template.yml` scaffold path, together with the hand-written interfaces under `src/types/`, is deprecated. Define content once with `field`, `fieldSets`, `defineContentType`, and `defineSingleton`; then use `buildDecapConfig` for Decap configuration and `toAstroSchema` for Astro validation.
