@@ -1,5 +1,13 @@
 # Changelog — @itci/easy-web-cms-adapters
 
+## 1.7.1
+
+### Patch Changes
+
+- 9d6a2f2: Resolve AdminPage's shared admin-content helpers from the published dist directory so packed consumers build successfully on Astro 6 and 7.
+- Updated dependencies [9d6a2f2]
+  - @easy-web/core@1.7.1
+
 ## 1.7.0
 
 ### Minor Changes
