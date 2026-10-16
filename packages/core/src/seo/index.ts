@@ -9,10 +9,16 @@ import {
 } from '../i18n/index.js'
 
 import { createCrawlPolicy, isDisallowedPath } from './crawl-policy.js'
+import { buildInfoManifest } from './build-info.js'
+import { buildInfoOptionsSchema, serializeBuildInfo, type BuildInfoOptions } from './build-info-manifest.js'
+
+export type { BuildInfoOptions, BuildInfoPackageId, BuildInfoManifest } from './build-info-manifest.js'
 
 export type { LocalizedPathGroup }
 
 export type Options = {
+  /** Public labels only; these routes are public, not protected by crawler directives. */
+  readonly buildInfo?: BuildInfoOptions
   noIndex?: boolean
   sitemapLocales?: Record<string, string>
   /**
@@ -87,6 +93,10 @@ function pathnameOf(page: string, config: AstroConfig): string {
   return pathname
 }
 
+function isBuildInfoPath(pathname: string): boolean {
+  return pathname === '/version' || pathname === '/version.json'
+}
+
 export default function easyWebSeo(options: Options = {}): AstroIntegration {
   return {
     name: '@easy-web/seo',
@@ -101,6 +111,11 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
         }
 
         const noIndex = options.noIndex ?? false
+        const buildInfoOptions = options.buildInfo === undefined ? undefined : buildInfoOptionsSchema.parse(options.buildInfo)
+        const manifest = buildInfoOptions === undefined ? undefined : buildInfoManifest(buildInfoOptions, config.root)
+        if (manifest) process.env.EASY_WEB_SEO_BUILD_INFO = serializeBuildInfo(manifest)
+        else delete process.env.EASY_WEB_SEO_BUILD_INFO
+        process.env.EASY_WEB_SEO_BUILD_INFO_JSON = String(buildInfoOptions?.json === true)
         const policy = createCrawlPolicy(noIndex)
 
         let sitemapI18n: { defaultLocale: string; locales: Record<string, string> } | undefined
@@ -166,9 +181,12 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
           const sitemapIntegration = sitemap({
             ...(sitemapI18n ? { i18n: sitemapI18n } : {}),
             namespaces: { xhtml: true },
-            filter: (page: string): boolean =>
-              !isDisallowedPath(pathnameOf(page, config), policy) &&
-              (options.filter?.(page) ?? true),
+            filter: (page: string): boolean => {
+              const pathname = pathnameOf(page, config)
+              return !isDisallowedPath(pathname, policy) &&
+                !(manifest && isBuildInfoPath(pathname)) &&
+                (options.filter?.(page) ?? true)
+            },
             serialize: (item: SitemapItem): SitemapItem => {
               // Re-render every <loc> through the same helper that produces the
               // canonical, so the two agree byte-for-byte. @astrojs/sitemap
@@ -236,6 +254,7 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
         }
 
         process.env.EASY_WEB_SEO_NO_INDEX = String(noIndex)
+        process.env.EASY_WEB_SEO_BASE = config.base
         // <SeoHead> is a component and cannot read astro.config, so the style
         // the sitemap uses is published here for it to reuse. Both surfaces
         // therefore derive the canonical URL form from one resolver.
@@ -246,6 +265,12 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
           entrypoint: new URL('./routes/robots-txt.js', import.meta.url),
           prerender: true,
         })
+        if (manifest) {
+          injectRoute({ pattern: '/version', entrypoint: new URL('../../src/seo/routes/version.astro', import.meta.url), prerender: true })
+          if (buildInfoOptions?.json === true) {
+            injectRoute({ pattern: '/version.json', entrypoint: new URL('./routes/version-json.js', import.meta.url), prerender: true })
+          }
+        }
       },
     },
   }

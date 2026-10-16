@@ -1,0 +1,42 @@
+---
+import Hero from '../../components/Hero.astro';
+import Section from '../../components/Section.astro';
+import '../../../styles/tokens.css';
+import { readBuildInfo } from '../build-info-manifest.js';
+
+export const prerender = true;
+const manifest = readBuildInfo();
+const hasJson = process.env.EASY_WEB_SEO_BUILD_INFO_JSON === 'true';
+---
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="noindex,nofollow" />
+        <title>Build information - {manifest.site}</title>
+    </head>
+    <body>
+        <main>
+            <Hero title="Build information" subtitle={manifest.site} />
+            <Section title="easy-web family">
+                <dl>
+                    <dt>Version</dt><dd>{manifest.easyWeb.version}</dd>
+                    {manifest.releaseId !== undefined && <><dt>Release</dt><dd>{manifest.releaseId}</dd></>}
+                </dl>
+                <p>All displayed packages share one easy-web family version. Individual UI components are not independently versioned.</p>
+                <ul>{manifest.easyWeb.packages.map((id) => <li><code>@easy-web/{id}</code></li>)}</ul>
+                {hasJson && <p><a href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/version.json`}>Machine-readable build information (JSON)</a></p>}
+            </Section>
+        </main>
+    </body>
+</html>
+
+<style>
+    body { margin: 0; background: var(--ew-surface); color: var(--ew-on-surface); font-family: var(--ew-font-sans); line-height: var(--ew-leading-normal); }
+    dt { font-weight: 700; }
+    dd { margin: 0 0 var(--ew-space-4); overflow-wrap: anywhere; }
+    code { font-family: var(--ew-font-mono); }
+    a { color: var(--ew-link); }
+    a:focus-visible { outline: 2px solid var(--ew-primary); outline-offset: var(--ew-space-1); }
+</style>

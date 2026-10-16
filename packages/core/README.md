@@ -20,6 +20,63 @@ The base package for the `@easy-web/*` family. It owns the shared content contra
  
 Four concerns remain separate because they depend on a specific platform or runtime: `@easy-web/swa` for Azure Static Web Apps, the `cms-adapters` package for Decap CMS, `@easy-web/auth` for React and MSAL authentication, and `@easy-web/brand` for brand tooling.
 
+## Public build information (opt-in)
+
+```ts
+import easyWebSeo from '@easy-web/core/seo';
+
+easyWebSeo({
+    buildInfo: {
+        site: 'Public site name',
+        packages: ['cms-adapters', 'swa'],
+        releaseId: 'public-release-label',
+        json: true,
+    },
+});
+```
+
+`buildInfo` accepts `site`, optional `packages`, optional `releaseId`, and optional
+`json`. The HTML route is the safe default. Set `json: true` only when the deployment
+host can preserve a path-specific `X-Robots-Tag` response header for `/version.json`.
+Labels must already be trimmed, printable text of 1–120 UTF-16 code units, with
+no controls or invisible formatting characters. Supply only deliberately public
+labels: validation cannot determine whether a label contains a secret.
+`releaseId` is an optional opaque public label, not an automatically collected
+commit, pipeline identifier or timestamp.
+
+Allowed package IDs are `core`, `auth`, `cms-adapters`, and `swa`. Core is always
+included; selections are deduplicated and sorted. The integration reads core's
+own package artifact and resolves enabled add-on manifests from the site's Node
+package search paths at configuration time, without executing their code. Missing,
+invalid or differently versioned add-ons fail the build. Package ranges from the
+site manifest are never reported. UI components are not independently versioned.
+
+`/version` is always prerendered as standalone English HTML using core
+components/tokens without hydration. `/version.json` is also prerendered only
+when `json: true`. Their shared manifest has this
+closed shape (the version below is illustrative):
+
+```json
+{"schema":"easy-web/build-info","schemaVersion":1,"site":"Public site name","easyWeb":{"version":"1.2.3","packages":["core"]}}
+```
+
+JSON is compact with a final newline; when supplied, `releaseId` appears after
+`site`. No framework/runtime/third-party inventory, host details, environment,
+build time or arbitrary metadata is collected. HTML escapes the public labels.
+Both routes are excluded from the sitemap. Public `robots.txt` deliberately does
+not disallow them: a crawler must be able to fetch a route before it can observe
+its `noindex` directive. Site-wide `noIndex` remains one global rule. HTML always includes
+`<meta name="robots" content="noindex,nofollow">`. The optional JSON response sets
+`application/json; charset=utf-8`, `Cache-Control: no-store`,
+`X-Content-Type-Options: nosniff` and
+`X-Robots-Tag: noindex, nofollow` where Astro/the deployment preserves response
+headers. Ordinary static file hosts do not retain endpoint response headers
+automatically, which is why JSON generation is off by default. This integration
+does not modify deployment-platform configuration.
+
+These routes are intentionally public. Robots rules and noindex are **not access
+control**. Omitting `buildInfo` injects neither route and retains prior crawl output.
+
 ## Recipe protocol version 1
 
 Recipes declare `provides`, `requires`, `conflicts`, compatibility ranges, output
@@ -58,4 +115,4 @@ Only a money-enabled selection accepts `currency`, validated by the shared ISO
 4217 input schema. `homepage` requires `featured`, so a type cannot occupy that
 featured presentation slot merely by defining an image.
 
-This package is private while the consolidation is in progress and is made publishable only by the family release task.
+This package is published as part of the fixed `@easy-web/*` family through the Changesets and npm Trusted Publishing workflow.

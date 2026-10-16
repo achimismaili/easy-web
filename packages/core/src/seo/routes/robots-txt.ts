@@ -13,8 +13,10 @@ function render(policy: CrawlPolicy, site: URL | undefined): string {
   }
 
   if (policy.sitemap && site) {
+    const configuredBase = process.env.EASY_WEB_SEO_BASE ?? '/'
+    const base = `/${configuredBase.replace(/^\/+|\/+$/g, '')}`.replace(/^\/$/, '')
     lines.push('')
-    lines.push(`Sitemap: ${new URL('sitemap-index.xml', site).href}`)
+    lines.push(`Sitemap: ${new URL(`${base}/sitemap-index.xml`, site).href}`)
   }
 
   return `${lines.join('\n')}\n`

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && node scripts/assert-preview-assets.mjs",
+    "build": "astro check && astro build && node scripts/assert-preview-assets.mjs && node scripts/assert-build-info.mjs",
     "preview": "astro preview",
     "typecheck": "astro check",
     "test": "vitest run",

@@ -13,6 +13,7 @@ const runGET = (ctx: Partial<APIContext>): Response => {
 describe('robots-txt GET handler', () => {
   afterEach(() => {
     delete process.env.EASY_WEB_SEO_NO_INDEX;
+    delete process.env.EASY_WEB_SEO_BASE;
   });
 
   it('returns public robots.txt with Sitemap when EASY_WEB_SEO_NO_INDEX is "false"', async () => {
@@ -62,5 +63,12 @@ describe('robots-txt GET handler', () => {
     expect(response.status).toBe(200);
     expect(text).toContain('Sitemap: https://example.com/sitemap-index.xml');
     expect(text).toContain('Disallow: /admin/');
+  });
+
+  it('includes Astro base in the sitemap URL', async () => {
+    process.env.EASY_WEB_SEO_BASE = '/easy-web/';
+    const response = runGET({ site: new URL('https://example.com') });
+
+    expect(await response.text()).toContain('Sitemap: https://example.com/easy-web/sitemap-index.xml');
   });
 });
