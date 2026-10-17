@@ -38,6 +38,68 @@ What to expect:
 The package name `@easy-web/create` is reserved for a future `pnpm create` entry point and ships no code, so `pnpm create @easy-web` does not generate a site today. Use `@easy-web/cli`. See the [`@easy-web/create` page](../../packages/create-easy-web/).
 :::
 
+### Review the generated result
+
+Recipes belong to the packages that own the capabilities; the CLI composes their
+declared outputs rather than copying a running site. A successful create adds one
+generation commit, but its location depends on the target:
+
+| Input target | Where the generated commit lives |
+| :--- | :--- |
+| A nonexistent directory or an empty directory without Git metadata | A new Git repository at that path, on `main`, with one initial commit |
+| A clean Git root or worktree with an existing commit whose tree and index are empty | A new `easy-web-create-...` task branch in a separate worktree; the input repository's HEAD, index and files stay unchanged |
+
+An initialized repository without a committed HEAD is not the second case.
+Hidden or ignored files also make a target occupied; there is no overwrite mode.
+Use the **returned `target`**, not an assumed copy of the input path, for every
+subsequent command. Keep a returned task worktree until review is complete.
+
+For automation, add `--json` to the create command. Success writes a
+`schemaVersion: 1` result to stdout with `target`, `commit`, `branch`, `graphJson`
+and `graphMermaid`; errors write diagnostics to stderr. The graph fields are
+serialized strings in the result, not additional generated files.
+
+Creation checks recipe options and validators, declared output paths, JSON and
+JavaScript syntax, dependency source restrictions and an additions-only Git index.
+It does **not** run the generated site's type checks, build or end-to-end tests.
+Review and validate the result before merging or using it:
+
+1. Inspect the returned commit and capability graph, then the generated source and
+   package scripts. A generated auth mount is not mounted by the shell: selecting
+   `auth` does not by itself render sign-in or configure the Astro React integration.
+   Follow the [auth integration guidance](../../packages/auth/) when wiring it.
+2. Resolve dependencies in the returned target with `pnpm install` if you did not
+   select `--install`. The offline placeholder records specifiers, not resolved
+   package snapshots; it is not ready for `pnpm install --frozen-lockfile`.
+   Review and commit the completed lockfile separately. The generation default
+   makes no network request, but obtaining the CLI (for example through `pnpm dlx`)
+   and installing dependencies can require network access.
+3. Run the site's build and applicable checks yourself. The current generated
+   shell has a build script, but no `tsconfig.json` or `@astrojs/check`; add the
+   required type-check setup rather than treating creation success as a passing
+   Astro check. Inspect the built pages and optional integrations before accepting
+   the result.
+
+:::caution[Installation happens after the generation commit]
+`--install` runs `pnpm install` in the returned target through the ambient registry
+configuration. It can update the lockfile after the commit. If installation fails,
+the command exits with code `4`, but the generated repository or task worktree and
+commit remain; no success result is printed. Inspect that state before retrying
+installation. Do not rerun create into the now-occupied target or assume that a
+nonzero exit means generation was rolled back.
+:::
+
+### After creation
+
+The site owns its generated files. Updating a recipe changes future generations;
+it does not synchronize those files in existing sites. Maintain shared package
+dependencies and their lockfile through reviewed updates and site-local checks,
+not by rerunning create. See the [responsibility model](../../architecture/#shared-packages-and-site-responsibilities).
+
+Hosting, executable deployment definitions, credentials and permissions are a
+separate setup and review step. Creation neither provisions them nor establishes
+a deployed site or PR preview environment.
+
 ## Manual Setup
 
 Bootstrap a new site instance manually. Start from the recommended baseline: Node.js 24, pnpm 10 and Astro 7 (see [Installation](../installation/)).
