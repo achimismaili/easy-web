@@ -1,5 +1,12 @@
 # @itci/easy-web-content-blocks
 
+## 1.9.0
+
+### Patch Changes
+
+- Updated dependencies [3f659ac]
+  - @easy-web/core@1.9.0
+
 ## 1.8.0
 
 ### Patch Changes
