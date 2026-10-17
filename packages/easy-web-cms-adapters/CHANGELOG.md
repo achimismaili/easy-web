@@ -1,5 +1,12 @@
 # Changelog — @itci/easy-web-cms-adapters
 
+## 1.8.0
+
+### Patch Changes
+
+- Updated dependencies [fd16e96]
+  - @easy-web/core@1.8.0
+
 ## 1.7.1
 
 ### Patch Changes
