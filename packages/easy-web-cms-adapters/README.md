@@ -11,6 +11,31 @@ Decap CMS integration package for the [easy-web](https://github.com/achimismaili
 
 ## Usage
 
+## Content-aware CLI generation
+
+`createCmsContentSiteRecipes(composition, options)` composes core's shell/content
+recipes with a `cms.decap-editor` recipe. Use the CLI's top-level `composition`
+and `recipes.cms` backend/media settings; do not nest another composition inside
+the CMS options. Add `cms-admin` to each editable content type.
+
+Core retains the only collection schema, content routes and Astro config. The CMS
+recipe emits settings and a standalone `/admin/` route using `AdminPage`, with
+`buildContentCompositionDecapConfig` deriving its forms from the recorded
+composition at build time. Non-bound collections stay out of the editor.
+This generator supports the same single-locale title/slug/body, optional
+summary/image slice as core; it does not narrow the existing standalone
+`cmsMediaRecipe` API or its supported traits.
+
+The first media root owns uploads and sample images; every explicit root gets a
+preview mapping. Duplicate/overlapping roots fail validation. The shell composes
+the shared markdown processor, preview integration and SEO without merging
+generated JavaScript. `shell.noIndex` remains effective, and `/admin/` is always
+excluded from search. None of this supplies preview-host authentication.
+
+Backend settings contain public identifiers only. Cloud provisioning, repository
+permissions and Entra setup remain external. Saves target the selected backend
+branch (default `main`); no editorial workflow is enabled.
+
 ## Source-asset previews
 
 Definitions with `mediaFolder: 'src/assets/...'` and `publicFolder: '/src/assets/...'` intentionally produce Astro `ImageMetadata`. Frontend pages therefore keep optimized `/_astro/...` URLs. Decap, however, requests `public_folder` literally. Enable explicit source-to-public mappings when editors need those previews:

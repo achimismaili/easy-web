@@ -99,7 +99,9 @@ are allowed. A registry pin identifies package name, exact version, SHA-512 SRI
 and package-relative export path. The future loader must verify artifact bytes
 before importing executable code; admission checks its receipt against the
 CLI-owned registry, not a registry supplied by the target. A receipt schema alone
-is not cryptographic verification. No loader or recipe implementation ships here.
+is not cryptographic verification. The verified-artifact loader is not implemented;
+the CLI currently imports its first-party workspace/package dependencies directly.
+Core ships the shell recipe and content-site recipe factory.
 
 ## Generic content composition
 
@@ -114,5 +116,25 @@ routes are declared per configured content locale. A content type exposes a
 Only a money-enabled selection accepts `currency`, validated by the shared ISO
 4217 input schema. `homepage` requires `featured`, so a type cannot occupy that
 featured presentation slot merely by defining an image.
+
+`createContentSiteRecipes(composition)` from `@easy-web/core/recipes` connects a
+validated composition to shell navigation and a `content.pages` recipe. Its
+`generatedContentCompositionSchema` deliberately accepts a smaller implemented
+subset than the generic contract: one locale, `title`/`slug`/`body`, optional
+`summary`/`image`, list/detail bindings and optional navigation or `cms-admin`. Other valid
+contract selections fail with an explicit not-yet-supported diagnostic.
+
+The recipe generates Astro collections from shared trait schemas, deterministic
+example content, contract-checked entry adapters and list/detail pages using Card,
+Media and Prose. A body becomes `HasBody` only after Astro renders it. Content
+roles and bindings are logical graph contributions, not output filenames.
+`primary` is a graph role; it does not select a homepage automatically.
+`@easy-web/cms-adapters` supplies `createCmsContentSiteRecipes` for the CMS-enabled
+path, consuming the same composition without replacing core's schemas or routes.
+Core's optional `ContentSiteOptions` lets first-party recipes choose an asset
+folder and contribute imports/integrations/markdown processing to the shell's
+single configuration renderer. These are package-owned source expressions, not
+user-configurable JavaScript or a post-generation config merge.
+Application-auth composition remains unsupported.
 
 This package is published as part of the fixed `@easy-web/*` family through the Changesets and npm Trusted Publishing workflow.

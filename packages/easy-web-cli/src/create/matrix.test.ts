@@ -3,18 +3,16 @@
 // Drives the REAL createSite pipeline (compose -> stage -> commit) with a mocked install runner.
 // Only profiles that are composable today are exercised; everything else is an explicit
 // it.skip / documented gap, never fabricated coverage:
-//   - shell + cms, shell + cms + auth: composer rejects (astro.config.mjs collision) -> invalid profile.
+//   - legacy standalone cms + shell still conflicts; the composition-aware CMS path is covered.
 //   - money: no recipe consumes the `money` trait.
-//   - primary/additional content: no recipe emits primary/additional content contributions.
-//   - bilingual/regional: shell has no `contentLocales` option (only `defaultLocale`).
+//   - bilingual/regional: content generation currently accepts one locale.
 //   - legal enabled/disabled: shell has no legal toggle.
 //   - axe: no axe package is available in the monorepo, and none was added (documented gap).
-// Real astro check + astro build ARE run on createSite output (shell, shell+auth). A generated target has no
-// node_modules, so its files are copied (minus .git) into a throwaway directory inside packages/auth, which owns
-// astro, @astrojs/check, react and the workspace @easy-web/core link (same resolution trick as auth's
-// composition.test.ts). `pnpm exec` is run with cwd packages/auth only; never inside the target (it would try to install).
+// Real astro check + astro build ARE run on createSite output. A generated target has no
+// node_modules, so its files are copied (minus .git) under packages/auth or apps/contract-fixture,
+// which own the relevant test dependencies. Astro runs under the test runner's Node version without an installer.
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { cp, mkdtemp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -153,12 +151,15 @@ describe('generated-project matrix: valid profiles', () => {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const authPackage = resolve(here, '..', '..', '..', 'auth');
+const contentPackage = resolve(authPackage, '..', '..', 'apps', 'contract-fixture');
 const authSource = join(authPackage, 'src', 'index.ts').replaceAll('\\', '/');
+const astroPackage = join(authPackage, 'node_modules', 'astro');
+const astroBin = resolve(astroPackage, JSON.parse(readFileSync(join(astroPackage, 'package.json'), 'utf8')).bin.astro);
 
 function runAstro(command: 'check' | 'build', root: string): Promise<string> {
     return new Promise((done, fail) => {
-        const child = spawn('pnpm', ['exec', 'astro', command, '--root', root], {
-            cwd: authPackage, env: { ...process.env, CI: 'true', NO_COLOR: '1' }, shell: process.platform === 'win32',
+        const child = spawn(process.execPath, [astroBin, command, '--root', root], {
+            cwd: root, env: { ...process.env, CI: 'true', NO_COLOR: '1' },
         });
         let output = '';
         child.stdout.on('data', (chunk) => { output += String(chunk); });
@@ -173,27 +174,67 @@ function runAstro(command: 'check' | 'build', root: string): Promise<string> {
 }
 
 describe('generated-project matrix: real astro check + build on createSite output', () => {
-    const realProfiles: readonly { readonly name: string; readonly recipes: Record<string, unknown>; readonly auth: boolean }[] = [
+    const contentComposition = {
+        contentLocales: ['en'],
+        contentTypes: [{
+            id: 'entries', primary: true, labels: { en: 'Entries' }, routes: { en: '/library/entries/' },
+            traits: ['title', 'slug', 'summary', 'image', 'body'], bindings: ['list', 'detail', 'navigation'],
+        }, {
+            id: 'example-note', labels: { en: 'Notes' }, routes: { en: '/notes/' },
+            traits: ['title', 'slug', 'body'], bindings: ['list', 'detail'],
+        }],
+    };
+    const cmsComposition = {
+        ...contentComposition, contentTypes: contentComposition.contentTypes.map((type, index) => ({
+            ...type, bindings: [...type.bindings, ...(index === 0 ? ['cms-admin'] : [])],
+        })),
+    };
+    const editorOptions = {
+        backend: cmsOptions.backend, mediaRoots: ['src/assets/images'], uiLocale: 'en',
+    };
+    const realProfiles: readonly { readonly name: string; readonly recipes: Record<string, unknown>; readonly auth: boolean; readonly composition?: unknown; readonly noIndex?: boolean; readonly locale?: string; readonly cms?: boolean }[] = [
         { name: 'minimal (shell only)', recipes: { shell: { siteName: 'Matrix Site' } }, auth: false },
         { name: 'shell + auth', recipes: { shell: { siteName: 'Matrix Site' }, auth: {} }, auth: true },
+        { name: 'content, public SEO', recipes: { shell: { siteName: 'Content Site' } }, composition: contentComposition, auth: false },
+        { name: 'content, noIndex SEO', recipes: { shell: { siteName: 'Content Site', noIndex: true } }, composition: contentComposition, noIndex: true, auth: false },
+        { name: 'CMS, public SEO', recipes: { cms: editorOptions }, composition: cmsComposition, cms: true, auth: false },
+        { name: 'CMS, noIndex SEO', recipes: { shell: { noIndex: true }, cms: editorOptions }, composition: cmsComposition, cms: true, noIndex: true, auth: false },
+        { name: 'CMS, de without images or summaries', recipes: { shell: { defaultLocale: 'de', noIndex: true }, cms: { ...editorOptions, uiLocale: 'de' } }, composition: {
+            contentLocales: ['de'], contentTypes: [{
+                id: 'entries', labels: { de: 'Eintraege' }, routes: { de: '/library/entries/' },
+                traits: ['title', 'slug', 'body'], bindings: ['list', 'detail', 'navigation', 'cms-admin'],
+            }],
+        }, locale: 'de', cms: true, noIndex: true, auth: false },
+        { name: 'content, de without images or summaries', recipes: { shell: { siteName: 'Inhalte', defaultLocale: 'de' } }, composition: {
+            contentLocales: ['de'], contentTypes: [{
+                id: 'entries', labels: { de: 'Eintraege' }, routes: { de: '/library/entries/' },
+                traits: ['title', 'slug', 'body'], bindings: ['list', 'detail', 'navigation'],
+            }],
+        }, locale: 'de', auth: false },
     ];
     for (const profile of realProfiles) {
         it(`${profile.name}: astro check and astro build exit 0 and emit structural pages`, async () => {
             // Given: a real committed createSite target (installer mocked)
             const target = join(root, 'site');
             const runner = vi.fn<InstallRunner>();
-            await createSite(parseCreateConfig({ target, recipes: profile.recipes }), undefined, { install: false, runner });
-            const fixture = await mkdtemp(join(authPackage, '.matrix-fixture-'));
+            await createSite(parseCreateConfig({ target, recipes: profile.recipes, ...(profile.composition ? { composition: profile.composition } : {}) }), undefined, { install: false, runner });
+            const fixture = await mkdtemp(join(profile.composition ? contentPackage : authPackage, '.matrix-fixture-'));
             try {
                 for (const entry of await readdir(target)) {
                     if (entry !== '.git') await cp(join(target, entry), join(fixture, entry), { recursive: true });
                 }
-                // The generated site ships no tsconfig; supply the strict Astro one (plus the auth source path alias).
-                await writeFile(join(fixture, 'tsconfig.json'), `${JSON.stringify({
-                    extends: 'astro/tsconfigs/strict',
-                    include: ['.astro/types.d.ts', '**/*'],
-                    compilerOptions: { baseUrl: '.', paths: { '@easy-web/auth': [authSource] } },
-                }, null, 2)}\n`);
+                if (profile.auth) {
+                    const config = JSON.parse(await readFile(join(fixture, 'tsconfig.json'), 'utf8'));
+                    await writeFile(join(fixture, 'tsconfig.json'), `${JSON.stringify({
+                        ...config, compilerOptions: { baseUrl: '.', paths: { '@easy-web/auth': [authSource] } },
+                    }, null, 2)}\n`);
+                }
+                if (profile.cms && !profile.locale) {
+                    const entryPath = join(fixture, 'src', 'content', 'entries', 'example.md');
+                    const entry = await readFile(entryPath, 'utf8');
+                    await writeFile(entryPath, entry.replace('../../assets/images/content-example.svg', '/src/assets/images/content-example.svg')
+                        + '\n![CMS body image](/src/assets/images/content-example.svg)\n');
+                }
                 // When
                 const check = await runAstro('check', fixture);
                 const build = await runAstro('build', fixture);
@@ -203,10 +244,90 @@ describe('generated-project matrix: real astro check + build on createSite outpu
                 const dist = await walk(join(fixture, 'dist'));
                 expect(dist).toContain('index.html');
                 expect(dist).toContain('404.html');
-                expect(dist).toContain('sitemap-index.xml');
+                expect(dist.includes('sitemap-index.xml')).toBe(!profile.noIndex);
+                const robots = await readFile(join(fixture, 'dist', 'robots.txt'), 'utf8');
+                expect(robots).toContain(profile.noIndex ? 'Disallow: /\n' : 'Sitemap:');
+                if (profile.noIndex) {
+                    expect(dist.filter((path) => /sitemap.*\.xml$/.test(path))).toEqual([]);
+                    expect(robots).not.toContain('Sitemap:');
+                }
                 const html = await readFile(join(fixture, 'dist', 'index.html'), 'utf8');
-                expect(html).toContain('<html lang="en"');
+                expect(html).toContain(`<html lang="${profile.locale ?? 'en'}"`);
                 expect(html).not.toMatch(/\[object Object\]/);
+                if (profile.cms) {
+                    const admin = await readFile(join(fixture, 'dist', 'admin', 'index.html'), 'utf8');
+                    expect(admin).toContain('name="robots" content="noindex"');
+                    expect(admin).toContain('decap-cms@3.16.3');
+                    expect(admin).toContain('window.CMS_MANUAL_INIT = true');
+                    expect(admin).not.toContain('MsalProvider');
+                    const match = admin.match(/window\.initCMS\(\{ config: ([\s\S]*?) \}\);/);
+                    if (!match) throw new Error('Missing built Decap configuration');
+                    const editor = JSON.parse(match[1]);
+                    expect(editor.collections).toHaveLength(1);
+                    expect(editor.locale).toBe(profile.locale ?? 'en');
+                    expect(editor.collections[0].folder).toBe('src/content/entries');
+                    expect(editor.collections[0].fields.map(({ name }: { name: string }) => name)).toEqual(
+                        profile.locale ? ['title', 'slug', 'body'] : ['title', 'slug', 'summary', 'image', 'body']);
+                    if (!profile.locale) {
+                        expect(editor.collections[0].fields.find(({ name }: { name: string }) => name === 'image').fields)
+                            .toEqual(expect.arrayContaining([expect.objectContaining({ name: 'alt', required: true })]));
+                        expect(dist).toContain('src/assets/images/content-example.svg');
+                        const detail = await readFile(join(fixture, 'dist', 'library', 'entries', 'example', 'index.html'), 'utf8');
+                        expect(detail).toContain('alt="CMS body image"');
+                        expect(detail).not.toContain('src="/src/assets');
+                    }
+                    expect(editor.public_folder).toBe('/src/assets/images');
+                    expect(editor.backend.branch).toBe('main');
+                    expect(editor.publish_mode).toBeUndefined();
+                    expect(dist).not.toContain('admin/config.yml');
+                    if (!profile.noIndex) expect(await readFile(join(fixture, 'dist', 'sitemap-0.xml'), 'utf8')).not.toContain('/admin');
+                }
+                if (profile.composition) {
+                    const list = await readFile(join(fixture, 'dist', 'library', 'entries', 'index.html'), 'utf8');
+                    const detail = await readFile(join(fixture, 'dist', 'library', 'entries', 'example', 'index.html'), 'utf8');
+                    expect(list).toContain('href="/library/entries/example/"');
+                    expect(detail).toContain(profile.locale === 'de' ? 'Ersetze diesen Beispielinhalt' : 'Replace this example content');
+                    expect(detail).toContain('https://replace-with-your-domain.example/library/entries/example/');
+                    for (const page of [html, list, detail]) {
+                        expect(page).toContain('href="/library/entries/"');
+                        expect(/name="robots" content="noindex, nofollow"/.test(page)).toBe(!!profile.noIndex);
+                    }
+                    if (!profile.locale) {
+                        expect(list).toContain('alt="Circle on a dark background"');
+                        expect(detail).toContain('alt="Circle on a dark background"');
+                        expect(detail).toMatch(/src="\/_astro\/content-example[^"]*\.svg"/);
+                        expect(detail).not.toContain('../../assets');
+                        expect(dist).toContain('notes/example/index.html');
+                        const note = await readFile(join(fixture, 'dist', 'notes', 'example', 'index.html'), 'utf8');
+                        expect(note).toContain('Notes - Example');
+                        expect(note).not.toContain('href="/notes/"');
+                    }
+                    if (!profile.noIndex) {
+                        const sitemap = await readFile(join(fixture, 'dist', 'sitemap-0.xml'), 'utf8');
+                        expect(sitemap).toContain('/library/entries/example/');
+                    }
+                    if (profile.name === 'content, public SEO' || profile.name === 'CMS, public SEO') {
+                        const entryPath = join(fixture, 'src', 'content', 'entries', 'example.md');
+                        const original = await readFile(entryPath, 'utf8');
+                        await writeFile(entryPath, original.replace('"alt": "Circle on a dark background"', '"alt": ""'));
+                        await expect(runAstro('build', fixture)).rejects.toThrow(/alt/);
+                        await writeFile(entryPath, original);
+                        if (profile.cms) {
+                            await writeFile(entryPath, original.replace(/ {2}"summary": [^\n]+\n/, ''));
+                            await expect(runAstro('build', fixture)).rejects.toThrow(/summary/);
+                            await writeFile(entryPath, original.replace('"slug": "example"', '"slug": "Invalid Slug"'));
+                            await expect(runAstro('build', fixture)).rejects.toThrow(/slug/);
+                            await writeFile(entryPath, original);
+                        }
+                        await writeFile(join(fixture, 'src', 'content', 'entries', 'duplicate.md'), original);
+                        await expect(runAstro('build', fixture)).rejects.toThrow('Duplicate content slug: example');
+                        await rm(join(fixture, 'src', 'content', 'entries', 'duplicate.md'));
+                        const adapterPath = join(fixture, 'src', 'lib', 'content', 'entries.ts');
+                        const adapter = await readFile(adapterPath, 'utf8');
+                        await writeFile(adapterPath, adapter.replace('title: data.title', 'title: 123'));
+                        await expect(runAstro('check', fixture)).rejects.toThrow(/not assignable/);
+                    }
+                }
                 // Rendered island count. FINDING: the shell+auth recipe output never mounts AuthMount (the Base layout
                 // and index page do not reference it), so the built page has 0 islands even with auth selected.
                 // Pinned deliberately so that wiring auth into the shell flips this to 1 on purpose.
@@ -303,10 +424,9 @@ describe('generated-project matrix: invalid / conflict profiles', () => {
 
 describe('generated-project matrix: documented gaps (skipped, not faked)', () => {
     it.skip('money profile - no recipe consumes the money trait', () => undefined);
-    it.skip('bilingual / regional locale modes - shell has no contentLocales option, only defaultLocale', () => undefined);
-    it.skip('primary/additional generic content - no recipe emits primary/additional content contributions', () => undefined);
+    it.skip('bilingual / regional locale modes - content generation currently accepts one locale', () => undefined);
     it.skip('legal enabled/disabled - shell has no legal toggle; legal links are unconditional', () => undefined);
-    it.skip('shell + cms and shell + cms + auth as VALID profiles - composer rejects astro.config.mjs collision', () => undefined);
+    it.skip('legacy nested-composition CMS and application-auth composition - no single configuration owner', () => undefined);
     it.skip('axe accessibility scan - no axe package exists in the monorepo and none was added', () => undefined);
     it.skip('rendered auth island in shell+auth output - AuthMount is never mounted by the generated layout/page (pinned above as 0)', () => undefined);
 });

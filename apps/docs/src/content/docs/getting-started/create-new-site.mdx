@@ -29,10 +29,99 @@ Install the package to get the `easy-web` command, or run it once with `pnpm dlx
 
 What to expect:
 
-- **Recipes.** The `shell` recipe is always selected. Leave out `auth` to skip sign-in. Selecting the `cms` recipe currently fails before generation, because the shell and the CMS recipe both contribute `astro.config.mjs`.
+- **Recipes.** The `shell` recipe is always selected. Leave out `auth` to skip sign-in. The `cms` recipe can extend a top-level content composition without taking ownership of its schemas or Astro configuration.
 - **Offline by default.** Generation runs no package manager and makes no network request. It writes a placeholder `pnpm-lock.yaml` and makes one initial Git commit. Run `pnpm install` before you type-check or build, or pass `--install` to let the CLI run it through your own registry configuration.
 - **A safe target.** The target must be a new or empty directory whose parent exists. Git needs an identity configured already; the CLI never changes your Git configuration.
 - **Exit codes.** `0` is success, `3` is an invalid config, target or composition, and `4` is a generation, Git or staging failure. `--json` prints versioned diagnostics.
+
+### Generate content pages without CMS
+
+Add a top-level `composition` to create typed content collections and actual pages,
+not just empty capability declarations:
+
+```json
+{
+  "target": "./new-site",
+  "recipes": {
+    "shell": { "siteName": "Example Site", "defaultLocale": "en", "noIndex": true }
+  },
+  "composition": {
+    "contentLocales": ["en"],
+    "contentTypes": [{
+      "id": "entries",
+      "primary": true,
+      "labels": { "en": "Entries" },
+      "routes": { "en": "/entries/" },
+      "traits": ["title", "slug", "summary", "image", "body"],
+      "bindings": ["list", "detail", "navigation"]
+    }]
+  }
+}
+```
+
+This generates a collection definition, example markdown, a typed adapter, a list
+at `/entries/`, detail pages such as `/entries/example/`, and a navigation link.
+The adapter proves the entry's capabilities and maps its summary/image into the
+shared Card contract. The detail page renders markdown through Prose and uses
+Media for the local Astro image asset. The capability graph includes the content
+role and bindings; nothing is copied from a live website.
+
+The first content slice accepts one locale matching `shell.defaultLocale`, one or
+more content types, required `title`/`slug`/`body`, optional `summary`/`image`, and
+both list/detail bindings with optional navigation. The `primary` marker is a graph
+role, not an automatic homepage. Paths must use non-reserved lowercase segments
+and must not overlap another collection's list/detail routes.
+Other traits/bindings, multiple locales, and combining top-level composition with
+application auth are explicitly rejected for now. CMS is opt-in as described below.
+
+Generated shells include strict Astro typechecking, shared tokens and `SeoHead`.
+After installing dependencies and replacing the placeholder site URL in
+`astro.config.mjs`, run `pnpm typecheck` and `pnpm build`. `noIndex: true` suppresses
+the sitemap and sets both robots.txt and page metadata; it is not access control.
+The CLI does not configure a protected preview host.
+
+The generated definitions record the creation input and export the collection
+schemas. Changing that recorded trait list does not regenerate the rest of the
+site: the CLI remains create-only.
+
+### Add the CMS editor
+
+Keep the same top-level `composition`. Add `cms-admin` to each editable type's
+bindings and add `cms` inside `recipes`:
+
+```json
+{
+  "cms": {
+    "backend": {
+      "repo": "YOUR_ORG/YOUR_PROJECT/YOUR_REPOSITORY",
+      "tenantId": "YOUR_TENANT_ID",
+      "appId": "YOUR_PUBLIC_APP_ID",
+      "branch": "main"
+    },
+    "mediaRoots": ["src/assets/images"],
+    "uiLocale": "en"
+  }
+}
+```
+
+This fragment belongs alongside `recipes.shell`; it is not a complete create
+config. Never add a second composition inside `recipes.cms`.
+
+Core remains the sole schema, content-route and Astro-config owner. The CMS
+add-on builds Decap forms from the same composition and renders the shared
+standalone AdminPage at `/admin/`. Only `cms-admin`-bound types appear in the
+editor. A missing CMS selection or an editor with no bound types is an input error.
+
+Uploads and the starter image use the first media root. All roots have explicit
+source-image preview mappings and must be distinct and non-overlapping. The
+generated markdown processor resolves Decap body-image URLs without changing the
+public pages' optimized assets. The editor is always noindex and omitted from the
+sitemap; the site's `noIndex` policy still applies.
+
+Backend values are public identifiers, not secrets. Repository access, Entra
+registration and login require separate setup. Generation neither provisions
+cloud resources nor tests a live CMS session; saves target the configured branch
+(default `main`). Preview-host authentication remains a separate deployment concern.
 
 :::note[`@easy-web/create` is reserved]
 The package name `@easy-web/create` is reserved for a future `pnpm create` entry point and ships no code, so `pnpm create @easy-web` does not generate a site today. Use `@easy-web/cli`. See the [`@easy-web/create` page](../../packages/create-easy-web/).
