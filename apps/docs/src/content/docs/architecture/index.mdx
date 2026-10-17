@@ -61,6 +61,66 @@ graph TD
 
 `core` is the base every site installs. `cms-adapters` depends on it for the content contracts and `auth` for the recipe protocol; `swa` and `brand` are independent, and `create` is a reserved name with no code. The CLI depends on core, `auth` and `cms-adapters` because it composes their create recipes, and it never ships inside a site. The dashed edges are the deprecated compatibility packages, which only re-export core and are removed in 2.0.
 
+## Shared Packages and Site Responsibilities
+
+easy-web shares implementation through packages, not by making one site's source
+tree the template for every other site. Keep reusable behavior in the package
+that owns it, and keep a site's composition and identity in that site's repository.
+
+| Concern | Shared package responsibility | Site responsibility |
+| :--- | :--- | :--- |
+| Presentation | Core components, theme tokens, labels and component prop contracts | Layout composition, branding, copy, assets and site-specific components |
+| Content | Core structural contracts; CMS add-on field builders and schema/form generators | Content definitions, entries, collection loaders, routes and mappings into component contracts |
+| Optional integrations | CMS admin UI, auth components, hosting integration and brand tooling | Explicit selection, configuration and mounting of the integrations the site needs |
+| Creation | Package-owned recipes composed by the create-only CLI | Review the generated source, resolve dependencies and maintain the resulting repository |
+| Operations | Documented package behavior and compatibility constraints | Dependency and lockfile updates, build checks, executable deployment definitions and operational documentation |
+
+Start with core and add only the integrations the site needs. A site without a CMS
+can use Astro content collections and core components directly; adding an editor
+does not change which contracts those components accept. A one-off component can
+stay local without forking shared components or requiring every site to adopt the
+same content model.
+
+The CLI is a starting point, not a synchronization engine. It composes recipes
+into a new or empty target; it does not clone an existing site, regenerate an
+occupied site, migrate content, provision cloud resources or deploy the result.
+After creation, shared implementation changes arrive through reviewed dependency
+updates, while generated site files remain the site's responsibility. See
+[Create a New Site](../getting-started/create-new-site/) for the supported
+selections and current limitations. This separation does not imply that pipeline
+generation or an existing-site upgrade command is available.
+
+## CMS Editing and Content Reading Are Separate
+
+`@easy-web/cms-adapters` supplies the Decap editor integration and typed definition
+builders. It is not a content-fetching abstraction: pages still read their
+collections through Astro's native content APIs.
+
+With the typed builders, a site defines a content type once and explicitly wires
+that definition into both the editor configuration and the Astro collection schema:
+
+```mermaid
+flowchart LR
+    DEF["Site content definition"] -->|"buildDecapConfig"| FORM["Decap editor form"]
+    DEF -->|"toAstroSchema"| SCHEMA["Astro collection schema"]
+    FORM -->|"edits"| FILES["Site content files"]
+    FILES -->|"loaded and validated"| COLLECTION["Astro content collection"]
+    SCHEMA --> COLLECTION
+    COLLECTION -->|"getCollection"| MAP["Site mapping to core contracts"]
+    MAP --> BLOCK["Shared core components"]
+```
+
+The definition keeps form fields and schema fields aligned; it does not choose the
+site's routes or prove that every component can consume the result. The site adds
+`assertImplements` checks for the contracts it uses and typed mappings where a
+component needs a derived field such as a link. These compile-time checks complement
+the collection schema's content validation rather than replacing it.
+
+This is the manually wired content model, not a promise that the CLI can generate
+every such composition. See [Writing content types](../guides/content-types/) for
+the definition, schema, mapping and conformance steps, and
+[CMS adapters](../packages/cms-adapters/) for the current Decap APIs.
+
 ## The Consumer Pattern
 
 Site instances install easy-web packages from the public npm registry:

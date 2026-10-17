@@ -1,9 +1,11 @@
 # easy-web — Local Docs
 
-What is kept here is limited to this repo's internals.
+This directory holds repository-level diagrams and implementation notes.
 
 - **[`architecture.md`](architecture.md)** - diagrams of the package graph, the propagation path from a changeset to every site, the release flow, and the single-source SEO model.
+- **[Architecture Overview](../apps/docs/src/content/docs/architecture/index.mdx)** - public product guidance in the documentation site: package and site responsibilities, CMS editing versus content reading, and integration constraints.
 
-The ecosystem-level records — this repo's role and integration map, the decision records behind the shared primitives, and the repo topology — are maintained in a private index repository and are not linkable from here. Anything a package consumer needs in order to use a package belongs in that package's own README instead.
-
-Keep code-level notes here only when they would be noise in the index repository.
+Extend the existing documentation site for reusable architecture and integration
+guidance; keep package-specific API details in the package READMEs and reference
+pages. Public diagrams explain product relationships, not actual site inventories,
+customer associations or infrastructure locations.

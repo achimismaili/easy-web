@@ -3,9 +3,11 @@
 Visual reference for how the `@easy-web/*` family is wired, released and consumed.
 Diagrams are Mermaid and render inline on GitHub.
 
-> Ecosystem-level records (decision records, repo topology, adoption matrix) are
-> maintained in a private index repository. This file covers only what is
-> internal to `easy-web`.
+For reusable guidance on shared-package versus site responsibilities and the
+separation between CMS editing and Astro content reading, see the
+[Architecture Overview](../apps/docs/src/content/docs/architecture/index.mdx#shared-packages-and-site-responsibilities)
+in the documentation site. This file complements that guidance with repository
+diagrams.
 
 ## Package graph
 
