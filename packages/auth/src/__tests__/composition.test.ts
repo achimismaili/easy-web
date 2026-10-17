@@ -288,6 +288,12 @@ describe('recipe composition: emitted fixtures parse, type-check and build (boun
     await runAstro(minimalRoot, 'check');
     await runAstro(minimalRoot, 'build');
 
+    // SEO owns robots.txt at build time; the auth stand-in config below omits SEO.
+    expect(shellFiles.map((file) => file.path)).not.toContain('public/robots.txt');
+    const robots = readFileSync(join(minimalRoot, 'dist/robots.txt'), 'utf8');
+    expect(robots).toContain('Disallow: /admin/');
+    expect(robots).toContain('Sitemap: https://replace-with-your-domain.example/sitemap-index.xml');
+
     // Composition proof on the parts that are sound: shell's config/public files + auth's files, with the
     // broken shell-owned component files (Base layout, 404, localized-paths) replaced by test-local stand-ins.
     for (const stale of ['src/layouts/Base.astro', 'src/pages/404.astro', 'src/lib/localized-paths.ts']) {
@@ -307,5 +313,5 @@ describe('recipe composition: emitted fixtures parse, type-check and build (boun
 
     const authHtml = readFileSync(join(authRoot, 'dist/index.html'), 'utf8');
     expect(authHtml.match(/<astro-island\b/g)).toHaveLength(1);
-    expect(readFileSync(join(authRoot, 'public/robots.txt'), 'utf8')).toContain('Disallow: /admin/');  }, 300_000);
+  }, 300_000);
 });
