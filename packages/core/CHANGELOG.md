@@ -1,5 +1,14 @@
 # @easy-web/core
 
+## 1.8.0
+
+### Minor Changes
+
+- fd16e96: Add the typed Card headingLevel prop (h1-h6, default h3) for accessible heading hierarchies.
+  Keep PageShell's focused skip link above every shared header using the existing layer tokens,
+  and retain lightboxes above sticky headers. Derive Open Graph alternate locales from configured
+  hreflang links instead of inventing bilingual metadata for single-language sites.
+
 ## 1.7.1
 
 ### Patch Changes
