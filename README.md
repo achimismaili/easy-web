@@ -68,6 +68,8 @@ Several site instances consume these packages: a pilot that validates every rele
 
 New sites, and everything in this repository, start on Node.js 24, pnpm 10 and Astro 7. Node.js 22 with Astro 6 stays supported for existing sites, for the packages that the compatibility lane in [`ci.yml`](.github/workflows/ci.yml) builds on that pairing. Node.js is a build-time requirement: easy-web sites are static output, so Node.js builds a site but is not needed to serve it. `@easy-web/cli` is the exception and needs Node.js 24 or later, because it only runs on the machine that generates a site. The [technology map](https://achim.ismaili.de/easy-web/docs/architecture/technology-map/) lists the lane that validates each package.
 
+The packed compatibility consumer overrides direct and transitive tested first-party dependencies to the same local tarballs. This lets the matrix validate unpublished release versions without fetching those versions from npm; strict peer checks and real consumer builds still apply.
+
 ## Structure
 
 | Path | Purpose |
