@@ -50,7 +50,7 @@ jobs:
         run: node scripts/packed-consumer-compat.mjs --pack-only compat-tarballs
 
       - name: Upload compatibility artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: easy-web-compat-tarballs
           path: compat-tarballs/*.tgz
@@ -89,7 +89,7 @@ jobs:
           cache: pnpm
 
       - name: Download compatibility artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: easy-web-compat-tarballs
           path: compat-tarballs
