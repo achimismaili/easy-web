@@ -108,6 +108,7 @@ async function writeConsumer(testCase, consumer, archives, astro) {
     private: true,
     type: 'module',
     scripts: { build: 'astro build' },
+    pnpm: { overrides: dependencies },
     dependencies: {
       ...dependencies,
       '@astrojs/markdown-remark': '7.3.2',
