@@ -10,7 +10,7 @@ import Media from './Media.astro';
 export type Props = CardProps;
 
 const props = Astro.props;
-const { item, imageSizes, class: className } = props;
+const { item, imageSizes, headingLevel: Heading = 'h3', class: className } = props;
 const { title, description, href } = item ?? props;
 // Only the legacy props fall back to the title for alt text; an item's image
 // carries its own alt.
@@ -25,7 +25,7 @@ const Tag = href ? 'a' : 'div';
     props.image && <img src={props.image} alt={legacyAlt} class="ew-card__image" loading="lazy" />
   )}
   <div class="ew-card__body">
-    <h3 class="ew-card__title">{title}</h3>
+    <Heading class="ew-card__title">{title}</Heading>
     {description && <p class="ew-card__description">{description}</p>}
   </div>
 </Tag>

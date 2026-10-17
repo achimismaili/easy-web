@@ -12,6 +12,7 @@ const itemCard: CardProps = {
   item: { title: 'Touring bicycle', href: '/bikes/touring/', image },
   imageSizes: '(min-width: 1024px) 33vw, 100vw',
   class: 'featured',
+  headingLevel: 'h2',
 };
 
 const itemCardWithoutLink: CardProps = { item: { title: 'Touring bicycle', description: 'Ready for long rides' } };
@@ -21,7 +22,14 @@ const legacyCard: CardProps = {
   href: '/bikes/touring/',
   image: '/images/touring.jpg',
   imageAlt: 'A touring bicycle',
+  headingLevel: 'h4',
 };
+
+// @ts-expect-error Only heading elements are allowed as card titles.
+const nonHeadingCard: CardProps = { item: { title: 'Gallery' }, headingLevel: 'div' };
+
+// @ts-expect-error Heading levels use tag names, not numeric ranks.
+const numericHeadingCard: CardProps = { title: 'Gallery', headingLevel: 2 };
 
 // @ts-expect-error An item image carries its own alt text; the title is no fallback.
 const itemImageWithoutAlt: CardProps = { item: { title: 'Touring bicycle', image: { src: '/images/touring.jpg' } } };
@@ -56,6 +64,8 @@ const grid: CardGridProps = { class: 'news-grid' };
 void itemCard;
 void itemCardWithoutLink;
 void legacyCard;
+void nonHeadingCard;
+void numericHeadingCard;
 void itemImageWithoutAlt;
 void mixedCard;
 void legacyCardWithSizes;

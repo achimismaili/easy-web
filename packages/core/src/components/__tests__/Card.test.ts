@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import type { ImageMetadata } from 'astro';
+import type { CardProps } from '../../contracts/index.js';
 import BlogPostCard from '../BlogPostCard.astro';
 import Card from '../Card.astro';
 import CardGrid from '../CardGrid.astro';
@@ -36,6 +37,21 @@ const imgTag = (html: string) => html.match(/<img\b[^>]*>/)?.[0] ?? '';
 const scopeOf = (tag: string) => tag.match(/data-astro-cid-[a-z0-9]+/)?.[0];
 
 describe('<Card item>', () => {
+  it.each(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const)('renders a typed %s title on both prop paths', async (headingLevel) => {
+    const variants: CardProps[] = [
+      { item: { title: 'Gallery', href: '/gallery/' }, headingLevel },
+      { title: 'Gallery', headingLevel },
+    ];
+    for (const props of variants) {
+      const html = await render(Card, props);
+      expect(html).toContain(`<${headingLevel} class="ew-card__title">Gallery</${headingLevel}>`);
+    }
+  });
+
+  it('defaults the legacy title to h3', async () => {
+    expect(await render(Card, { title: 'Gallery' })).toContain('<h3 class="ew-card__title">Gallery</h3>');
+  });
+
   it('renders a local image through Media with srcset and the given sizes, and links the card', async () => {
     const html = await render(Card, {
       item: {

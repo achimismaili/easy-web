@@ -5,7 +5,8 @@ import { normalizeHtml } from './normalize-html';
 
 /**
  * Baseline: how today's <SeoHead> renders with today's props. A change to
- * these snapshots is a regression of legacy usage - do not update them.
+ * these snapshots requires an intentional behavior change. The single-language
+ * baseline now omits the formerly invented OG alternate; all other tags stay fixed.
  */
 const site = 'https://example.com';
 
