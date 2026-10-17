@@ -10,8 +10,12 @@ import { invalid } from './errors.js';
 export function outputPath(contribution: RecipeOutputContribution): string {
     const { target } = contribution;
     return contribution.kind === 'route' && target.startsWith('/')
-        ? target === '/' ? 'src/pages/index.astro' : `src/pages${target}.astro`
+        ? target.endsWith('/') ? `src/pages${target}index.astro` : `src/pages${target}.astro`
         : target;
+}
+
+export function isFileContribution(contribution: RecipeOutputContribution): boolean {
+    return contribution.kind !== 'content' && contribution.kind !== 'binding';
 }
 
 export function safeOutputPath(path: string): string {
@@ -58,7 +62,7 @@ export async function composeRecipes(selections: readonly RecipeSelection[]): Pr
     const graph = resolved.value;
     const owners = new Map<string, string>();
     for (const { recipe } of selections) {
-        for (const contribution of recipe.outputContributions) {
+        for (const contribution of recipe.outputContributions.filter(isFileContribution)) {
             const path = safeOutputPath(outputPath(contribution));
             const key = path.toLowerCase();
             if (owners.has(key) && path !== 'package.json') {
@@ -83,7 +87,7 @@ export async function composeRecipes(selections: readonly RecipeSelection[]): Pr
             if (issues.length) invalid(`Recipe validation failed: ${JSON.stringify(issues)}`);
         }
         const output = await recipe.generate(context);
-        const declared = recipe.outputContributions.map(outputPath).sort();
+        const declared = recipe.outputContributions.filter(isFileContribution).map(outputPath).sort();
         const generated = output.files.map(({ path }) => safeOutputPath(path)).sort();
         if (new Set(generated).size !== generated.length || JSON.stringify(declared) !== JSON.stringify(generated)) {
             invalid(`Generated files differ from declared contributions: ${recipe.id}`);

@@ -24,6 +24,9 @@ const cmsMediaRecipeOptionsSchema = z.strictObject({
     roots.forEach((root, index) => {
       const key = root.toLocaleLowerCase('en-US');
       if (folded.has(key)) context.addIssue({ code: z.ZodIssueCode.custom, path: [index], message: 'Media roots must not case-collide' });
+      if ([...folded].some((previous) => key.startsWith(`${previous}/`) || previous.startsWith(`${key}/`))) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: [index], message: 'Media roots must not overlap' });
+      }
       folded.add(key);
     });
   }).readonly(),
@@ -31,6 +34,8 @@ const cmsMediaRecipeOptionsSchema = z.strictObject({
 });
 
 export type CmsMediaRecipeOptions = z.infer<typeof cmsMediaRecipeOptionsSchema>;
+export const cmsSiteOptionsSchema = cmsMediaRecipeOptionsSchema.omit({ composition: true });
+export type CmsSiteOptions = z.infer<typeof cmsSiteOptionsSchema>;
 
 function identifierTraits(traits: readonly string[]): readonly ('title' | 'slug')[] {
   if (traits.includes('title')) return ['title'];
@@ -56,6 +61,20 @@ function runtimeDefinitions(options: CmsMediaRecipeOptions) {
       publicFolder,
       fields: fieldsForTraits(traits, { uiLocale: options.uiLocale, mediaFolder, publicFolder }),
     });
+  });
+}
+
+/** Build the editor from the same trait selections as the page collections, without another schema owner. */
+export function buildContentCompositionDecapConfig(rawComposition: unknown, rawOptions: unknown) {
+  const composition = contentCompositionSchema.parse(rawComposition);
+  const options = cmsSiteOptionsSchema.parse(rawOptions);
+  const selected = composition.contentTypes.filter((type) => type.bindings.includes('cms-admin'));
+  if (!selected.length) throw new Error('CMS generation requires at least one cms-admin content binding');
+  const definitions = runtimeDefinitions({ ...options, composition: { ...composition, contentTypes: selected } });
+  return buildDecapConfig({
+    backend: { name: 'azure', repo: options.backend.repo, tenant_id: options.backend.tenantId, app_id: options.backend.appId, branch: options.backend.branch },
+    mediaFolder: options.mediaRoots[0]!, publicFolder: `/${options.mediaRoots[0]!}`,
+    locale: options.uiLocale, contentTypes: definitions,
   });
 }
 
@@ -91,7 +110,7 @@ export const cmsMediaRecipe = {
   id: CMS_MEDIA_RECIPE_ID,
   version: '1.5.0',
   protocolVersion: 1,
-  compatibleCliRange: '^0.1.0',
+  compatibleCliRange: '^0.1.0 || ^0.2.0',
   compatibleRuntimeRange: '^1.5.0',
   provides: ['cms.decap-media', 'content.typed-definitions', 'media.preview-copy'],
   requires: ['site.shell'],

@@ -1,6 +1,6 @@
 # @easy-web/cli
 
-Private Phase-1 create-only CLI. Generation is offline by default; installation is explicit.
+Phase-1 create-only CLI. Generation is offline by default; installation is explicit.
 
 ```sh
 easy-web create --config ./create.json --json
@@ -21,11 +21,108 @@ easy-web create --config ./create.json --install
 ```
 
 Shell is always selected; omit `auth` or `cms` to exclude them. Recipe options are
-parsed with the package-owned schemas. CMS options use `composition`, `backend`,
-`mediaRoots` and optional `uiLocale`; selecting CMS currently fails before generation
-because both shell and CMS contribute `astro.config.mjs`. Multi-recipe JS config
-merging is not supported in Phase 1. Package dependencies, devDependencies and
+parsed with the package-owned schemas. CMS editor generation uses the top-level
+content composition, as shown below. Arbitrary multi-recipe JS config merging is
+not supported in Phase 1. Package dependencies, devDependencies and
 scripts merge additively in resolver order; the later value wins a key collision.
+
+## Content-aware generation
+
+An optional top-level `composition` selects content independently of CMS. The CLI
+resolves a deterministic capability graph and runs package-owned recipes; it does
+not clone a site, copy a pilot, or read a customer repository.
+
+```json
+{
+  "target": "./new-site",
+  "recipes": {
+    "shell": { "siteName": "Example Site", "defaultLocale": "en", "noIndex": true }
+  },
+  "composition": {
+    "contentLocales": ["en"],
+    "contentTypes": [{
+      "id": "entries",
+      "primary": true,
+      "labels": { "en": "Entries" },
+      "routes": { "en": "/entries/" },
+      "traits": ["title", "slug", "summary", "image", "body"],
+      "bindings": ["list", "detail", "navigation"]
+    }]
+  }
+}
+```
+
+This first slice supports one locale matching `shell.defaultLocale`, one or more
+content types, required `title`/`slug`/`body`, optional `summary`/`image`, and
+`list`/`detail` plus optional `navigation` bindings. At most one type can be
+`primary`; that marker describes its graph role, not a homepage renderer.
+Routes use non-reserved lowercase path segments and must not overlap.
+Unsupported traits, homepage bindings, multiple locales, and combining this
+composition with application auth fail as invalid input, not partial output.
+Existing shell-only and shell-plus-auth inputs retain their earlier behavior.
+
+Core owns schema, sample-content and page generation. The generated definitions
+record the composition and export Astro collections built from the shared trait
+schemas. Typed adapters map `summary` to the Card contract's `description`, resolve
+`href` from the configured route and slug, and prove capability conformance with
+`assertImplements`. Detail pages use the rendered-body contract; image-enabled
+sites declare Sharp and supply a local example asset handled by Astro.
+The graph reports content roles and presentation bindings separately from files.
+
+After creation, run `pnpm install`, replace the placeholder `site` URL in
+`astro.config.mjs`, then run `pnpm typecheck` and `pnpm build`. The generated shell
+includes a strict Astro `tsconfig.json`, `@astrojs/check`, shared tokens and
+`SeoHead`. The SEO integration owns `robots.txt`; `noIndex: true` emits no sitemap,
+disallows crawling and adds noindex metadata to generated pages. This is not
+authentication and does not enforce a deployment environment's access policy.
+Definitions and pages are generated source: editing the recorded trait list alone
+does not regenerate schemas or routes. The CLI still has no modify/update command.
+
+### Add CMS to the same content composition
+
+Add `cms-admin` to the bindings of each editable content type and add these recipe
+options alongside `recipes.shell`:
+
+```json
+{
+  "cms": {
+    "backend": {
+      "repo": "YOUR_ORG/YOUR_PROJECT/YOUR_REPOSITORY",
+      "tenantId": "YOUR_TENANT_ID",
+      "appId": "YOUR_PUBLIC_APP_ID",
+      "branch": "main"
+    },
+    "mediaRoots": ["src/assets/images"],
+    "uiLocale": "en"
+  }
+}
+```
+
+Do not repeat `composition` inside `recipes.cms`. Core still owns the collection
+schemas, routes, example content and the only `astro.config.mjs`. The CMS add-on
+reads the recorded composition at build time to generate Decap forms in the
+standalone `/admin/` page, using the existing `AdminPage` component. Only content
+types with `cms-admin` appear in the editor; no binding means no editor exposure.
+CMS without a bound type, or a CMS binding without the add-on, is rejected.
+
+The first media root owns editor uploads and the generated example image; all
+configured roots get explicit source-asset previews. Roots must be distinct and
+non-overlapping. Astro's markdown processor handles Decap's `/src/assets/...`
+body-image URLs, while public pages retain optimized assets. The shared SEO
+integration and `shell.noIndex` policy remain intact; the editor is always
+noindex and excluded from the sitemap. These crawler settings are not authentication.
+
+This writes public backend identifiers, never credentials. Configure the Azure
+DevOps repository, public Entra application and permissions separately; generation
+does not provision, authenticate, deploy or validate a live CMS login. Saves use
+the configured branch (default `main`) without enabling an editorial workflow.
+
+The published standalone `cmsMediaRecipe` API remains available with its older
+nested composition and full trait support. That recipe owns a complete config and
+schema and is not composable with the CLI shell; use the top-level composition
+path above for generated content sites.
+
+## Target and validation boundary
 
 Targets must have an existing parent and be nonexistent or empty, including hidden
 and ignored content. Linked paths/junctions and unsafe output paths are rejected.

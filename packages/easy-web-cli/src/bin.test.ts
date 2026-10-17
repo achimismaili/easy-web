@@ -123,6 +123,34 @@ describe('easy-web built CLI', () => {
     expect(await readFile(join(target, 'pnpm-lock.yaml'), 'utf8')).toContain("lockfileVersion: '9.0'");
   });
 
+  it.each([false, true])('generates content routes and graph bindings with CMS=%s through the built command', async (cms) => {
+    const target = join(packDirectory, `generated-content-${cms}`);
+    const configPath = join(packDirectory, `create-content-${cms}.json`);
+    await writeFile(configPath, JSON.stringify({
+      target, recipes: { shell: { noIndex: true }, ...(cms ? { cms: {
+        backend: { repo: 'org/project/repo', tenantId: 'TENANT', appId: 'APP' }, mediaRoots: ['src/assets/images'], uiLocale: 'en',
+      } } : {}) },
+      composition: {
+        contentLocales: ['en'],
+        contentTypes: [{
+          id: 'notes', labels: { en: 'Notes' }, routes: { en: '/notes/' },
+          traits: ['title', 'slug', 'body'], bindings: ['list', 'detail', 'navigation', ...(cms ? ['cms-admin'] : [])],
+        }],
+      },
+    }));
+    const result = await execa(process.execPath, [builtCli, 'create', '--config', configPath, '--json'], {
+      reject: false,
+      env: { GIT_AUTHOR_NAME: 'CLI Test', GIT_AUTHOR_EMAIL: 'cli@example.invalid', GIT_COMMITTER_NAME: 'CLI Test', GIT_COMMITTER_EMAIL: 'cli@example.invalid' },
+    });
+    expect(result.exitCode, result.stderr).toBe(0);
+    const graph = JSON.parse(JSON.parse(result.stdout).graphJson);
+    expect(graph.contentTypes.additional[0].id).toBe('content.type.notes');
+    expect(graph.bindings).toHaveLength(cms ? 4 : 3);
+    if (cms) expect(await readFile(join(target, 'src/pages/admin.astro'), 'utf8')).toContain('buildContentCompositionDecapConfig(composition, cmsOptions)');
+    expect(await readFile(join(target, 'src/pages/notes/[slug].astro'), 'utf8')).toContain('Rendered<Item & Linkable>');
+    expect(await readFile(join(target, 'src/layouts/Base.astro'), 'utf8')).toContain('<SeoHead');
+  });
+
   it.each([true, false])('reports the install failure cause when json=%s', async (json) => {
     const target = join(packDirectory, `generated-install-failure-${json}`);
     const configPath = join(packDirectory, `create-install-failure-${json}.json`);

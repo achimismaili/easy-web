@@ -10,7 +10,7 @@ const CONTRIBUTION_FILE_PATH: Record<string, string> = {
     'shell.home': 'src/pages/index.astro',
     'shell.404': 'src/pages/404.astro',
     'shell.localized-paths': 'src/lib/localized-paths.ts',
-    'shell.robots': 'public/robots.txt',
+    'shell.tsconfig': 'tsconfig.json',
     'shell.gitignore': '.gitignore',
 };
 
@@ -38,6 +38,8 @@ describe('shell recipe', () => {
         const files = buildShellFiles({ noIndex: true });
         const config = files.find((file) => file.path === 'astro.config.mjs')!;
         expect(config.content).toContain('noIndex: true');
+        expect(files.find((file) => file.path === 'src/layouts/Base.astro')!.content).toContain('<SeoHead');
+        expect(files.some((file) => file.path === 'public/robots.txt')).toBe(false);
     });
 
     it('never emits a real domain', () => {
