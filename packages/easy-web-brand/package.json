@@ -29,7 +29,7 @@
   "dependencies": {
     "mri": "^1.2.0",
     "png-to-ico": "^3.0.2",
-    "sharp": "^0.34.5"
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
