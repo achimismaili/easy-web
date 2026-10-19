@@ -336,6 +336,68 @@ OG metadata without changing the hreflang links. Language/region tags normalize 
 OG underscores and casing (for example `en-GB` to `en_GB`); bare `de` and `en`
 retain their historical `de_DE` and `en_US` mappings.
 
+#### Not-found page ownership
+
+`NotFound` is a host-independent body component, not a route generator or an HTTP
+status handler. Keep each site's 404 page a thin shell: the site owns the route,
+layout, document language, SEO metadata and content loading; the component owns
+the shared body and token-based styling. Keep that shell public rather than
+wrapping it in a sign-in requirement.
+
+```astro
+---
+// src/pages/404.astro; Base is the site's own layout.
+import Base from '../layouts/Base.astro';
+import NotFound from '@easy-web/core/components/NotFound';
+---
+<Base title="Page not found">
+  <NotFound currentLang="en" defaultLocale="en" rootHref="/" />
+</Base>
+```
+
+For localized pages, pass the matching content slice and locale props. The
+default home link is `/` for the default locale and `/<currentLang>/` otherwise;
+set `rootHref` explicitly when the site's base path or locale routing differs.
+Supply `alternateHref` only when the target page exists.
+
+Site-owned, CMS-editable copy can use `NotFoundContent` from
+`@easy-web/core/contracts` or `notFoundSchema` from
+`@easy-web/core/schemas/notFound`. The schema is an open locale-keyed record of
+optional `image` (string), `heading` and `message` fields; it does not register a
+collection or CMS form, generate translations or enforce locale completeness.
+Register content and editing fields in the site. With Astro's glob loader's
+default ID generation, `notFound.json` at the collection root gets entry ID
+`notfound`, not `notFound`; use the actual collection name and loader ID when
+calling `getEntry`.
+
+#### Validate artifacts separately from hosting
+
+After a site build, use its existing test runner to check the **actual emitted
+files**, not a fixed path list copied from another site:
+
+- Confirm the root 404 artifact and every deliberately authored localized 404
+  route exist. With the workspace's Astro 7 directory output, the root special
+  route is `404.html`; inspect localized output for the site's `build.format`,
+  base path and routing configuration instead of assuming every 404 is
+  `/<locale>/404/index.html`.
+- Inspect each rendered body for the intended heading/message and a home link to
+  the correct locale root, including any base path.
+- If the site requires translated CMS copy, check every configured locale has a
+  non-whitespace `heading` or `message`. Schema acceptance alone is insufficient:
+  missing fields use built-in fallback copy, while empty strings do not.
+
+These are build-artifact smoke tests, not proof that a missing URL returns HTTP
+404. `astro preview` is not an emulator for a hosting provider's routing config;
+do not assume a particular missing-route status or fallback body across versions
+and adapters. An operator must separately verify a unique, nonexistent URL on
+the deployed target returns HTTP 404 **and** the intended body and home link,
+including locale-prefixed URLs where applicable.
+
+For Azure Static Web Apps, use the optional
+[`@easy-web/swa` integration and configuration checks](https://github.com/achimismaili/easy-web/blob/main/packages/easy-web-swa/README.md#validation-boundaries).
+Other hosts need their own fallback configuration. Installing a package or
+following this guidance does not wire site tests or post-deployment checks.
+
 ## Related
 
 - [Writing content types](../../guides/content-types/)

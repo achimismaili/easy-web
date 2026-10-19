@@ -1,5 +1,11 @@
 # Migration Guide — @easy-web/content-blocks
 
+> **Historical upgrade notes.** This package now re-exports core. For new or
+> current not-found adoption, use the [core page/content guidance](https://achim.ismaili.de/easy-web/docs/packages/core/#not-found-page-ownership)
+> and the [current SWA checklist](../easy-web-swa/MIGRATION.md) only if hosted on
+> SWA. The older schema/entry-ID examples and automated migration instructions
+> below are not the current adoption contract.
+
 Upgrade paths for consuming instances. Every section provides an **Automated** path (recommended), a **Manual** checklist (for auditing what the script does), and a **Rollback** procedure.
 
 The shared 404 architecture spans two packages: the `<NotFound>` component and its per-locale content model here, and the `staticwebapp.config.json` slice managed by [`@easy-web/swa`](https://github.com/achimismaili/easy-web/blob/main/packages/easy-web-swa/README.md). Read the `@easy-web/swa` README first if you need the "why" behind the sidecar ownership model.
