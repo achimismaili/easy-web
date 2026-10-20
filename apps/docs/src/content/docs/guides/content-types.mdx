@@ -7,6 +7,14 @@ A content type in an easy-web site is one TypeScript definition. From it you get
 
 The builders live in [`@easy-web/cms-adapters`](../../packages/cms-adapters/). The contracts they're checked against live in [`@easy-web/core/contracts`](../../packages/core/#content-contracts).
 
+Contracts describe shared data shapes, not a mandatory set of collections. A site
+chooses its collection names, storage, routes and extra fields; several different
+collections can satisfy the same contract. The definitions below are manually
+wired into Astro and Decap. The CLI's separate
+[content composition](../../getting-started/create-new-site/#generate-content-pages-without-cms)
+can generate supported schemas, adapters and routes when creating a site, but
+adding a field or assertion to an existing site does not regenerate those files.
+
 ## A first definition
 
 ```ts
@@ -125,13 +133,24 @@ The return type is the contract, so TypeScript checks the mapping for you. Site 
 Next to the definition, state which contracts it must satisfy:
 
 ```ts
-import { assertImplements, type Event, type HasImage } from '@easy-web/core/contracts';
+import { assertImplements, type Event } from '@easy-web/core/contracts';
 import type { InferData } from '@easy-web/cms-adapters';
 
-assertImplements<InferData<typeof events>, Event & HasImage>();
+assertImplements<InferData<typeof events>, Event>();
 ```
 
-This is the per-site conformance gate. If someone renames `startDate`, makes `image` optional, or changes a type, this line fails and the error names the field.
+This is the per-site conformance gate. If someone renames `startDate`, makes it
+optional, or changes its type, this line fails and the error names the field.
+
+The default event field set already has an optional image, which `Event` permits.
+To require `Event & HasImage`, first replace that image with a required
+`field.image`, as in the field-set customization above, then strengthen the
+assertion. An assertion checks assignability; it does not make optional data
+required or check whether alt text is meaningful.
+
+`field.body()` is excluded from `InferData`. A block requiring `HasBody` needs
+the `Content` component returned by `render(entry)` from `astro:content`, composed
+with the mapped data at the rendering boundary, not a frontmatter string.
 
 ### 4. Run `pnpm typecheck`
 
@@ -139,7 +158,22 @@ This is the per-site conformance gate. If someone renames `startDate`, makes `im
 pnpm typecheck
 ```
 
-`astro check` and the build fail on the same error, so drift turns into a red pipeline instead of a broken editor.
+Make sure the site's `typecheck` script runs `astro check` and is part of its
+validation pipeline. `astro build` alone is not a TypeScript conformance gate.
+For example, a build script can explicitly run `astro check && astro build`.
+
+The checks have different responsibilities:
+
+| Check | What it proves |
+| :--- | :--- |
+| `toAstroSchema` attached to a loaded collection | Actual content satisfies the generated schema when Astro loads it, including required values and image alt rules |
+| `assertImplements<Data, Contract>()` in a type-checked file | The inferred data type is assignable to the requested contract; the function performs no runtime validation |
+| A typed mapping return value | The mapped data supplies the fields a block needs, including site-owned links |
+
+Importing a `Navigation` type or casting JSON to a contract does not validate
+stored content. Attach the generated schema to the collection that reads it.
+Neither a schema nor a type assertion creates routes, a CMS page, CI checks or a
+rebuild schedule.
 
 ## Images and alt text
 
@@ -178,17 +212,38 @@ Publishing is explicit. Set `publish` on the definition and an optional `publish
 | `missing-date-means-published` | visible | hidden until that date |
 | `missing-date-means-draft` | hidden | hidden until that date |
 
-Apply the rule wherever you list entries:
+Choose the missing-date rule deliberately: one allows undated content to appear;
+the other keeps it out until a date is supplied and reached. With either rule, a
+date equal to or earlier than the evaluation time is published. `publishDate` is
+separate from `Article.datePublished` and `Event.startDate`; those fields do not
+control `isPublished`.
+
+The definition adds a field, not an automatic filter. Apply the rule at every
+public read boundary. For example, given a `news` definition with
+`publish: 'missing-date-means-draft'`, share one reader:
 
 ```ts
+// src/content/news.ts
+import { getCollection } from 'astro:content';
 import { isPublished } from '@easy-web/core/contracts';
 
-const visible = (await getCollection('news')).filter((entry) =>
-  isPublished(entry.data, 'missing-date-means-draft'),
-);
+export async function getPublishedNews() {
+  const now = new Date();
+  return (await getCollection('news')).filter((entry) =>
+    isPublished(entry.data, 'missing-date-means-draft', now),
+  );
+}
 ```
 
-Without `publish`, no date field is added and every entry is visible. Since the rule is checked at build time, a site that relies on future dates needs a scheduled rebuild.
+Use that reader for listings **and** the detail route's `getStaticPaths`, plus
+feeds, search data and other generated outputs that expose entries. Hiding a card
+does not prevent an unfiltered detail route from generating a public page.
+
+Without `publish`, no date field is added and no publication filtering is supplied.
+On a prerendered site, visibility is evaluated during the build: a future date
+does not update deployed HTML by itself. The site must arrange a rebuild at or
+after that date, scheduled or otherwise. This is a publication policy, not access
+control for confidential content.
 
 ## Per-locale content
 
