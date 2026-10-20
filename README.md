@@ -96,7 +96,7 @@ pnpm changeset
 
 ## Publishing
 
-Publishing is fully automated. Pushing to `main` with pending changesets opens a `chore: version packages` pull request; merging that pull request publishes the whole fixed version group to npm via GitHub Actions and npm Trusted Publishing (OIDC). No manual `npm publish`, and no npm token in CI.
+Publishing uses GitHub Actions and npm Trusted Publishing (OIDC). Pending changesets on `main` produce a `chore: version packages` pull request; merging it records the versions in Git, and a subsequent Release run can publish the unpublished versions. The fixed family and independently versioned CLI are checked separately. A merged version PR alone does not prove npm publication succeeded. No manual `npm publish`, and no npm token in CI. See [package versions, dependencies and releases](CONTRIBUTING.md#package-versions-dependencies-and-releases) for membership, verification and adoption guidance.
 
 Package publication and website deployment are separate. The deploy workflow builds this repository's showcase and docs for GitHub Pages; it does not publish npm packages. Pilot and customer sites keep their own lockfiles and Azure pipelines, so a published version changes no deployed site until that repository accepts a dependency update, validates it and deploys its own artifact. Rollout is pilot-first.
 

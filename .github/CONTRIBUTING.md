@@ -31,6 +31,11 @@ Every PR that changes a publishable package MUST include a changeset file.
 
 Run `pnpm changeset` to create one interactively.
 
+The [root contributing guide](../CONTRIBUTING.md#package-versions-dependencies-and-releases)
+defines the fixed family, independent CLI, dependency strategy and the distinction
+between a version PR, verified npm publication and site adoption. Repository-only
+documentation changes that alter no published package do not need a changeset.
+
 ## Package Structure
 
 | Directory | Package | Purpose |
