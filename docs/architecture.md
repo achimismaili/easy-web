@@ -75,58 +75,58 @@ ships inside one. Each shim is a regular dependency on `core` that re-exports on
 subpath with `@deprecated` markers, so existing imports keep working through 1.x.
 2.0 removes the shims once every site has migrated.
 
-Everything else each package needs is supplied by the consuming instance as a
-peer dependency:
+Host-provided integrations are declared as peers; packages also install regular
+third-party dependencies, such as MSAL in auth and Sharp in brand:
 
 | Package | Peer dependencies |
 | :--- | :--- |
-| `core`, `swa`, `cms-adapters`, `seo`, `markdown` | `astro` |
+| `core`, `swa`, `seo`, `markdown` | `astro` |
+| `cms-adapters` | `astro`, `sharp` |
 | `content-blocks` | `astro`, `zod` |
 | `i18n` | `astro`, `@inlang/paraglide-js` |
 | `auth` | `astro`, `react`, `react-dom` |
 | `theme-core`, `brand` | none |
 
-**Why `core` is a dependency rather than a peer.** Under Changesets `fixed`
-grouping, an intra-workspace *peer* dependency forces every release to be a
-major (ADR 0016). Core's helpers are pure functions, CSS custom properties and
-Astro components, so a duplicate copy costs bundle size rather than
-correctness. `auth` keeps its React peer declaration because two MSAL instances
-corrupt the shared token cache. There, duplication *is* a bug.
+**Why `core` is a dependency rather than a peer.** Peer-range changes can
+propagate breaking bumps through Changesets' fixed group. Core's shared helpers
+do not require a host singleton. Auth also depends on core normally, while keeping
+React and React DOM as host-provided peers. Peer declarations alone cannot prevent
+two MSAL providers: auth-dependent components must share one React island and one
+provider. See the [contributing guide](../CONTRIBUTING.md#dependencies-and-host-provided-peers)
+for the manifest-backed dependency strategy.
 
 ## Propagation: one fix reaches every site
 
-The reason the monorepo exists. A change lands once and every instance inherits
-it through npm.
+The reason the monorepo exists: a change lands once and becomes available to
+every instance through npm. Adoption is explicit, not an automatic rollout.
 
 ```mermaid
 flowchart LR
   dev["contributor<br/>+ changeset"] --> main["easy-web main"]
   main --> vpr["version PR<br/><i>chore: version packages</i>"]
-  vpr -->|merge| npm[("public npm<br/>@easy-web/* @ one version")]
-  npm --> reno["Renovate<br/><i>monthly</i>"]
-  reno --> pilot["dev.ismaili.de<br/><i>pilot — validates first</i>"]
-  pilot -->|once validated| cust["harleyrentflorida.de<br/><i>customer</i>"]
-  reno -.-> cust
-  cust --> future["future instances"]
+  vpr -->|merge| release["Release run<br/><i>verify publication</i>"]
+  release --> npm[("public npm<br/>fixed family + independent CLI")]
+  npm --> update["reviewed site update<br/><i>manifest + lockfile</i>"]
+  update --> pilot["pilot<br/><i>validate and deploy</i>"]
+  pilot -->|once validated| cust["customer adoption<br/><i>separate checks and deployment</i>"]
 
   classDef hub fill:#7b2d8b,color:#fff,stroke:#4a1a54
   classDef reg fill:#8b5a2d,color:#fff,stroke:#54341a
   classDef site fill:#2d4a8b,color:#fff,stroke:#1a2d54
-  class main,vpr hub
-  class npm,reno reg
-  class pilot,cust,future site
+  class main,vpr,release hub
+  class npm,update reg
+  class pilot,cust site
 ```
 
 All 11 packages in the fixed group share one version (`fixed` grouping), so
 "which versions work together?" has a single answer. The CLI is versioned on its
-own and is never installed alongside them in a site. Pilot-first is a policy, not
-a mechanism: `dev.ismaili.de` takes a new version before any customer site does.
+own and is not a generated-site dependency. Pilot-first is a policy, not
+a mechanism: the pilot validates a new version before customer adoption.
 
 ## Release flow
 
-`changesets/action` does one of two things depending on whether changesets are
-pending. Both branches must stay reachable — gating on only the first is what
-previously made publishing impossible.
+`changesets/action` opens a version PR when changesets are pending and can publish
+when they are not. The workflow admits both paths:
 
 ```mermaid
 flowchart TD
@@ -134,21 +134,24 @@ flowchart TD
   check -->|yes| open["open / update<br/>version PR"]
   open --> merge["merge version PR<br/><i>consumes changesets,<br/>bumps package.json</i>"]
   merge --> push
-  check -->|no| ahead{"local version<br/>ahead of npm?"}
-  ahead -->|yes| pub["publish all packages<br/><i>OIDC trusted publishing</i>"]
-  ahead -->|no| noop["nothing to do"]
+  check -->|no| differs{"either bellwether version<br/>differs from npm?"}
+  differs -->|yes| pub["publish unpublished versions<br/><i>OIDC trusted publishing</i>"]
+  differs -->|no| noop["skip Changesets action"]
 
   classDef act fill:#2d4a8b,color:#fff,stroke:#1a2d54
   classDef dec fill:#8b5a2d,color:#fff,stroke:#54341a
   classDef done fill:#3f6f3f,color:#fff,stroke:#254025
   class open,merge,pub act
-  class check,ahead dec
+  class check,differs dec
   class noop done
 ```
 
-The second condition is what makes the publish branch reachable: merging the
-version PR removes the changesets, so a "pending changesets" gate alone would
-skip publishing forever.
+The bellwethers are `@easy-web/i18n` for the fixed family and `@easy-web/cli`
+for the independent line. Merging a version PR consumes the changesets, so the
+registry comparison keeps the publish path reachable. Neither that comparison
+nor the merge proves a complete npm release. See the
+[canonical release guidance](../CONTRIBUTING.md#version-pr-publication-and-adoption-are-separate)
+for workflow conditions, publication evidence and consumer ownership.
 
 ## SEO: one declaration, two surfaces
 

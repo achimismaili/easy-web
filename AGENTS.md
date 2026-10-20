@@ -72,10 +72,12 @@ Since ADR 0018 the family has one **base** package and optional **add-ons**:
 | `scripts/` | Workspace-level tooling (release, validation) |
 | `docs/` | Repo-local notes; canonical docs live in `websites/docs/` |
 
-Package versions are deliberately not listed here. All `@easy-web/*` packages are a
-fixed version group released together, so there is exactly one current version for the
-whole family — read it from the npm badge in `README.md`, or from any
-`packages/<name>/package.json`. A hand-maintained version column in this file drifted
+Package versions are deliberately not listed here. All `@easy-web/*` packages
+except `@easy-web/cli` form a fixed version group released together. The CLI has
+its own version line. A fixed-family package manifest records the repository
+version; the npm badge in `README.md` reports a registry version, not proof of a
+complete family publish. See [the contributing guide](CONTRIBUTING.md#package-versions-dependencies-and-releases)
+for exact membership and publication verification. A hand-maintained version column in this file drifted
 for several releases before it was removed.
 
 Core SEO's opt-in public build-information implementation lives in
