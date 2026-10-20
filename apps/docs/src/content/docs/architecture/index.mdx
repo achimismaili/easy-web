@@ -180,16 +180,17 @@ This table is a summary. The [Technology Map](./technology-map/) ties each techn
 
 ## Single Auth Island (Important)
 
-All auth-dependent React components on a page **must live inside a single React island**. React Context does not cross Astro island boundaries — two separate `client:*` islands would create two independent MSAL instances.
+All auth-dependent React components on a page **must live inside one React island
+under one `AuthProvider`**. React Context does not cross Astro island boundaries.
+A separate auth-consuming island cannot read that provider; adding another
+provider creates another MSAL client rather than sharing the first one's state.
 
-```astro
-<!-- ✅ CORRECT: one island wraps all auth components -->
-<AuthProvider client:only="react" config={msalConfig}>
-  <UserProfile />
-  <LoginButton />
-</AuthProvider>
+The site owns a React wrapper that composes the provider and every auth consumer,
+and mounts that wrapper once with `client:only="react"`. Compose the children in
+React, not as Astro-rendered children or slots. If the layout already mounts the
+wrapper, its pages must not add another auth island. Non-auth content can remain
+static or use its own islands.
 
-<!-- ❌ WRONG: two islands = two MSAL instances = broken auth -->
-<UserProfile client:only="react" />
-<LoginButton client:only="react" />
-```
+See the [auth integration contract](../packages/auth/#authprovider) for the
+`AuthConfig` props, site-owned wrapper example, forbidden provider topologies,
+client-only lifecycle and CLI wiring boundaries.
