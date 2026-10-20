@@ -163,11 +163,10 @@ Review and validate the result before merging or using it:
    Review and commit the completed lockfile separately. The generation default
    makes no network request, but obtaining the CLI (for example through `pnpm dlx`)
    and installing dependencies can require network access.
-3. Run the site's build and applicable checks yourself. The current generated
-   shell has a build script, but no `tsconfig.json` or `@astrojs/check`; add the
-   required type-check setup rather than treating creation success as a passing
-   Astro check. Inspect the built pages and optional integrations before accepting
-   the result.
+3. After installing dependencies, run `pnpm typecheck` and `pnpm build`. The
+   generated shell already includes a strict `tsconfig.json`, `@astrojs/check`,
+   and the `typecheck` script; creation itself does not run these checks. Inspect
+   the built pages and optional integrations before accepting the result.
 
 :::caution[Installation happens after the generation commit]
 `--install` runs `pnpm install` in the returned target through the ambient registry
