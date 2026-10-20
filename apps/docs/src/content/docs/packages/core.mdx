@@ -274,6 +274,18 @@ Contracts are small structural types. They describe what a block needs, not how 
 
 `Localized<T>` is a read-only record keyed by locale (`{ de: T, en: T }`). A single-locale site supplies one key.
 
+`Navigation` does not load a file or select the active locale. For CMS-managed
+navigation, use `defineSingleton` with `fieldSets.navigation(['en'])` (or the
+site's actual locales), attach `toAstroSchema` to its Astro collection, and read
+the validated entry in the site layout. Pass `mainNav[locale]` to Header's
+`navItems` and `legalNav[locale]` to Footer's `legalLinks`. See
+[the singleton example](../cms-adapters/#content-definitions).
+
+The localized records do not enforce a specific locale list or provide an
+automatic fallback; the definition and site routing must agree. `NavItem.order`
+is optional metadata, not automatic sorting: Header and Footer render the arrays
+they receive in array order. Apply any desired sorting before passing those props.
+
 ### Content types
 
 | Type | Field | Type | Required |
@@ -323,12 +335,19 @@ A block asks for a capability instead of a whole content type. A hero needs `Has
 | `jsonLd` | `page`, `article`, `event`, `organization`, `person`, `product` builders that turn a contract into schema.org JSON-LD |
 
 ```ts
-import { assertImplements, type Event, type HasImage } from '@easy-web/core/contracts';
+import { assertImplements, type Event } from '@easy-web/core/contracts';
 import type { InferData } from '@easy-web/cms-adapters';
 import { events } from './content/model';
 
-assertImplements<InferData<typeof events>, Event & HasImage>();
+assertImplements<InferData<typeof events>, Event>();
 ```
+
+This matches the standard event field set's optional image. Require the image in
+the definition before asserting `Event & HasImage`. See
+[the conformance steps](../../guides/content-types/#3-call-assertimplements) for
+schema validation versus type checks, and
+[publish rules](../../guides/content-types/#publish-rules) for filtering every
+public output rather than just listings.
 
 ## Labels
 
