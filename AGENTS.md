@@ -5,7 +5,7 @@
 
 ## Project identity
 
-- **Purpose**: Shared package family for the ismaili.de web ecosystem - one base package (`@easy-web/core`: theme tokens, i18n, SEO, components and content contracts) plus add-ons for CMS, Static Web Apps, MSAL auth and brand assets, and the reserved scaffold CLI name.
+- **Purpose**: Shared package family for the ismaili.de web ecosystem - one base package (`@easy-web/core`: theme tokens, i18n, SEO, components and content contracts) plus add-ons for CMS, Static Web Apps, MSAL auth and brand assets, and a create-only CLI.
 - **Type**: pnpm + Turborepo monorepo. Node is pinned via Volta and pnpm via `packageManager`, both in the root `package.json` — read the values there rather than from this file.
 - **Publishes to**: npm public registry. Packages namespaced `@easy-web/*`.
 - **Consumed by**: every instance repo (`dev.ismaili.de`, `harleyrentflorida.de`, future sites).
