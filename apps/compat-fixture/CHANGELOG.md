@@ -1,5 +1,17 @@
 # compat-fixture
 
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies [c730c4a]
+  - @easy-web/cms-adapters@1.9.1
+  - @easy-web/content-blocks@1.9.1
+  - @easy-web/markdown@1.9.1
+  - @easy-web/i18n@1.9.1
+  - @easy-web/seo@1.9.1
+  - @easy-web/theme-core@1.9.1
+
 ## 0.0.8
 
 ### Patch Changes

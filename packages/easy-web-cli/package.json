@@ -1,6 +1,6 @@
 {
   "name": "@easy-web/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Create-only command-line interface for generating easy-web sites.",
   "type": "module",
   "engines": {

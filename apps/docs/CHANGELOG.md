@@ -1,5 +1,12 @@
 # docs
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [c730c4a]
+  - @easy-web/core@1.9.1
+
 ## 0.0.5
 
 ### Patch Changes
