@@ -1,111 +1,75 @@
-# Migration Guide — @easy-web/swa
+# Adoption Guide - @easy-web/swa
 
-Adoption paths for the shared Azure Static Web Apps integration. Each section provides an **Automated** path (recommended), a **Manual** checklist (for auditing what the script does), and a **Rollback** procedure.
+Use this checklist for the current sidecar-based integration. The old 0.1.x
+root-sentinel and per-locale rewrite model is obsolete; do not recreate it.
+See the [README](./README.md) for the API, ownership rules and URL-shape behavior.
 
-The sentinel-merge architecture and the "why not just template `staticwebapp.config.json`" rationale live in [ADR 0013 — Shared Not-Found Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md). This guide does not repeat that rationale — read the ADR first if you need the "why".
+## Adopt or review an existing installation
 
----
+1. Supply the site's root 404 page and any explicitly routed localized pages.
+   Use `@easy-web/core/components/NotFound` and, if needed,
+   `@easy-web/core/schemas/notFound`; `@easy-web/content-blocks` is a deprecated
+   compatibility package. Follow the
+   [core page/content ownership guidance](https://achim.ismaili.de/easy-web/docs/packages/core/#not-found-page-ownership).
+   The SWA integration does not generate pages or CMS collections.
 
-## Adopting v0.1.0
+2. For a site hosted on Azure Static Web Apps, install the add-on and register it
+   alongside existing integrations. Other hosts do not need this package.
 
-**Scope**: first release of the `easyWebNotFound()` Astro integration. It writes a sentinel-marked slice into `dist/staticwebapp.config.json` on every build so shared 404 handling works consistently on Azure SWA across all instances. The integration is safe to adopt on any Astro 6 or 7 project; single-locale and multi-locale instances both supported.
-
-**Companion package**: pair this adoption with [`@easy-web/content-blocks@^1.1.0`](../easy-web-content-blocks/MIGRATION.md), which ships the `NotFound` component the 404 page renders. The two are designed to adopt together.
-
-### The sentinel contract (read before hand-editing anything)
-
-> **Do NOT hand-edit `responseOverrides."404"` or sentinel-tracked route entries in `staticwebapp.config.json` — they are managed by the integration and will be overwritten on every build.**
-
-The integration writes a `$easyWebManaged` sentinel into `dist/staticwebapp.config.json` that lists exactly which top-level keys and which `routes[]` indices it owns. Everything else in the file — `auth`, `globalHeaders`, `navigationFallback`, and every non-managed route — is preserved verbatim across builds. Hand-editing a sentinel-tracked slot is a losing race with the next `pnpm build`: your edit will be replaced by the integration's output.
-
-If you need to override the 404 slot, add your entry to `public/staticwebapp.config.json` **before** the integration runs. The `additive` merge path detects a pre-existing `responseOverrides."404"` and yields — the user override wins and the integration will not manage that slot (a warning is logged).
-
-### Automated
-
-Run the migration script from the `websites` meta-repo — it installs the package, registers the integration in `astro.config.mjs`, and cleans stale `staticwebapp.config.json` slots:
-
-```powershell
-pwsh -File E:\code\it-ci\websites\scripts\migrations\notfound-adopt.ps1 -InstancePath E:\code\it-ci\<your-instance>
-```
-
-The script performs every step in the manual checklist below.
-
-### Manual
-
-If you prefer to adopt by hand (or need to audit what the script does), perform these steps in order:
-
-1. **Install the package** in the instance:
-   ```bash
-   pnpm add @easy-web/swa@^0.1.0
+   ```sh
+   pnpm add @easy-web/swa
    ```
 
-2. **Register the integration** in `astro.config.mjs`:
    ```js
    import { defineConfig } from 'astro/config';
-   import { easyWebNotFound } from '@easy-web/swa';
+   import easyWebNotFound from '@easy-web/swa';
 
    export default defineConfig({
-     // ... your existing config (site, i18n, etc.) ...
-     integrations: [
-       // ... existing integrations ...
-       easyWebNotFound(), // easy-web-swa: manages the sentinel-marked 404 slice
-     ],
+     integrations: [easyWebNotFound()],
    });
    ```
 
-   The integration reads `config.i18n.defaultLocale` and `config.i18n.locales` automatically. If your instance has no Astro `i18n` config, or if you need to override the derived values (e.g. partial locale rollout), pass explicit options:
+   Keep existing site configuration. The old `defaultLocale` and `locales` options
+   are accepted for compatibility but do not change the output.
 
-   ```js
-   easyWebNotFound({ defaultLocale: 'de', locales: ['de', 'en'] })
-   ```
+3. Review source `staticwebapp.config.json` and any sibling
+   `staticwebapp.config.json.easy-web-managed.json` together. For static sites,
+   normally place source files in `public/` so Astro copies them into the output.
+   Decide whether the integration or the site owns `responseOverrides.404`:
+   an existing, unclaimed override wins; a sidecar claim permits replacement.
+   To hand the slot to the integration, remove the source override and rebuild.
+   To take it back, supply the desired source override and remove that key's
+   sidecar claim if present. Review `trailingSlash` ownership separately.
 
-3. **Rebuild** so the integration writes its slice into `dist/staticwebapp.config.json`:
-   ```bash
-   pnpm build
-   ```
+4. When upgrading from the legacy root-sentinel model, remove `$easyWebManaged`
+   from source config. Review and remove obsolete locale-wide 404 rewrites only
+   after identifying them; do not delete unrelated routes. The integration strips
+   unknown root keys but **does not** remove old routes or infer ownership from
+   the legacy sentinel. An existing 404 slot without a sidecar claim stays
+   user-owned, even if an old integration originally wrote it.
 
-   On completion, `dist/staticwebapp.config.json` will contain:
-   - `responseOverrides."404" = { rewrite: '/404.html', statusCode: 404 }`
-   - one `routes[]` entry per non-default locale rewriting `/{locale}/*` → `/{locale}/404/index.html`
-   - a `$easyWebManaged` sentinel listing the managed keys and route indices
+5. Run the site's build and inspect its actual deployable output directory.
+   Confirm `/404.html` exists for the fixed managed target; do not infer localized
+   artifact paths from old examples. Check emitted config, sidecar ownership,
+   rendered locale-root links and required content completeness using the
+   [validation boundaries](./README.md#validation-boundaries).
+   The config is reserialized, so compare unrelated values rather than formatting.
 
-4. **Remove stale hand-crafted entries** from `public/staticwebapp.config.json`:
-   - Delete any hand-crafted `responseOverrides."404"` block — the integration now owns that slot.
-   - Delete any `routes[]` entries that rewrite `/{locale}/*` to a 404 page — the integration owns those too (the `additive` merge path will warn on next build if a duplicate remains).
-   - Keep everything else (`auth`, `globalHeaders`, `navigationFallback`, and non-404 routes) untouched — the integration preserves them verbatim.
+6. Separately arrange the operator-owned deployed-target HTTP checks described in
+   the README. Successful local builds or artifact smoke tests do not prove live
+   missing-route behavior. This checklist does not install tests, change a
+   pipeline, deploy a site or provide an existing-site migration command.
 
-5. **Rebuild once more** to confirm the integration produces a clean output with no duplicate-route warnings in the build log.
+## Rollback
 
-### Rollback
-
-If the integration breaks something and you need to revert:
-
-```bash
-# In the instance repo, on the branch where you adopted:
-
-# 1. Remove the easyWebNotFound() call from astro.config.mjs (and the import).
-#    Then commit that edit.
-
-# 2. Uninstall the package:
-pnpm remove @easy-web/swa
-
-# 3. Revert the staticwebapp.config.json changes:
-git revert <commit-sha-of-the-staticwebapp-config-cleanup-commit>
-
-# 4. If you deleted an old hand-crafted responseOverrides."404" during adoption,
-#    restore it from that git-reverted state — or re-add it manually.
-
-# 5. Rebuild:
-pnpm build
-```
-
-The integration writes only to `dist/staticwebapp.config.json` (build output, not tracked); the source-side changes are the `astro.config.mjs` edit and any `public/staticwebapp.config.json` cleanup. Both are git-tracked, so `git revert` reproduces the pre-adoption state exactly.
-
----
+Revert the reviewed source adoption changes: the integration registration,
+dependency/lockfile edits, and any config, sidecar or page/content changes.
+If removing the integration, restore a site-owned fallback appropriate to the
+host. Rebuild from those sources and inspect the resulting artifact; merely
+editing generated output is not a durable rollback. Live behavior needs a
+separate operator check after the reverted artifact is deployed.
 
 ## See also
 
-- [ADR 0013 — Shared Not-Found Primitives](https://github.com/achimismaili/websites/blob/main/docs/decisions/0013-shared-not-found-primitives.md) — architecture rationale, sentinel-merge algorithm, and preservation contract.
-- [`@easy-web/content-blocks` MIGRATION.md](../easy-web-content-blocks/MIGRATION.md) — companion package that ships the `NotFound` component and `notFoundSchema`.
-- [`CHANGELOG.md`](./CHANGELOG.md) — chronological release notes.
-- [`README.md`](./README.md) — integration API and options reference.
+- [README](./README.md) - current integration contract and limitations.
+- [CHANGELOG](./CHANGELOG.md) - historical release notes.
