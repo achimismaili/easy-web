@@ -52,11 +52,10 @@ dependency updates use `patch`.
 
 | Group | Current membership | Meaning |
 | :--- | :--- | :--- |
-| Fixed family | `@easy-web/core`, `@easy-web/auth`, `@easy-web/brand`, `@easy-web/cms-adapters`, `@easy-web/swa`, `@easy-web/create`, `@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo`, `@easy-web/markdown` | A family release gives every member the same version, including unchanged packages. A dependency-only or minimal changelog is expected for an unchanged member. |
+| Fixed family | `@easy-web/core`, `@easy-web/auth`, `@easy-web/brand`, `@easy-web/cms-adapters`, `@easy-web/swa`, `@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo`, `@easy-web/markdown` | A family release gives every member the same version, including unchanged packages. A dependency-only or minimal changelog is expected for an unchanged member. |
 | Independent tooling | `@easy-web/cli` | Has its own semver line; a CLI-only change does not release the fixed family. It is a creation-time tool, not a dependency to add to a generated site. |
 
-The reserved `@easy-web/create` name is still in the fixed group; it is not the
-implemented CLI. Workspace apps and the root are private and are not npm releases.
+Workspace apps and the root are private and are not npm releases.
 Do not infer a package version from a repository tag or the private root's
 version. Read the relevant package manifest for the repository version and npm
 for the published version.

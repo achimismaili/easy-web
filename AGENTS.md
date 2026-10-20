@@ -45,7 +45,6 @@ Since ADR 0018 the family has one **base** package and optional **add-ons**:
 
 - **Base:** `@easy-web/core`. One install gives a working site: theme tokens, i18n, SEO, the markdown plugin, all 31 Astro components, and the content contracts (`Item`, `Page`, `Article`, `Event`, `Organization`, `Person`, `Product`, the capabilities `HasImage` / `HasPhotos` / `HasBody` / `Linkable`, and `assertImplements`). New shared components, tokens and i18n helpers go here.
 - **Add-ons:** `@easy-web/cms-adapters` (Decap plus the typed field builders that generate forms and schemas), `@easy-web/swa`, `@easy-web/auth`, `@easy-web/brand`.
-- **Reserved:** `@easy-web/create`.
 - **Deprecated compatibility packages:** `@easy-web/theme-core`, `@easy-web/i18n`, `@easy-web/content-blocks`, `@easy-web/seo`, `@easy-web/markdown`. They hold no implementation any more, only `@deprecated` re-exports of core subpaths. Never add code to them. They stay for all of 1.x and are removed in 2.0, once every site (darts included) has migrated.
 
 **Core status:** `@easy-web/core` is published on npm and released through the normal OIDC flow like the rest of the family. *Bootstrapping a brand-new package* below still applies to any future new package.
@@ -62,7 +61,6 @@ Since ADR 0018 the family has one **base** package and optional **add-ons**:
 | `packages/easy-web-markdown/` | `@easy-web/markdown` - **deprecated compatibility package**. Re-exports the remark plugin from `@easy-web/core/markdown` |
 | `packages/easy-web-swa/` | `@easy-web/swa` — **add-on**. AstroIntegration merging a sentinel-marked `staticwebapp.config.json` slice for shared 404 handling on Azure Static Web Apps |
 | `packages/easy-web-cms-adapters/` | `@easy-web/cms-adapters` - **add-on**. Decap CMS integration per ADR 0006: typed content definitions (`field`, `fieldSets`, `defineContentType`, `defineSingleton`), generators (`toAstroSchema`, `buildDecapConfig`, `InferData`), the `AdminPage` component (takes a generated `config`). The older `generateDecapConfig*` and frontmatter types are superseded |
-| `packages/create-easy-web/` | `@easy-web/create` — scaffold CLI per ADR 0003, bootstraps a new instance from this baseline. **Reserved placeholder**, ships no `src/` |
 | `packages/easy-web-cli/` | Independent `@easy-web/cli`; `src/create/` owns config input, recipe composition and Git-backed staging. `create --config` generates new empty targets offline with a placeholder lockfile; `--install` explicitly runs pnpm through ambient registry configuration. No cloud operations. |
 | `apps/showcase/` | Live component gallery on the contract-based components; reference consumer of core |
 | `apps/docs/` | Starlight documentation site (core reference, content-types guide, migration guide) |

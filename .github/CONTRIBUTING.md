@@ -46,7 +46,6 @@ documentation changes that alter no published package do not need a changeset.
 | `packages/auth/` | `@easy-web/auth` | Add-on: MSAL.js auth integration |
 | `packages/easy-web-brand/` | `@easy-web/brand` | Add-on: brand asset generation and the `easy-web-brand` CLI |
 | `packages/easy-web-cli/` | `@easy-web/cli` | Tooling: create-only site generator (Node.js 24 or later, versioned on its own) |
-| `packages/create-easy-web/` | `@easy-web/create` | Reserved name, ships no source |
 | `packages/theme-core/` | `@easy-web/theme-core` | Deprecated: re-exports `@easy-web/core/theme` |
 | `packages/i18n/` | `@easy-web/i18n` | Deprecated: re-exports `@easy-web/core/i18n` |
 | `packages/easy-web-content-blocks/` | `@easy-web/content-blocks` | Deprecated: re-exports core components and schemas |
