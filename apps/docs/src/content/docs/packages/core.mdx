@@ -46,6 +46,154 @@ import type { Event, Linkable } from '@easy-web/core/contracts';
 ---
 ```
 
+## Localized URLs and crawl policy
+
+`easyWebSeo()` composes the sitemap integration and injects `robots.txt`; a site's
+layout renders `SeoHead` for the document metadata. Do not register a second
+sitemap integration or keep a competing `public/robots.txt`. The latter can shadow
+the generated route.
+
+### Declare translated routes once
+
+The helpers assume an unprefixed default locale and prefixed additional locales.
+For same-slug routes such as `/guide/` and `/en/guide/`, head helpers derive
+alternates by replacing the locale prefix, and the sitemap pairs built routes
+with the same remaining slug. Neither mechanism translates a slug or creates pages.
+
+For translated slugs, declare one shared `localizedPaths` array and pass it to
+both `createI18n()` and `easyWebSeo()`. Otherwise the head helper can invent an
+unbuilt URL such as `/en/hilfe/`, while the sitemap fails to pair `/hilfe/` with
+`/en/help/`. Leave same-slug pairs out of this array; use `[]` when no translated
+slugs need mapping.
+
+This example assumes a site served at the origin root (`base: '/'`), with both
+`/hilfe/` and `/en/help/` implemented by the site's pages:
+
+```ts
+// src/lib/localization.ts
+import { createI18n, type LocalizedPathGroup } from '@easy-web/core/i18n';
+
+export const locales = ['de', 'en'] as const;
+export const defaultLocale = 'de';
+export const site = 'https://example.invalid';
+export const trailingSlash = 'always';
+export const localizedPaths: readonly LocalizedPathGroup[] = [
+  { de: '/hilfe/', en: '/en/help/' },
+];
+
+export const i18n = createI18n({
+  locales, defaultLocale, baseUrl: site, trailingSlash, localizedPaths,
+});
+```
+
+```ts
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import easyWebSeo from '@easy-web/core/seo';
+import {
+  locales, defaultLocale, site, trailingSlash, localizedPaths,
+} from './src/lib/localization';
+
+export default defineConfig({
+  site,
+  base: '/',
+  trailingSlash,
+  i18n: {
+    locales: [...locales],
+    defaultLocale,
+    routing: { prefixDefaultLocale: false },
+  },
+  integrations: [
+    easyWebSeo({
+      localizedPaths,
+      sitemapLocales: { de: 'de', en: 'en' },
+    }),
+  ],
+});
+```
+
+```astro
+---
+// In the site's shared layout:
+import SeoHead from '@easy-web/core/components/SeoHead';
+import { i18n } from '../lib/localization';
+
+const pathname = Astro.url.pathname;
+const locale = i18n.getLocaleFromPath(pathname);
+---
+<head>
+  <SeoHead
+    title="Example page"
+    siteName="Example Site"
+    pathname={pathname}
+    locale={locale}
+    alternates={i18n.getAlternateLinks(pathname)}
+  />
+</head>
+```
+
+`SeoHead` emits the canonical from the current pathname and Astro's `site`; do not
+add a second canonical. On `/en/help/`, it is
+`https://example.invalid/en/help/`. Both pages' head alternates contain the same
+`de` and `en` URLs, including a self-reference, plus `x-default` pointing to
+`https://example.invalid/hilfe/`. Both sitemap entries carry the reciprocal `de`
+and `en` pair; declared sitemap groups do not add `x-default`.
+`localizedHref()` only changes locale prefixes; it does not consult
+`localizedPaths`. Use the declared alternates for a translated-slug language switch.
+
+Each group must contain every configured locale, with no unknown locale keys.
+Values must begin with a single `/`, contain no query or fragment, and claim
+distinct paths across and within groups. With sitemap generation enabled, the
+build also rejects declared URLs missing from the sitemap (including filtered-out
+routes) and conflicting automatic pairings. A group is not a declaration of
+partial translations or proof that the host serves a route.
+
+### Match the configured served URL form
+
+Explicit Astro `trailingSlash: 'always'` or `'never'` wins. When it is `'ignore'`,
+the integration resolves directory output to `'always'` and file output to
+`'never'`; preserve output warns and assumes `'always'`. `SeoHead` inherits that
+resolution, and `createI18n()` reads it when the bundle is created unless given an
+explicit `trailingSlash`. Sharing the explicit setting, as above, also avoids
+depending on when the bundle is initialized.
+
+`toServedPath()` normalizes leading/trailing slashes and strips queries/fragments;
+group lookup ignores trailing slashes, queries and fragments. Neither lowercases
+paths nor discovers host redirects. Use the actual path casing and pass a pathname,
+not a full URL, to `SeoHead`. Keep `site` and the helpers' `baseUrl` aligned with
+the chosen public host; there is no automatic apex/`www` rewrite.
+
+`sitemapLocales` maps every Astro locale ID to the intended BCP-47 language tag.
+If the whole option is omitted, the integration warns and uses the IDs themselves
+(`de`, `en` here), never guesses `en-EN` or a country. It does not fill missing
+entries in a supplied map. Head helpers also use locale IDs as `hreflang`; a
+region-specific sitemap map such as `{ en: 'en-GB' }` does not relabel head
+alternates automatically. Align those tags deliberately if regional targeting
+is needed.
+
+### Keep crawl exclusions consistent
+
+Public mode excludes `/admin`, `/admin/` and descendants from the sitemap and
+writes `Disallow: /admin/` in `robots.txt`. An optional
+`easyWebSeo({ filter: (url) => ... })` can exclude more sitemap URLs, but cannot
+re-admit a built-in exclusion. It does not add robots rules or page metadata.
+
+`easyWebSeo({ noIndex: true })` registers no sitemap and generates
+`Disallow: /` without a `Sitemap:` line. `SeoHead` inherits `noindex, nofollow`
+unless its `noIndex` prop explicitly overrides the policy (not-found routes
+remain noindexed). Conversely, a page-level `noIndex` prop does not remove that
+page from the sitemap; coordinate any additional exclusions in the site config.
+The opt-in [build-information routes](#public-build-information) have their own
+sitemap exclusions.
+
+Review the built HTML, sitemap and `robots.txt` together: the canonical,
+self-referencing head alternate and sitemap URL should agree byte-for-byte, and
+translated pairs should be reciprocal and point at built pages. This checks
+content/configuration, not live redirects, response headers or access control.
+Hosting behavior needs separate verification on the chosen platform; this guide
+neither configures deployment nor applies Azure Static Web Apps behavior to
+GitHub Pages. Crawler directives do not protect private content.
+
 ## Public build information
 
 `easyWebSeo()` can opt a site into two prerendered diagnostic routes generated from one closed manifest:
