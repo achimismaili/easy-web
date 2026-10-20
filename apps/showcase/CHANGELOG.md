@@ -1,5 +1,12 @@
 # showcase
 
+## 0.0.23
+
+### Patch Changes
+
+- Updated dependencies [c730c4a]
+  - @easy-web/core@1.9.1
+
 ## 0.0.22
 
 ### Patch Changes
