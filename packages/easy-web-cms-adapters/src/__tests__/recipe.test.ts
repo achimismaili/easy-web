@@ -75,6 +75,11 @@ describe('CMS media recipe fixture', () => {
     const admin = fs.readFileSync(path.join(root, 'public/admin/index.html'), 'utf8');
     expect(admin).toContain('/admin/config.yml');
     expect(admin).not.toMatch(/Msal|AuthProvider|@easy-web\/auth/);
+    const manifest = JSON.parse(String(generated.files.find(({ path }) => path === 'package.json')?.content));
+    expect(manifest.dependencies['@easy-web/core']).toBe('^1.6.0');
+    expect(manifest.dependencies['@easy-web/cms-adapters']).toBe('^1.6.0');
+    expect(manifest.dependencies['@astrojs/markdown-remark']).toBe('^7.3.1');
+    expect(cmsMediaRecipe.compatibleRuntimeRange).toBe('^1.6.0');
   });
 
   it('passes astro check and build with a Decap body image', () => {

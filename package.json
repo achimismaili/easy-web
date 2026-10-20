@@ -14,6 +14,7 @@
     "test:browser": "playwright test",
     "build": "turbo run build",
     "compat:packed": "node scripts/packed-consumer-compat.mjs",
+    "compat:cli-minimum": "turbo run build --filter=@easy-web/cli... && node scripts/cli-minimum-consumer.mjs",
     "docs:build": "turbo run docs:build",
     "publish-packages": "turbo run publish-packages"
   },

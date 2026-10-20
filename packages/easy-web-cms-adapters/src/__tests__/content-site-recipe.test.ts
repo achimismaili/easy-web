@@ -20,6 +20,15 @@ const options = cmsSiteOptionsSchema.parse({
 });
 
 describe('CMS content-site recipes', () => {
+  it('requires the first composition-helper release for both directly used packages', async () => {
+    const { cms } = createCmsContentSiteRecipes(composition, options);
+    const output = await cms.generate({ options: {}, capabilities: [], contributions: [] });
+    const manifest = JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content));
+    expect(manifest.dependencies['@easy-web/core']).toBe('^1.9.0');
+    expect(manifest.dependencies['@easy-web/cms-adapters']).toBe('^1.9.0');
+    expect(cms.compatibleRuntimeRange).toBe(manifest.dependencies['@easy-web/cms-adapters']);
+  });
+
   it('has exactly one schema/config owner and declares its dependency on typed definitions', async () => {
     const recipes = createCmsContentSiteRecipes(composition, options);
     expect(resolveCapabilityGraph(Object.values(recipes)).ok).toBe(true);
