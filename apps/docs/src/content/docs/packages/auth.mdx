@@ -9,27 +9,47 @@ description: MSAL.js authentication, Microsoft Graph integration, and SharePoint
 pnpm add @easy-web/auth
 ```
 
+For manual integration, the site also needs React, React DOM and Astro's React
+integration (`@astrojs/react`). Register `react()` in the site's existing
+`astro.config.mjs`, preserving its other integrations:
+
+```javascript
+import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
+
+export default defineConfig({
+  integrations: [react()],
+});
+```
+
 ## Overview
 
 `@easy-web/auth` wraps MSAL.js (Microsoft Authentication Library) to provide Entra ID / Azure AD authentication in the easy-web ecosystem. It exports an `AuthProvider` React context root, hooks for reading auth state and calling Microsoft Graph, pre-built UI components (login button, user avatar, protected content wrapper), and SharePoint-specific components and utilities.
 
 :::caution[Single-island constraint]
-All auth-dependent React components on a given page **must live inside a single React island**. React Context does not cross Astro island boundaries — two `client:*` directives create two independent `MsalProvider` instances which will corrupt the `sessionStorage` token cache. See [ADR 0010](https://github.com/achimismaili/websites/blob/main/docs/decisions/0010-react-auth-single-island.md) for full rationale.
+All auth-dependent React components on a given page **must live inside one React
+island under one `AuthProvider`**. Each hydrated React island has a separate React
+root; Context does not cross those boundaries. A second island cannot consume the
+first island's provider. Giving it another provider creates a separate MSAL client,
+not shared React state.
 
-Use one top-level `<AuthProvider client:only="react">` and render all auth-dependent children inside it.
+Compose the provider and its consumers in a site-owned React wrapper, then mount
+that wrapper once with `client:only="react"`. Non-auth content can remain static or
+use independent islands.
 :::
 
 ## Configuration
 
 ### `AuthConfig`
 
-Per-instance authentication configuration. Consumed by `buildMsalConfig`.
+Site-owned authentication configuration. Pass this plain object to `AuthProvider`;
+the package does not read a site's configuration module or environment directly.
 
 ```typescript
 interface AuthConfig {
   /** Entra app registration client ID for this site instance */
   clientId: string;
-  /** IT-CI tenant ID */
+  /** Entra tenant ID for this site */
   tenantId: string;
   /** Redirect URI after login. Defaults to window.location.origin at runtime. */
   redirectUri?: string;
@@ -40,16 +60,21 @@ interface AuthConfig {
 
 ### `buildMsalConfig`
 
-Converts an `AuthConfig` into a fully-formed MSAL `Configuration` object ready to pass to `AuthProvider`.
+Converts an `AuthConfig` into an MSAL `Configuration` for low-level browser-side
+MSAL use. `AuthProvider` calls this internally: do **not** pass its result to
+`AuthProvider` or build it in Astro frontmatter for the mounting pattern below.
+The generated configuration includes a logger callback, which is not a
+serializable island prop.
 
 **Signature:** `function buildMsalConfig(config: AuthConfig): Configuration`
 
 ```typescript
 import { buildMsalConfig } from '@easy-web/auth';
 
+// Inside browser-side code, not Astro frontmatter.
 const msalConfig = buildMsalConfig({
-  clientId: import.meta.env.PUBLIC_ENTRA_CLIENT_ID,
-  tenantId: import.meta.env.PUBLIC_ENTRA_TENANT_ID,
+  clientId: 'REPLACE_WITH_YOUR_CLIENT_ID',
+  tenantId: 'REPLACE_WITH_YOUR_TENANT_ID',
 });
 ```
 
@@ -57,34 +82,35 @@ const msalConfig = buildMsalConfig({
 
 ### `AuthProvider`
 
-The root React component that sets up MSAL context. Every auth-dependent component must be a descendant of this element. Mount it as a single `client:only="react"` island in your Astro layout.
+The root React component that sets up MSAL context. Every auth-dependent component
+must be a descendant in the **same React tree**, including Graph/SharePoint hooks
+and UI components. `AuthShell` below is a site-owned wrapper, not a package export.
 
-**Signature:** `function AuthProvider({ config, children }: { config: Configuration; children: ReactNode }): JSX.Element`
+**Props:** `{ config: AuthConfig; children: ReactNode }`
 
 ```astro
 ---
 // src/layouts/Base.astro
-import { buildMsalConfig } from '@easy-web/auth';
+import type { AuthConfig } from '@easy-web/auth';
 import AuthShell from '../islands/AuthShell';
 
-const msalConfig = buildMsalConfig({
-  clientId: import.meta.env.PUBLIC_ENTRA_CLIENT_ID,
-  tenantId: import.meta.env.PUBLIC_ENTRA_TENANT_ID,
-});
+const authConfig = {
+  clientId: 'REPLACE_WITH_YOUR_CLIENT_ID',
+  tenantId: 'REPLACE_WITH_YOUR_TENANT_ID',
+} satisfies AuthConfig;
 ---
 
-<!-- Single island — all auth UI lives inside this one boundary -->
-<AuthShell client:only="react" msalConfig={msalConfig} />
+<AuthShell client:only="react" config={authConfig} />
 ```
 
 ```tsx
 // src/islands/AuthShell.tsx
 import { AuthProvider, LoginButton, UserAvatar, ProtectedContent } from '@easy-web/auth';
-import type { Configuration } from '@azure/msal-browser';
+import type { AuthConfig } from '@easy-web/auth';
 
-export default function AuthShell({ msalConfig }: { msalConfig: Configuration }) {
+export default function AuthShell({ config }: { config: AuthConfig }) {
   return (
-    <AuthProvider config={msalConfig}>
+    <AuthProvider config={config}>
       <LoginButton />
       <ProtectedContent>
         <UserAvatar />
@@ -94,6 +120,67 @@ export default function AuthShell({ msalConfig }: { msalConfig: Configuration })
   );
 }
 ```
+
+### Composition and mount ownership
+
+The site chooses the one mount location and composes all consumers inside
+`AuthShell.tsx`. Import additional auth-dependent React components there, without
+adding Astro `client:*` directives to them. Do not rely on Astro slots or markup
+passed as children to create a live React Context subtree; those children are
+rendered by Astro, not composed as React consumers inside this wrapper.
+
+If the layout already mounts the auth shell, pages using it must not mount another
+auth shell or a separately hydrated login button, avatar or protected widget.
+Auth UI needed in several visual regions must still be composed within one React
+tree; placing a widget under the same DOM ancestor or in the layout's Astro slot
+does not make it part of that tree. A page-specific mount is only an alternative
+when its layout does not already mount auth.
+
+Avoid these topologies:
+
+- Sibling auth-consuming islands: they cannot read each other's provider, even
+  with identical configuration.
+- Separate provider-bearing shells on the same page: each owns a different MSAL
+  client while using `sessionStorage` for caching, risking competing auth/cache
+  operations rather than synchronizing their React state.
+- Nested or duplicated `AuthProvider` elements inside one island: a shared root
+  does not deduplicate providers; use one provider above all consumers.
+
+### Client-only rendering and instance lifetime
+
+`client:only="react"` skips server rendering of the auth shell and renders it in
+the browser. `client:load`, `client:idle` and `client:visible` do not provide that
+SSR opt-out and are not substitutes for this integration pattern. Keep any static
+page content outside the shell when it must appear without client JavaScript.
+Authentication state is not available to Astro frontmatter through this provider.
+`ProtectedContent` is a client-side UI gate, not authorization for public build
+artifacts or backend data.
+
+The provider constructs `PublicClientApplication` in its React render path and
+keeps it in a `useRef` across re-renders of that mounted provider. This is **not**
+a module-wide singleton or a guarantee across remounts, separate roots or separate
+provider elements. Treat `config` as fixed for that mounted lifetime: changing its
+props does not replace the existing MSAL client.
+
+Pass only public, serializable `AuthConfig` data across the Astro boundary, never
+a client secret, access token, MSAL instance or callback. When `redirectUri` is
+omitted, the browser configuration uses `window.location.origin` for login and
+logout redirects. `buildMsalConfig` has a non-browser fallback of `/`; that fallback
+does not make server-rendering an auth shell supported.
+
+### CLI-generated sites
+
+Selecting `recipes.auth` in the create-only CLI emits placeholder configuration,
+`AuthShell.tsx` and `AuthMount.astro` from the `auth.single-island` recipe. It does
+not currently register the React integration or render `AuthMount` in the shell.
+Finish that site-owned wiring before expecting sign-in UI.
+
+Either mount the generated `AuthMount` once in the shared Astro layout (it owns the
+`client:only="react"` directive), **or** mount `AuthShell` directly as above, never
+both. Keep subsequent auth consumers in that shell. Generated-output validation
+does not replace checking the final page's composition after site edits. See
+[Create a New Site](../../getting-started/create-new-site/#review-the-generated-result)
+for the review and maintenance handoff.
 
 ## Auth hooks
 
