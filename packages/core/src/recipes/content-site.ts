@@ -9,6 +9,7 @@ import type { RecipeOutputContribution } from './schema.js';
 
 const supportedTraits = new Set(['title', 'slug', 'summary', 'image', 'body']);
 const supportedBindings = new Set(['list', 'detail', 'navigation', 'cms-admin']);
+const contentRuntimeRange = '^1.6.0';
 
 export interface ContentSiteOptions {
     readonly mediaFolder?: string;
@@ -160,9 +161,12 @@ export const collections = {
 };
 ` },
         { path: 'src/content.config.ts', content: "export { collections } from './content/definitions';\n" },
+        { path: 'package.json', content: `${JSON.stringify({ dependencies: {
+            '@easy-web/core': contentRuntimeRange,
+            ...(composition.contentTypes.some((type) => type.traits.includes('image')) ? { sharp: '^0.35.0' } : {}),
+        } }, null, 2)}\n` },
     ];
     if (composition.contentTypes.some((type) => type.traits.includes('image'))) {
-        files.push({ path: 'package.json', content: `${JSON.stringify({ dependencies: { sharp: '^0.35.0' } }, null, 2)}\n` });
         files.push({ path: exampleImage, content: '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><rect width="640" height="360" fill="#334155"/><circle cx="320" cy="180" r="90" fill="#94a3b8"/></svg>\n' });
     }
     for (const [index, type] of composition.contentTypes.entries()) {
@@ -215,7 +219,7 @@ export function createContentSiteRecipes(rawComposition: unknown, options: Conte
         },
         content: {
             id: 'content.pages', version: '1.7.1', protocolVersion: 1,
-            compatibleCliRange: '^0.1.0 || ^0.2.0', compatibleRuntimeRange: '^1.7.1',
+            compatibleCliRange: '^0.1.0 || ^0.2.0', compatibleRuntimeRange: contentRuntimeRange,
             provides: ['content.pages', 'content.typed-definitions'], requires: ['site.shell'], conflicts: [],
             order: { priority: 10, key: 'content' }, optionsSchema: z.strictObject({}),
             outputContributions: contributions, validators: [],

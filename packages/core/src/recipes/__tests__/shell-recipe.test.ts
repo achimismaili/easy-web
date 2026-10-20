@@ -74,4 +74,12 @@ describe('shell recipe', () => {
 
         expect(workspace.content).toBe('allowBuilds:\n  esbuild: true\n  sharp: true\n');
     });
+
+    it('keeps the shell-only runtime floor independent of content generation', () => {
+        const manifest = JSON.parse(buildShellFiles({}).find(({ path }) => path === 'package.json')!.content);
+        expect(manifest.dependencies['@easy-web/core']).toBe('^1.5.0');
+        expect(manifest.dependencies['@easy-web/cms-adapters']).toBeUndefined();
+        expect(manifest.dependencies.sharp).toBeUndefined();
+        expect(shellRecipe.compatibleRuntimeRange).toBe('^1.5.0');
+    });
 });

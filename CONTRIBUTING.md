@@ -34,6 +34,15 @@ CI runs two lanes, both defined in `.github/workflows/ci.yml`:
 
 Run the workspace lane before you open a PR. If you change exports, peer ranges or published files, also reproduce the compatibility lane locally: `node scripts/packed-consumer-compat.mjs --astro <version> --node <minimum>`, using a pairing from the `packed-consumer` matrix.
 
+`pnpm compat:cli-minimum` packs the CLI and its recipe owners, runs the installed
+CLI with `create --no-install --json`, and installs the generated sites outside
+the workspace. Shell, content (with/without images), and CMS (with/without images)
+profiles and the standalone CMS media recipe pin only the generated first-party runtime lower bounds to published
+registry versions, then run `typecheck` and `build` and inspect SEO, routes and
+CMS previews. Generator-only tarball overrides never enter runtime consumers;
+no source aliases or release-age exclusions are used. This networked check runs
+in CI on Node 24, separately from the workspace source-based test matrix.
+
 The [technology map](https://achim.ismaili.de/easy-web/docs/architecture/technology-map/) lists the lane that validates every package.
 
 ## UI and docs

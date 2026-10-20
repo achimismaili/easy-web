@@ -26,6 +26,14 @@ content composition, as shown below. Arbitrary multi-recipe JS config merging is
 not supported in Phase 1. Package dependencies, devDependencies and
 scripts merge additively in resolver order; the later value wins a key collision.
 
+Generated runtime minima follow the APIs emitted by the selected recipes:
+shell-only uses core `^1.5.0`; content collections require core `^1.6.0` (trait
+schemas); content plus CMS requires core and CMS adapters `^1.9.0`
+(`buildContentCompositionDecapConfig` and its coupled core APIs). Ordinary
+installation must satisfy these ranges without release-age exclusions or other
+policy bypasses. The CLI's own dependencies are creation-time dependencies, not
+proof that the generated site's runtime ranges are sufficient.
+
 ## Content-aware generation
 
 An optional top-level `composition` selects content independently of CMS. The CLI

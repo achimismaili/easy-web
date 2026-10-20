@@ -11,6 +11,18 @@ const type = {
 const composition = { contentLocales: ['en'], contentTypes: [type] };
 
 describe('content site recipes', () => {
+    it.each([{ traits: ['title', 'slug', 'body'] }, { traits: type.traits }])('declares the first trait-schema runtime with traits $traits', async ({ traits }) => {
+        const { content } = createContentSiteRecipes({ ...composition, contentTypes: [{ ...type, traits }] });
+        const output = await content.generate({ options: {}, capabilities: [], contributions: [] });
+        const manifest = JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content));
+        expect(manifest.dependencies).toEqual({
+            '@easy-web/core': '^1.6.0',
+            ...(traits.includes('image') ? { sharp: '^0.35.0' } : {}),
+        });
+        expect(content.compatibleRuntimeRange).toBe(manifest.dependencies['@easy-web/core']);
+        expect(content.outputContributions).toContainEqual(expect.objectContaining({ kind: 'dependency', target: 'package.json' }));
+    });
+
     it('resolves content roles, rendering bindings and routes with shell navigation', async () => {
         const recipes = createContentSiteRecipes(composition);
         const graph = resolveCapabilityGraph([recipes.content, recipes.shell]);

@@ -40,6 +40,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Generated CLI minimum-runtime consumers
+        run: pnpm compat:cli-minimum
+
       - name: Browser QA
         timeout-minutes: 5
         run: |

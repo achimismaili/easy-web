@@ -137,4 +137,9 @@ single configuration renderer. These are package-owned source expressions, not
 user-configurable JavaScript or a post-generation config merge.
 Application-auth composition remains unsupported.
 
+Generated content sites require core `^1.6.0`, the first release with the trait
+schemas used in their collections and adapters, even without images. This does
+not raise the shell-only floor of `^1.5.0`. CMS composition adds its own higher
+runtime requirement.
+
 This package is published as part of the fixed `@easy-web/*` family through the Changesets and npm Trusted Publishing workflow.
