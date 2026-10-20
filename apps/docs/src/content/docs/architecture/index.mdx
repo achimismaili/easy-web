@@ -17,7 +17,6 @@ easy-web/
 │   ├── auth/                            # Add-on: MSAL.js authentication wrapper
 │   ├── easy-web-brand/                  # Add-on: favicon and icon generation
 │   ├── easy-web-cli/                    # Tooling: create-only site generator (Node.js 24 or later)
-│   ├── create-easy-web/                 # Reserved name, ships no source
 │   ├── theme-core/                      # Deprecated shim, re-exports core/theme
 │   ├── i18n/                            # Deprecated shim, re-exports core/i18n
 │   ├── easy-web-content-blocks/         # Deprecated shim, re-exports core/components
@@ -40,7 +39,6 @@ graph TD
     AUTH["@easy-web/auth"]
     BRAND["@easy-web/brand"]
     CLI["@easy-web/cli"]
-    CREATE["@easy-web/create (reserved)"]
     TC["@easy-web/theme-core"]
     I18N["@easy-web/i18n"]
     CB["@easy-web/content-blocks"]
@@ -59,7 +57,7 @@ graph TD
     MD -.-> CORE
 ```
 
-`core` is the base every site installs. `cms-adapters` depends on it for the content contracts and `auth` for the recipe protocol; `swa` and `brand` are independent, and `create` is a reserved name with no code. The CLI depends on core, `auth` and `cms-adapters` because it composes their create recipes, and it never ships inside a site. The dashed edges are the deprecated compatibility packages, which only re-export core and are removed in 2.0.
+`core` is the base every site installs. `cms-adapters` depends on it for the content contracts and `auth` for the recipe protocol; `swa` and `brand` are independent. The CLI depends on core, `auth` and `cms-adapters` because it composes their create recipes, and it never ships inside a site. The dashed edges are the deprecated compatibility packages, which only re-export core and are removed in 2.0.
 
 ## Shared Packages and Site Responsibilities
 

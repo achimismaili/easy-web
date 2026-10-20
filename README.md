@@ -39,12 +39,6 @@ Install `@easy-web/core` for a working site. Everything else is opt-in.
 | :--- | :--- |
 | `@easy-web/cli` | Config-driven, create-only site generator: `easy-web create --config`. Needs Node.js 24 or later. Not part of the fixed version group |
 
-**Reserved**
-
-| Package | Description |
-| :--- | :--- |
-| `@easy-web/create` | **Reserved placeholder** for a future `pnpm create` entry point. Ships no source; don't add it as a dependency. To generate a site today, use `@easy-web/cli` |
-
 **Deprecated compatibility packages**
 
 These five were folded into `@easy-web/core`. Each one now only re-exports core with `@deprecated` markers, so existing imports keep working for the whole 1.x line. They're removed in 2.0, once every site has migrated. See the [migration guide](https://achim.ismaili.de/easy-web/docs/guides/migrating-to-core/).
