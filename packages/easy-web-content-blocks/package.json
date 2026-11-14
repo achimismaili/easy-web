@@ -33,7 +33,7 @@
     "@easy-web/core": "workspace:*"
   },
   "devDependencies": {
-    "astro": "^7.3.5",
+    "astro": "^7.4.7",
     "typescript": "^5.5.0",
     "vitest": "^4.1.10",
     "zod": "^4.0.0"
