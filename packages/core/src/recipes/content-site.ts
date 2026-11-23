@@ -383,7 +383,7 @@ export function createContentSiteRecipes(rawComposition: unknown, options: Conte
         },
         content: {
             id: 'content.pages', version: '1.7.1', protocolVersion: 1,
-            compatibleCliRange: '^0.1.0 || ^0.2.0', compatibleRuntimeRange: runtimeRange,
+            compatibleCliRange: '^0.1.0 || ^0.2.0 || ^0.3.0', compatibleRuntimeRange: runtimeRange,
             provides: ['content.pages', 'content.typed-definitions'], requires: ['site.shell'], conflicts: [],
             order: { priority: 10, key: 'content' }, optionsSchema: z.strictObject({}),
             outputContributions: contributions, validators: [],

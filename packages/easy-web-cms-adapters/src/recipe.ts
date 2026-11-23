@@ -124,7 +124,7 @@ export const cmsMediaRecipe = {
   id: CMS_MEDIA_RECIPE_ID,
   version: '1.5.0',
   protocolVersion: 1,
-  compatibleCliRange: '^0.1.0 || ^0.2.0',
+  compatibleCliRange: '^0.1.0 || ^0.2.0 || ^0.3.0',
   compatibleRuntimeRange: cmsMediaRuntimeRange,
   provides: ['cms.decap-media', 'content.typed-definitions', 'media.preview-copy'],
   requires: ['site.shell'],

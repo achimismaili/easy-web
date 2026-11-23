@@ -22,14 +22,16 @@ Core retains the only collection schema, content routes and Astro config. The CM
 recipe emits settings and a standalone `/admin/` route using `AdminPage`, with
 `buildContentCompositionDecapConfig` deriving its forms from the recorded
 composition at build time. Non-bound collections stay out of the editor.
-This generator supports the same single-locale title/slug/body, optional
+This generator supports the same single-locale or DE/EN title/slug/body, optional
 summary/image/order slice as core; it does not narrow the existing standalone
 `cmsMediaRecipe` API or its supported traits.
 
 Generated content-plus-CMS sites require core and CMS adapters `^1.9.0`, the first
 release exporting `buildContentCompositionDecapConfig` and its coupled core recipe
-APIs. Selecting `order` raises both floors to `^1.10.0` for the generated optional
-order schema, comparator and form behavior. These are runtime minima, independent
+APIs. Selecting `order` or DE/EN content raises both floors to `^1.10.0` for
+the new ordering or localization APIs. These unpublished minima assume both
+features first ship together in 1.10.0; otherwise the later feature's minimum
+must be raised to its first release. These are runtime minima, independent
 of the version of the creation tool. The standalone media recipe needs core
 `^1.6.0` for its emitted `fieldsForTraits` API; selecting `order` raises its CMS
 adapter floor to `^1.10.0` for the optional numeric field behavior.

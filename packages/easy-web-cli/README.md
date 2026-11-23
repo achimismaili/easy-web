@@ -27,11 +27,11 @@ not supported in Phase 1. Package dependencies, devDependencies and
 scripts merge additively in resolver order; the later value wins a key collision.
 
 Generated runtime minima follow the APIs emitted by the selected recipes:
-shell-only uses core `^1.5.0`; single-locale content collections require core
-`^1.6.0` (trait schemas); single-locale content plus CMS requires core and CMS
+shell-only uses core `^1.5.0`; single-locale unordered content collections require core
+`^1.6.0` (trait schemas); single-locale unordered content plus CMS requires core and CMS
 adapters `^1.9.0` (`buildContentCompositionDecapConfig` and its coupled core
-APIs). Bilingual DE/EN content requires core and, when enabled, CMS adapters
-`^1.10.0` for rendered sitemap localization. Ordinary
+APIs). Bilingual DE/EN or ordered content requires core and, when enabled, CMS adapters
+`^1.10.0` for the newly emitted APIs. Ordinary
 installation must satisfy these ranges without release-age exclusions or other
 policy bypasses. The CLI's own dependencies are creation-time dependencies, not
 proof that the generated site's runtime ranges are sufficient.

@@ -20,6 +20,42 @@ const options = cmsSiteOptionsSchema.parse({
 });
 
 describe('CMS content-site recipes', () => {
+  it.each([
+    [false, false, '^1.6.0', '^1.9.0'],
+    [false, true, '^1.10.0', '^1.10.0'],
+    [true, false, '^1.10.0', '^1.10.0'],
+    [true, true, '^1.10.0', '^1.10.0'],
+  ])('uses the correct runtime floors and pipeline for bilingual=%s order=%s', async (bilingual, ordered, coreFloor, cmsFloor) => {
+    const selected = {
+      contentLocales: bilingual ? ['de', 'en'] : ['de'],
+      contentTypes: [{
+        id: 'entries', primary: true,
+        labels: bilingual ? { de: 'Eintraege', en: 'Entries' } : { de: 'Eintraege' },
+        routes: bilingual ? { de: '/eintraege/', en: '/entries/' } : { de: '/eintraege/' },
+        traits: ['title', 'slug', 'body', ...(ordered ? ['order'] : [])],
+        bindings: ['list', 'detail', 'cms-admin'],
+      }],
+    };
+    const recipes = createCmsContentSiteRecipes(selected, options);
+    expect(recipes.content.compatibleRuntimeRange).toBe(coreFloor);
+    expect(recipes.cms.compatibleRuntimeRange).toBe(cmsFloor);
+    const output = await recipes.content.generate({ options: {}, capabilities: [], contributions: [] });
+    const manifest = JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content));
+    expect(manifest.dependencies['@easy-web/core']).toBe(coreFloor);
+    const cmsOutput = await recipes.cms.generate({ options: {}, capabilities: [], contributions: [] });
+    const cmsManifest = JSON.parse(String(cmsOutput.files.find(({ path }) => path === 'package.json')?.content));
+    expect(cmsManifest.dependencies['@easy-web/core']).toBe(cmsFloor);
+    expect(cmsManifest.dependencies['@easy-web/cms-adapters']).toBe(cmsFloor);
+    const list = String(output.files.find(({ path }) => path === 'src/pages/eintraege/index.astro')?.content);
+    if (bilingual) {
+      expect(list.indexOf('data.locale === "de"')).toBeLessThan(list.indexOf('.sort('));
+      expect(list.indexOf('.sort(')).toBeLessThan(list.indexOf('.map((entry) => toItem(entry, "de", sitePrefix))'));
+    }
+    if (ordered) expect(list).toContain('compareContentOrder(');
+    else if (bilingual) expect(list).toContain('.sort((left, right) => left.data.slug');
+    else expect(list).toContain('.map(toItem).sort((left, right) => left.href < right.href ? -1 : left.href > right.href ? 1 : 0)');
+  });
+
   it('requires the first composition-helper release for both directly used packages', async () => {
     const { cms } = createCmsContentSiteRecipes(composition, options);
     const output = await cms.generate({ options: {}, capabilities: [], contributions: [] });

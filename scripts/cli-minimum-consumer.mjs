@@ -313,6 +313,117 @@ async function consumeOrderedContent(root, cli, archives, versions) {
   process.stdout.write(`ordered-content: packed local CLI/core/CMS ${versions['@easy-web/core']}; build output order and CMS form asserted; invalid NaN rejected\n`);
 }
 
+async function consumeBilingualOrderedContent(root, cli, archives, versions) {
+  const config = {
+    target: join(root, 'bilingual-ordered-content'),
+    recipes: {
+      shell: { siteName: 'Synthetic bilingual catalogue', defaultLocale: 'de' },
+      cms: { backend, mediaRoots: ['src/assets/images'], uiLocale: 'en' },
+    },
+    composition: {
+      contentLocales: ['de', 'en'],
+      contentTypes: [{
+        id: 'bikes', primary: true,
+        labels: { de: 'Fahrraeder', en: 'Bikes' },
+        routes: { de: '/fahrraeder/', en: '/bikes/' },
+        traits: ['title', 'slug', 'body', 'order'],
+        bindings: ['list', 'detail', 'navigation', 'cms-admin'],
+      }],
+    },
+  };
+  const configPath = join(root, 'bilingual-ordered-content.json');
+  await writeJson(configPath, config);
+  const { target } = JSON.parse(await run(root, process.execPath, [cli, 'create', '--config', configPath, '--no-install', '--json']));
+  const manifestPath = join(target, 'package.json');
+  const manifest = await readJson(manifestPath);
+  assert.equal(manifest.dependencies['@easy-web/core'], '^1.10.0');
+  assert.equal(manifest.dependencies['@easy-web/cms-adapters'], '^1.10.0');
+  const archiveFor = (name) => `file:${join(archives, `${name.replace('@', '').replace('/', '-')}-${versions[name]}.tgz`).replaceAll('\\', '/')}`;
+  manifest.dependencies['@easy-web/core'] = archiveFor('@easy-web/core');
+  manifest.dependencies['@easy-web/cms-adapters'] = archiveFor('@easy-web/cms-adapters');
+  await writeJson(manifestPath, { ...manifest, private: true, type: 'module' });
+
+  const entries = [
+    { key: 'negative', de: ['d-neg', -5], en: ['e-neg', 5] },
+    { key: 'tie-a', de: ['d-a', 0], en: ['e-a', 0] },
+    { key: 'tie-z', de: ['d-z', 0], en: ['e-z', -10] },
+    { key: 'positive', de: ['d-positive', 10], en: ['e-positive', 2] },
+    { key: 'missing', de: ['d-missing'], en: ['e-missing'] },
+  ];
+  for (const entry of entries) {
+    for (const locale of ['de', 'en']) {
+      const [slug, order] = entry[locale];
+      const data = { title: slug, slug, locale, translationKey: entry.key, ...(order === undefined ? {} : { order }) };
+      await writeFile(join(target, 'src', 'content', 'bikes', locale, `${slug}.md`),
+        `---\n${JSON.stringify(data, null, 2)}\n---\n\nSynthetic ${locale} content.\n`);
+    }
+  }
+  await install(target);
+  const core = await installedPackage(target, '@easy-web/core', versions['@easy-web/core']);
+  await installedPackage(target, '@easy-web/cms-adapters', versions['@easy-web/cms-adapters']);
+  assert((await readFile(join(core, 'dist', 'contracts', 'index.js'), 'utf8')).includes('./ordering.js'));
+  assert((await readFile(join(core, 'dist', 'contracts', 'traits.js'), 'utf8')).includes('optionalOrderTraitSchema'));
+  const check = await run(target, process.execPath, [pnpm, 'typecheck']);
+  assert(check.includes('0 errors'), check);
+  await run(target, process.execPath, [pnpm, 'build']);
+  const output = (...path) => readFile(join(target, 'dist', ...path), 'utf8');
+
+  for (const [route, expected, foreign] of [
+    ['fahrraeder', ['d-neg', 'd-a', 'd-z', 'd-positive', 'd-missing', 'example'], '/bikes/e-'],
+    ['bikes', ['e-z', 'e-a', 'e-positive', 'e-neg', 'e-missing', 'example'], '/fahrraeder/d-'],
+  ]) {
+    const html = await output(route, 'index.html');
+    const positions = expected.map((slug) => html.indexOf(`href="/${route}/${slug}/"`));
+    assert(positions.every((position) => position >= 0), `${route} cards all present`);
+    assert.deepEqual(positions, [...positions].sort((a, b) => a - b), `${route} localized numeric card ordering`);
+    assert(!html.includes(`href="${foreign}`), `${route} excludes other-locale entries`);
+    assert(html.includes('hreflang="de"') && html.includes('hreflang="en"'));
+  }
+  const admin = await output('admin', 'index.html');
+  const match = admin.match(/window\.initCMS\(\{ config: ([\s\S]*?) \}\);/);
+  assert(match, 'Built CMS configuration is required');
+  const editor = JSON.parse(match[1]);
+  assert.deepEqual(editor.collections.map(({ name, label, folder }) => [name, label, folder]), [
+    ['bikes_de', 'Fahrraeder (DE)', 'src/content/bikes/de'],
+    ['bikes_en', 'Bikes (EN)', 'src/content/bikes/en'],
+  ]);
+  for (const [index, collection] of editor.collections.entries()) {
+    const fields = collection.fields;
+    assert.deepEqual(fields.map(({ name }) => name), ['title', 'slug', 'order', 'locale', 'translationKey', 'body']);
+    const order = fields.find(({ name }) => name === 'order');
+    assert.equal(order.widget, 'number');
+    assert.equal(order.required, false);
+    assert.equal(order.value_type, 'int');
+    assert.equal(order.min, undefined);
+    assert.equal(order.max, undefined);
+    const locale = fields.find(({ name }) => name === 'locale');
+    assert.equal(locale.widget, 'hidden');
+    assert.equal(locale.default, ['de', 'en'][index]);
+    assert.equal(fields.find(({ name }) => name === 'translationKey').required, true);
+  }
+
+  const de = await output('fahrraeder', 'd-neg', 'index.html');
+  const en = await output('bikes', 'e-neg', 'index.html');
+  const site = 'https://replace-with-your-domain.example';
+  for (const [html, canonical] of [[de, '/fahrraeder/d-neg/'], [en, '/bikes/e-neg/']]) {
+    const links = html.match(/<link\b[^>]*>/g) ?? [];
+    assert(links.some((link) => link.includes('rel="canonical"') && link.includes(`href="${site}${canonical}"`)));
+    for (const [locale, path] of [['de', '/fahrraeder/d-neg/'], ['en', '/bikes/e-neg/']]) {
+      assert(links.some((link) => link.includes('rel="alternate"') &&
+        link.includes(`hreflang="${locale}"`) && link.includes(`href="${site}${path}"`)));
+    }
+  }
+  const sitemap = await output('sitemap-0.xml');
+  const sitemapBlocks = [...sitemap.matchAll(/<url>[\s\S]*?<\/url>/g)].map(([block]) => block);
+  for (const route of ['/fahrraeder/d-neg/', '/bikes/e-neg/']) {
+    const block = sitemapBlocks.find((entry) => entry.includes(`<loc>${site}${route}</loc>`));
+    assert(block, `Sitemap entry for ${route}`);
+    assert(block.includes('hreflang="de"') && block.includes('hreflang="en"'));
+    assert(block.includes(`${site}/fahrraeder/d-neg/`) && block.includes(`${site}/bikes/e-neg/`));
+  }
+  process.stdout.write(`bilingual-ordered-content: packed local CLI/core/CMS ${versions['@easy-web/core']}; localized ordering, CMS and SEO asserted\n`);
+}
+
 const root = await mkdtemp(join(tmpdir(), 'easy-web-cli-minimum-'));
 try {
   process.stdout.write(`CLI minimum-runtime consumers on Node ${process.versions.node}\n`);
@@ -320,6 +431,7 @@ try {
   for (const profile of profiles) await consume(root, cli, profile);
   await consumeMediaRecipe(root, tool);
   await consumeOrderedContent(root, cli, archives, versions);
+  await consumeBilingualOrderedContent(root, cli, archives, versions);
 } finally {
   await rm(root, { recursive: true, force: true });
 }

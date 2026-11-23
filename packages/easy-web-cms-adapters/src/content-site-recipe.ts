@@ -29,7 +29,7 @@ export function createCmsContentSiteRecipes(rawComposition: unknown, rawOptions:
   });
   const cms: RecipeMetadata = {
     id: 'cms.decap-editor', version: '1.7.1', protocolVersion: 1,
-    compatibleCliRange: '^0.1.0 || ^0.2.0', compatibleRuntimeRange: runtimeRange,
+    compatibleCliRange: '^0.1.0 || ^0.2.0 || ^0.3.0', compatibleRuntimeRange: runtimeRange,
     provides: ['cms.decap-editor', 'media.preview-copy'],
     requires: ['site.shell', 'content.typed-definitions'], conflicts: [],
     order: { priority: 30, key: 'cms' }, optionsSchema: z.strictObject({}),
