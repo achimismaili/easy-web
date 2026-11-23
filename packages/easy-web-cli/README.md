@@ -27,9 +27,11 @@ not supported in Phase 1. Package dependencies, devDependencies and
 scripts merge additively in resolver order; the later value wins a key collision.
 
 Generated runtime minima follow the APIs emitted by the selected recipes:
-shell-only uses core `^1.5.0`; content collections require core `^1.6.0` (trait
-schemas); content plus CMS requires core and CMS adapters `^1.9.0`
-(`buildContentCompositionDecapConfig` and its coupled core APIs). Ordinary
+shell-only uses core `^1.5.0`; single-locale content collections require core
+`^1.6.0` (trait schemas); single-locale content plus CMS requires core and CMS
+adapters `^1.9.0` (`buildContentCompositionDecapConfig` and its coupled core
+APIs). Bilingual DE/EN content requires core and, when enabled, CMS adapters
+`^1.10.0` for rendered sitemap localization. Ordinary
 installation must satisfy these ranges without release-age exclusions or other
 policy bypasses. The CLI's own dependencies are creation-time dependencies, not
 proof that the generated site's runtime ranges are sufficient.
@@ -60,14 +62,49 @@ not clone a site, copy a pilot, or read a customer repository.
 }
 ```
 
-This first slice supports one locale matching `shell.defaultLocale`, one or more
-content types, required `title`/`slug`/`body`, optional `summary`/`image`, and
-`list`/`detail` plus optional `navigation` bindings. At most one type can be
-`primary`; that marker describes its graph role, not a homepage renderer.
-Routes use non-reserved lowercase path segments and must not overlap.
-Unsupported traits, homepage bindings, multiple locales, and combining this
-composition with application auth fail as invalid input, not partial output.
-Existing shell-only and shell-plus-auth inputs retain their earlier behavior.
+Content generation supports one locale matching `shell.defaultLocale`, or the
+opt-in DE/EN pair with a distinct label and route for each locale. It supports
+one or more content types, required `title`/`slug`/`body`, optional
+`summary`/`image`, and `list`/`detail` plus optional `navigation` bindings. At
+most one type can be `primary`; that marker describes its graph role, not a
+homepage renderer. Routes use non-reserved lowercase path segments and must not
+overlap. Unsupported locale combinations, traits, homepage bindings, and
+combining this composition with application auth fail as invalid input, before
+target files are created. Existing single-locale and shell-only/auth behavior
+remains unchanged.
+
+To opt in to bilingual content, declare both complete locale entries and make
+the shell's default match the first locale:
+
+```json
+{
+  "recipes": {
+    "shell": { "siteName": "Example Site", "defaultLocale": "de" }
+  },
+  "composition": {
+    "contentLocales": ["de", "en"],
+    "contentTypes": [{
+      "id": "entries",
+      "primary": true,
+      "labels": { "de": "Einträge", "en": "Entries" },
+      "routes": { "de": "/beitraege/", "en": "/entries/" },
+      "traits": ["title", "slug", "summary", "body"],
+      "bindings": ["list", "detail", "navigation", "cms-admin"]
+    }]
+  }
+}
+```
+
+The generated collection stores localized entries under
+`src/content/<type>/<locale>/`, including required `locale` and
+`translationKey` fields. Slugs, title, summary and markdown body belong to each
+locale's entry. Each locale gets the exact list/detail routes in the composition,
+localized navigation and language switching. Detail hreflang links are emitted
+only for matching translation keys; an untranslated entry switches to that
+locale's list instead of inventing a detail URL. Canonicals use the actual
+locale route, and the opt-in SEO reconciliation validates built canonicals and
+reciprocal head links before adding the same alternates to the sitemap. Localized
+links and SEO URLs honor Astro's configured `base` path and trailing-slash mode.
 
 Core owns schema, sample-content and page generation. The generated definitions
 record the composition and export Astro collections built from the shared trait
@@ -112,6 +149,12 @@ reads the recorded composition at build time to generate Decap forms in the
 standalone `/admin/` page, using the existing `AdminPage` component. Only content
 types with `cms-admin` appear in the editor; no binding means no editor exposure.
 CMS without a bound type, or a CMS binding without the add-on, is rejected.
+
+For a bilingual composition, Decap creates separate DE and EN collections under
+the matching locale folders. Both sets of entries use the same `translationKey`
+field as the Astro collection, and collection labels use the locale-specific
+composition labels. The CMS editor's `uiLocale` controls the editor's field
+labels independently of content locales.
 
 The first media root owns editor uploads and the generated example image; all
 configured roots get explicit source-asset previews. Roots must be distinct and

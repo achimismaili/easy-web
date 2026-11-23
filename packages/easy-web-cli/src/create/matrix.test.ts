@@ -5,7 +5,7 @@
 // it.skip / documented gap, never fabricated coverage:
 //   - legacy standalone cms + shell still conflicts; the composition-aware CMS path is covered.
 //   - money: no recipe consumes the `money` trait.
-//   - bilingual/regional: content generation currently accepts one locale.
+//   - bilingual DE/EN: generated content and CMS localization are exercised below.
 //   - legal enabled/disabled: shell has no legal toggle.
 //   - axe: no axe package is available in the monorepo, and none was added (documented gap).
 // Real astro check + astro build ARE run on createSite output. A generated target has no
@@ -192,7 +192,7 @@ describe('generated-project matrix: real astro check + build on createSite outpu
     const editorOptions = {
         backend: cmsOptions.backend, mediaRoots: ['src/assets/images'], uiLocale: 'en',
     };
-    const realProfiles: readonly { readonly name: string; readonly recipes: Record<string, unknown>; readonly auth: boolean; readonly composition?: unknown; readonly noIndex?: boolean; readonly locale?: string; readonly cms?: boolean }[] = [
+    const realProfiles: readonly { readonly name: string; readonly recipes: Record<string, unknown>; readonly auth: boolean; readonly composition?: unknown; readonly noIndex?: boolean; readonly locale?: string; readonly cms?: boolean; readonly bilingual?: boolean; readonly basePath?: string }[] = [
         { name: 'minimal (shell only)', recipes: { shell: { siteName: 'Matrix Site' } }, auth: false },
         { name: 'shell + auth', recipes: { shell: { siteName: 'Matrix Site' }, auth: {} }, auth: true },
         { name: 'content, public SEO', recipes: { shell: { siteName: 'Content Site' } }, composition: contentComposition, auth: false },
@@ -211,6 +211,15 @@ describe('generated-project matrix: real astro check + build on createSite outpu
                 traits: ['title', 'slug', 'body'], bindings: ['list', 'detail', 'navigation'],
             }],
         }, locale: 'de', auth: false },
+        { name: 'bilingual DE/EN content and localized CMS', recipes: { shell: { siteName: 'Bilingual Content', defaultLocale: 'de' }, cms: { ...editorOptions, uiLocale: 'en' } }, composition: {
+            contentLocales: ['de', 'en'], contentTypes: [{
+                id: 'entries', primary: true,
+                labels: { de: 'Beiträge', en: 'Entries' },
+                routes: { de: '/beitraege/', en: '/entries/' },
+                traits: ['title', 'slug', 'summary', 'body'],
+                bindings: ['list', 'detail', 'navigation', 'cms-admin'],
+            }],
+        }, locale: 'de', cms: true, bilingual: true, basePath: '/docs', auth: false },
     ];
     for (const profile of realProfiles) {
         it(`${profile.name}: astro check and astro build exit 0 and emit structural pages`, async () => {
@@ -223,6 +232,11 @@ describe('generated-project matrix: real astro check + build on createSite outpu
                 for (const entry of await readdir(target)) {
                     if (entry !== '.git') await cp(join(target, entry), join(fixture, entry), { recursive: true });
                 }
+                if (profile.basePath) {
+                    const configPath = join(fixture, 'astro.config.mjs');
+                    const config = await readFile(configPath, 'utf8');
+                    await writeFile(configPath, config.replace(/(site: "[^"]+",)/, `$1\n  base: '${profile.basePath}',`));
+                }
                 if (profile.auth) {
                     const config = JSON.parse(await readFile(join(fixture, 'tsconfig.json'), 'utf8'));
                     await writeFile(join(fixture, 'tsconfig.json'), `${JSON.stringify({
@@ -234,6 +248,16 @@ describe('generated-project matrix: real astro check + build on createSite outpu
                     const entry = await readFile(entryPath, 'utf8');
                     await writeFile(entryPath, entry.replace('../../assets/images/content-example.svg', '/src/assets/images/content-example.svg')
                         + '\n![CMS body image](/src/assets/images/content-example.svg)\n');
+                }
+                if (profile.bilingual) {
+                    const englishEntry = join(fixture, 'src', 'content', 'entries', 'en', 'example.md');
+                    const source = await readFile(englishEntry, 'utf8');
+                    await writeFile(englishEntry, source.replace('"slug": "example"', '"slug": "sample-entry"'));
+                    const germanEntry = join(fixture, 'src', 'content', 'entries', 'de', 'example.md');
+                    const germanSource = await readFile(germanEntry, 'utf8');
+                    await writeFile(join(fixture, 'src', 'content', 'entries', 'de', 'untranslated.md'),
+                        germanSource.replace('"slug": "example"', '"slug": "only-in-de"')
+                            .replace('"translationKey": "example"', '"translationKey": "untranslated-de"'));
                 }
                 // When
                 const check = await runAstro('check', fixture);
@@ -263,11 +287,23 @@ describe('generated-project matrix: real astro check + build on createSite outpu
                     const match = admin.match(/window\.initCMS\(\{ config: ([\s\S]*?) \}\);/);
                     if (!match) throw new Error('Missing built Decap configuration');
                     const editor = JSON.parse(match[1]);
-                    expect(editor.collections).toHaveLength(1);
-                    expect(editor.locale).toBe(profile.locale ?? 'en');
-                    expect(editor.collections[0].folder).toBe('src/content/entries');
-                    expect(editor.collections[0].fields.map(({ name }: { name: string }) => name)).toEqual(
-                        profile.locale ? ['title', 'slug', 'body'] : ['title', 'slug', 'summary', 'image', 'body']);
+                    expect(editor.locale).toBe(profile.bilingual ? 'en' : profile.locale ?? 'en');
+                    expect(editor.collections).toHaveLength(profile.bilingual ? 2 : 1);
+                    if (profile.bilingual) {
+                        expect(editor.collections.map(({ name, label, folder }: { name: string; label: string; folder: string }) => [name, label, folder])).toEqual([
+                            ['entries_de', 'Beiträge (DE)', 'src/content/entries/de'],
+                            ['entries_en', 'Entries (EN)', 'src/content/entries/en'],
+                        ]);
+                        for (const collection of editor.collections) {
+                            expect(collection.fields.map(({ name }: { name: string }) => name)).toEqual([
+                                'title', 'slug', 'summary', 'locale', 'translationKey', 'body',
+                            ]);
+                        }
+                    } else {
+                        expect(editor.collections[0].folder).toBe('src/content/entries');
+                        expect(editor.collections[0].fields.map(({ name }: { name: string }) => name)).toEqual(
+                            profile.locale ? ['title', 'slug', 'body'] : ['title', 'slug', 'summary', 'image', 'body']);
+                    }
                     if (!profile.locale) {
                         expect(editor.collections[0].fields.find(({ name }: { name: string }) => name === 'image').fields)
                             .toEqual(expect.arrayContaining([expect.objectContaining({ name: 'alt', required: true })]));
@@ -283,13 +319,14 @@ describe('generated-project matrix: real astro check + build on createSite outpu
                     if (!profile.noIndex) expect(await readFile(join(fixture, 'dist', 'sitemap-0.xml'), 'utf8')).not.toContain('/admin');
                 }
                 if (profile.composition) {
-                    const list = await readFile(join(fixture, 'dist', 'library', 'entries', 'index.html'), 'utf8');
-                    const detail = await readFile(join(fixture, 'dist', 'library', 'entries', 'example', 'index.html'), 'utf8');
-                    expect(list).toContain('href="/library/entries/example/"');
+                    const listRoute = profile.bilingual ? 'beitraege' : 'library/entries';
+                    const detail = await readFile(join(fixture, 'dist', listRoute, 'example', 'index.html'), 'utf8');
+                    const list = await readFile(join(fixture, 'dist', listRoute, 'index.html'), 'utf8');
+                    expect(list).toContain(`href="${profile.basePath ?? ''}/${listRoute}/example/"`);
                     expect(detail).toContain(profile.locale === 'de' ? 'Ersetze diesen Beispielinhalt' : 'Replace this example content');
-                    expect(detail).toContain('https://replace-with-your-domain.example/library/entries/example/');
+                    expect(detail).toContain(`https://replace-with-your-domain.example${profile.basePath ?? ''}/${listRoute}/example/`);
                     for (const page of [html, list, detail]) {
-                        expect(page).toContain('href="/library/entries/"');
+                        expect(page).toContain(`href="${profile.basePath ?? ''}/${listRoute}/"`);
                         expect(/name="robots" content="noindex, nofollow"/.test(page)).toBe(!!profile.noIndex);
                     }
                     if (!profile.locale) {
@@ -304,7 +341,31 @@ describe('generated-project matrix: real astro check + build on createSite outpu
                     }
                     if (!profile.noIndex) {
                         const sitemap = await readFile(join(fixture, 'dist', 'sitemap-0.xml'), 'utf8');
-                        expect(sitemap).toContain('/library/entries/example/');
+                        expect(sitemap).toContain(`/${listRoute}/example/`);
+                        if (profile.bilingual) {
+                            const englishList = await readFile(join(fixture, 'dist', 'entries', 'index.html'), 'utf8');
+                            const englishDetail = await readFile(join(fixture, 'dist', 'entries', 'sample-entry', 'index.html'), 'utf8');
+                            expect(englishList).toContain('<html lang="en">');
+                            expect(englishList).toContain('hreflang="de"');
+                            expect(englishList).toContain('hreflang="en"');
+                            expect(englishDetail).toContain('<html lang="en">');
+                            expect(englishDetail).toContain(`href="https://replace-with-your-domain.example${profile.basePath ?? ''}/entries/sample-entry/"`);
+                            expect(englishDetail).toContain('hreflang="de"');
+                            expect(englishDetail).toContain(`https://replace-with-your-domain.example${profile.basePath ?? ''}/beitraege/example/`);
+                            expect(sitemap).toContain('hreflang="de"');
+                            expect(sitemap).toContain('hreflang="en"');
+                            expect(sitemap).toContain(`https://replace-with-your-domain.example${profile.basePath ?? ''}/entries/sample-entry/`);
+                            expect(sitemap).toContain(`https://replace-with-your-domain.example${profile.basePath ?? ''}/beitraege/example/`);
+                            expect(html).toContain(`https://replace-with-your-domain.example${profile.basePath ?? ''}/en/`);
+                            expect(list).toContain(`href="${profile.basePath ?? ''}/entries/"`);
+                            const untranslated = await readFile(join(fixture, 'dist', 'beitraege', 'only-in-de', 'index.html'), 'utf8');
+                            expect(untranslated).toContain(`href="${profile.basePath ?? ''}/entries/"`);
+                            expect(untranslated).not.toMatch(/<link rel="alternate" hreflang=/);
+                            const untranslatedSitemapEntry = [...sitemap.matchAll(/<url>[\s\S]*?<\/url>/g)]
+                                .map(([block]) => block).find((block) => block.includes('/only-in-de/'));
+                            expect(untranslatedSitemapEntry).toBeDefined();
+                            expect(untranslatedSitemapEntry).not.toContain('<xhtml:link');
+                        }
                     }
                     if (profile.name === 'content, public SEO' || profile.name === 'CMS, public SEO') {
                         const entryPath = join(fixture, 'src', 'content', 'entries', 'example.md');
@@ -424,7 +485,6 @@ describe('generated-project matrix: invalid / conflict profiles', () => {
 
 describe('generated-project matrix: documented gaps (skipped, not faked)', () => {
     it.skip('money profile - no recipe consumes the money trait', () => undefined);
-    it.skip('bilingual / regional locale modes - content generation currently accepts one locale', () => undefined);
     it.skip('legal enabled/disabled - shell has no legal toggle; legal links are unconditional', () => undefined);
     it.skip('legacy nested-composition CMS and application-auth composition - no single configuration owner', () => undefined);
     it.skip('axe accessibility scan - no axe package exists in the monorepo and none was added', () => undefined);

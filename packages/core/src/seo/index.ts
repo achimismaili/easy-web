@@ -11,6 +11,7 @@ import {
 import { createCrawlPolicy, isDisallowedPath } from './crawl-policy.js'
 import { buildInfoManifest } from './build-info.js'
 import { buildInfoOptionsSchema, serializeBuildInfo, type BuildInfoOptions } from './build-info-manifest.js'
+import { synchronizeRenderedSitemapAlternates } from './rendered-sitemap-alternates.js'
 
 export type { BuildInfoOptions, BuildInfoPackageId, BuildInfoManifest } from './build-info-manifest.js'
 
@@ -33,6 +34,11 @@ export type Options = {
    * A stale or misspelled entry fails the build rather than degrading quietly.
    */
   localizedPaths?: readonly LocalizedPathGroup[]
+  /**
+   * Reconcile sitemap alternates with rendered canonical/hreflang links after
+   * build. Intended for generated content whose translated slugs are CMS-owned.
+   */
+  synchronizeRenderedAlternates?: boolean
   /** Composed with the built-in crawl policy using AND semantics; cannot re-admit blocked paths. */
   filter?: (page: string) => boolean
 }
@@ -143,9 +149,9 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
 
         const declaredGroups = options.localizedPaths ?? []
 
-        if (declaredGroups.length > 0 && !sitemapI18n) {
+        if ((declaredGroups.length > 0 || options.synchronizeRenderedAlternates) && !sitemapI18n) {
           throw new Error(
-            '@easy-web/seo: `localizedPaths` requires `i18n` to be configured in astro.config.mjs.'
+            '@easy-web/seo: localized alternates require `i18n` to be configured in astro.config.mjs.'
           )
         }
 
@@ -228,7 +234,7 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
           const validatorIntegration: AstroIntegration = {
             name: '@easy-web/seo:localized-paths-validation',
             hooks: {
-              'astro:build:done': () => {
+              'astro:build:done': async ({ dir }) => {
                 const missing = [...declaredUrls].filter((url) => !seenUrls.has(url))
                 const failures = [
                   ...missing.map(
@@ -241,6 +247,14 @@ export default function easyWebSeo(options: Options = {}): AstroIntegration {
                 if (failures.length > 0) {
                   throw new Error(
                     `@easy-web/seo: invalid \`localizedPaths\`:\n- ${failures.join('\n- ')}`
+                  )
+                }
+                if (options.synchronizeRenderedAlternates) {
+                  await synchronizeRenderedSitemapAlternates(
+                    dir,
+                    config,
+                    localeIds,
+                    config.i18n!.defaultLocale,
                   )
                 }
               },

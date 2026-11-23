@@ -82,4 +82,27 @@ describe('shell recipe', () => {
         expect(manifest.dependencies.sharp).toBeUndefined();
         expect(shellRecipe.compatibleRuntimeRange).toBe('^1.5.0');
     });
+
+    it('opts only localized content shells into manual routes and rendered sitemap alternates', () => {
+        const files = buildShellFiles({ defaultLocale: 'de' }, [], {
+            contentLocales: ['de', 'en'],
+            navigationByLocale: { de: [{ label: 'Beiträge', href: '/beitraege/' }], en: [{ label: 'Entries', href: '/entries/' }] },
+            localizedPaths: [{ de: '/', en: '/en/' }, { de: '/beitraege/', en: '/entries/' }],
+        });
+        const config = files.find(({ path }) => path === 'astro.config.mjs')!.content;
+        const layout = files.find(({ path }) => path === 'src/layouts/Base.astro')!.content;
+        const root = files.find(({ path }) => path === 'src/pages/index.astro')!.content;
+        const englishHome = files.find(({ path }) => path === 'src/pages/en/index.astro')!.content;
+        expect(config).toContain('i18n: { defaultLocale: "de", locales: ["de","en"] }');
+        expect(config).toContain('"synchronizeRenderedAlternates":true');
+        expect(config).toContain('"de":"de","en":"en"');
+        expect(layout).toContain('<html lang={currentLang}>');
+        expect(layout).toContain('navigationByLocale[currentLang]');
+        expect(layout).toContain('alternates={alternates}');
+        expect(layout).toContain('import.meta.env.BASE_URL');
+        expect(root).toContain('Willkommen');
+        expect(root).toContain('getAlternateLinks');
+        expect(englishHome).toContain('Welcome');
+        expect(files.find(({ path }) => path === 'src/lib/localized-paths.ts')?.content).toContain('"/beitraege/"');
+    });
 });

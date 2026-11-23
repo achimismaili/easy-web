@@ -72,11 +72,23 @@ export function buildContentCompositionDecapConfig(rawComposition: unknown, rawO
   const selected = composition.contentTypes.filter((type) => type.bindings.includes('cms-admin'));
   if (!selected.length) throw new Error('CMS generation requires at least one cms-admin content binding');
   const definitions = runtimeDefinitions({ ...options, composition: { ...composition, contentTypes: selected } });
-  return buildDecapConfig({
+  const config = buildDecapConfig({
     backend: { name: 'azure', repo: options.backend.repo, tenant_id: options.backend.tenantId, app_id: options.backend.appId, branch: options.backend.branch },
     mediaFolder: options.mediaRoots[0]!, publicFolder: `/${options.mediaRoots[0]!}`,
     locale: options.uiLocale, contentTypes: definitions,
   });
+  if (composition.contentLocales.length < 2) return config;
+  return {
+    ...config,
+    collections: config.collections.map((collection) => {
+        if (!('folder' in collection)) return collection;
+        const type = selected.find((candidate) => collection.name.startsWith(`${candidate.id}_`));
+        const locale = composition.contentLocales.find((candidate) => collection.name === `${type?.id}_${candidate}`);
+        return type && locale
+            ? { ...collection, label: `${type.labels[locale]} (${locale.toUpperCase()})` }
+            : collection;
+    }),
+  };
 }
 
 function definitionsSource(composition: ContentComposition, mediaFolder: string, uiLocale: 'de' | 'en'): string {

@@ -29,6 +29,45 @@ describe('CMS content-site recipes', () => {
     expect(cms.compatibleRuntimeRange).toBe(manifest.dependencies['@easy-web/cms-adapters']);
   });
 
+  it('generates localized Decap collections from the same DE/EN composition', () => {
+    const bilingual = contentCompositionSchema.parse({
+      contentLocales: ['de', 'en'],
+      contentTypes: [{
+        id: 'entries', primary: true, labels: { de: 'Beiträge', en: 'Entries' },
+        routes: { de: '/beitraege/', en: '/entries/' },
+        traits: ['title', 'slug', 'body'],
+        bindings: ['list', 'detail', 'navigation', 'cms-admin'],
+      }],
+    });
+    const config = buildContentCompositionDecapConfig(bilingual, options);
+    expect(config.collections).toHaveLength(2);
+    expect(config.collections.map((collection) => [collection.name, collection.label, collection.folder])).toEqual([
+      ['entries_de', 'Beiträge (DE)', 'src/content/entries/de'],
+      ['entries_en', 'Entries (EN)', 'src/content/entries/en'],
+    ]);
+    for (const collection of config.collections) {
+      if (!('folder' in collection)) throw new Error('Expected a localized folder collection');
+      expect(collection.fields.map(({ name }) => name)).toEqual(['title', 'slug', 'locale', 'translationKey', 'body']);
+    }
+  });
+
+  it('raises the generated runtime floor only for bilingual CMS output', async () => {
+    const bilingual = contentCompositionSchema.parse({
+      contentLocales: ['de', 'en'],
+      contentTypes: [{
+        id: 'entries', primary: true, labels: { de: 'Beiträge', en: 'Entries' },
+        routes: { de: '/beitraege/', en: '/entries/' },
+        traits: ['title', 'slug', 'body'],
+        bindings: ['list', 'detail', 'navigation', 'cms-admin'],
+      }],
+    });
+    const { cms } = createCmsContentSiteRecipes(bilingual, options);
+    const output = await cms.generate({ options: {}, capabilities: [], contributions: [] });
+    const manifest = JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content));
+    expect(manifest.dependencies['@easy-web/core']).toBe('^1.10.0');
+    expect(manifest.dependencies['@easy-web/cms-adapters']).toBe('^1.10.0');
+  });
+
   it('has exactly one schema/config owner and declares its dependency on typed definitions', async () => {
     const recipes = createCmsContentSiteRecipes(composition, options);
     expect(resolveCapabilityGraph(Object.values(recipes)).ok).toBe(true);

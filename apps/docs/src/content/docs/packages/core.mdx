@@ -148,6 +148,18 @@ build also rejects declared URLs missing from the sitemap (including filtered-ou
 routes) and conflicting automatic pairings. A group is not a declaration of
 partial translations or proof that the host serves a route.
 
+Generated bilingual content uses a separate opt-in mode:
+`easyWebSeo({ synchronizeRenderedAlternates: true, sitemapLocales, localizedPaths })`.
+It reads only rendered pages that emit reciprocal, self-canonical head
+alternates, validates that every target is a built page on the configured site
+and base path and is present in the sitemap, then writes the same alternate
+cluster into sitemap entries. This is intended for generated CMS content whose
+translated slugs are not known when `astro.config.mjs` is created. The default
+remains static-only: without the option, existing `localizedPaths` validation
+and sitemap output are unchanged. The synchronization hook is not registered
+when `noIndex: true` suppresses the sitemap. Generated localized links and SEO
+URLs honor Astro's configured `base` path and trailing-slash mode.
+
 ### Match the configured served URL form
 
 Explicit Astro `trailingSlash: 'always'` or `'never'` wins. When it is `'ignore'`,

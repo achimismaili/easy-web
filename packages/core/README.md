@@ -120,7 +120,8 @@ featured presentation slot merely by defining an image.
 `createContentSiteRecipes(composition)` from `@easy-web/core/recipes` connects a
 validated composition to shell navigation and a `content.pages` recipe. Its
 `generatedContentCompositionSchema` deliberately accepts a smaller implemented
-subset than the generic contract: one locale, `title`/`slug`/`body`, optional
+subset than the generic contract: one locale or the DE/EN pair,
+`title`/`slug`/`body`, optional
 `summary`/`image`, list/detail bindings and optional navigation or `cms-admin`. Other valid
 contract selections fail with an explicit not-yet-supported diagnostic.
 
@@ -129,6 +130,13 @@ example content, contract-checked entry adapters and list/detail pages using Car
 Media and Prose. A body becomes `HasBody` only after Astro renders it. Content
 roles and bindings are logical graph contributions, not output filenames.
 `primary` is a graph role; it does not select a homepage automatically.
+In DE/EN mode, entries live below their locale folder and require matching
+`locale` and `translationKey` data. Each locale's label, route, title, summary,
+slug and markdown body remains independently editable; detail alternates are
+created only when a translation key has more than one locale. The generated
+shell localizes navigation and adds the actual translated routes to its
+canonical/head/sitemap configuration. Localized links and SEO URLs honor Astro's
+configured `base` path and trailing-slash mode.
 `@easy-web/cms-adapters` supplies `createCmsContentSiteRecipes` for the CMS-enabled
 path, consuming the same composition without replacing core's schemas or routes.
 Core's optional `ContentSiteOptions` lets first-party recipes choose an asset
@@ -137,9 +145,12 @@ single configuration renderer. These are package-owned source expressions, not
 user-configurable JavaScript or a post-generation config merge.
 Application-auth composition remains unsupported.
 
-Generated content sites require core `^1.6.0`, the first release with the trait
-schemas used in their collections and adapters, even without images. This does
-not raise the shell-only floor of `^1.5.0`. CMS composition adds its own higher
-runtime requirement.
+Single-locale generated content sites require core `^1.6.0`, the first release
+with the trait schemas used in their collections and adapters, even without
+images. Bilingual generated content requires core `^1.10.0` for rendered
+alternate reconciliation; its CMS recipe uses the same minimum. These are the
+unpublished minimums from the current Changesets release and require those
+artifacts to be released together before registry consumption. This does not
+raise the shell-only floor of `^1.5.0`.
 
 This package is published as part of the fixed `@easy-web/*` family through the Changesets and npm Trusted Publishing workflow.
