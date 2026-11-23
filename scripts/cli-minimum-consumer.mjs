@@ -73,7 +73,7 @@ async function generator(root) {
   await install(tool);
   for (const [name, version] of Object.entries(versions)) await installedPackage(tool, name, version);
   const cli = join(tool, 'node_modules', '@easy-web', 'cli', 'dist', 'bin.js');
-  return { cli, tool };
+  return { cli, tool, archives, versions };
 }
 
 const backend = {
@@ -232,12 +232,94 @@ async function consumeMediaRecipe(root, tool) {
   process.stdout.write('standalone-media: packed recipe -> registry core/CMS 1.6.0; typecheck/build and media preview passed\n');
 }
 
+async function consumeOrderedContent(root, cli, archives, versions) {
+  const config = {
+    target: join(root, 'ordered-content'),
+    recipes: {
+      shell: { siteName: 'Synthetic ordered catalogue', defaultLocale: 'en' },
+      cms: { backend, mediaRoots: ['src/assets/images'], uiLocale: 'en' },
+    },
+    composition: {
+      contentLocales: ['en'],
+      contentTypes: [{
+        id: 'bikes', primary: true, labels: { en: 'Bikes' }, routes: { en: '/bikes/' },
+        traits: ['title', 'slug', 'body', 'order'],
+        bindings: ['list', 'detail', 'cms-admin'],
+      }],
+    },
+  };
+  const configPath = join(root, 'ordered-content.json');
+  await writeJson(configPath, config);
+  const result = JSON.parse(await run(root, process.execPath, [cli, 'create', '--config', configPath, '--no-install', '--json']));
+  const target = result.target;
+  const manifestPath = join(target, 'package.json');
+  const manifest = await readJson(manifestPath);
+  assert.equal(manifest.dependencies['@easy-web/core'], '^1.10.0');
+  assert.equal(manifest.dependencies['@easy-web/cms-adapters'], '^1.10.0');
+  const archiveFor = (name) => `file:${join(archives, `${name.replace('@', '').replace('/', '-')}-${versions[name]}.tgz`).replaceAll('\\', '/')}`;
+  manifest.dependencies['@easy-web/core'] = archiveFor('@easy-web/core');
+  manifest.dependencies['@easy-web/cms-adapters'] = archiveFor('@easy-web/cms-adapters');
+  await writeJson(manifestPath, { ...manifest, private: true, type: 'module' });
+
+  const documents = [
+    { name: 'missing', slug: 'missing' },
+    { name: 'positive', slug: 'positive', order: 10 },
+    { name: 'tie-z', slug: 'tie-z', order: 0 },
+    { name: 'negative', slug: 'negative', order: -10 },
+    { name: 'tie-a', slug: 'tie-a', order: 0 },
+  ];
+  for (const document of documents) {
+    const frontmatter = [
+      '---',
+      `title: ${document.slug}`,
+      `slug: ${document.slug}`,
+      ...(document.order === undefined ? [] : [`order: ${document.order}`]),
+      '---',
+      '',
+      `Synthetic ${document.slug} content.`,
+      '',
+    ].join('\n');
+    await writeFile(join(target, 'src', 'content', 'bikes', `${document.name}.md`), frontmatter);
+  }
+
+  await install(target);
+  await installedPackage(target, '@easy-web/core', versions['@easy-web/core']);
+  await installedPackage(target, '@easy-web/cms-adapters', versions['@easy-web/cms-adapters']);
+  const check = await run(target, process.execPath, [pnpm, 'typecheck']);
+  assert(check.includes('0 errors'), check);
+  await run(target, process.execPath, [pnpm, 'build']);
+
+  const list = await readFile(join(target, 'dist', 'bikes', 'index.html'), 'utf8');
+  const orderedLinks = ['negative', 'tie-a', 'tie-z', 'positive', 'missing']
+    .map((slug) => list.indexOf(`href="/bikes/${slug}/"`));
+  assert(orderedLinks.every((position) => position >= 0), 'Every ordered content card appears in the rendered list');
+  assert.deepEqual(orderedLinks, [...orderedLinks].sort((left, right) => left - right),
+    'The rendered list sorts by numeric order, slug, then missing values');
+
+  const admin = await readFile(join(target, 'dist', 'admin', 'index.html'), 'utf8');
+  const match = admin.match(/window\.initCMS\(\{ config: ([\s\S]*?) \}\);/);
+  assert(match, 'Built CMS configuration is required');
+  const editor = JSON.parse(match[1]);
+  const orderField = editor.collections[0].fields.find(({ name }) => name === 'order');
+  assert(orderField, 'CMS form exposes the order trait');
+  assert.equal(orderField.required, false);
+  assert.equal(orderField.value_type, 'int');
+  assert.equal(orderField.min, undefined);
+  assert.equal(orderField.max, undefined);
+
+  await writeFile(join(target, 'src', 'content', 'bikes', 'invalid.md'),
+    '---\ntitle: invalid\nslug: invalid\norder: .nan\n---\n\nInvalid numeric content.\n');
+  await assert.rejects(run(target, process.execPath, [pnpm, 'build']), /order|expected|NaN/i);
+  process.stdout.write(`ordered-content: packed local CLI/core/CMS ${versions['@easy-web/core']}; build output order and CMS form asserted; invalid NaN rejected\n`);
+}
+
 const root = await mkdtemp(join(tmpdir(), 'easy-web-cli-minimum-'));
 try {
   process.stdout.write(`CLI minimum-runtime consumers on Node ${process.versions.node}\n`);
-  const { cli, tool } = await generator(root);
+  const { cli, tool, archives, versions } = await generator(root);
   for (const profile of profiles) await consume(root, cli, profile);
   await consumeMediaRecipe(root, tool);
+  await consumeOrderedContent(root, cli, archives, versions);
 } finally {
   await rm(root, { recursive: true, force: true });
 }

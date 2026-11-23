@@ -65,13 +65,21 @@ not clone a site, copy a pilot, or read a customer repository.
 Content generation supports one locale matching `shell.defaultLocale`, or the
 opt-in DE/EN pair with a distinct label and route for each locale. It supports
 one or more content types, required `title`/`slug`/`body`, optional
-`summary`/`image`, and `list`/`detail` plus optional `navigation` bindings. At
+`summary`/`image`/`order`, and `list`/`detail` plus optional `navigation` bindings. At
 most one type can be `primary`; that marker describes its graph role, not a
 homepage renderer. Routes use non-reserved lowercase path segments and must not
 overlap. Unsupported locale combinations, traits, homepage bindings, and
 combining this composition with application auth fail as invalid input, before
 target files are created. Existing single-locale and shell-only/auth behavior
 remains unchanged.
+
+When selected, `order` is optional per entry and accepts finite integers,
+including negative and zero values. Missing values sort last; ties sort by slug
+in the content locale, then by the collection ID. CMS forms expose an optional,
+unbounded integer field. Bilingual or ordered consumers require core `^1.10.0`
+and, when selected, CMS adapters `^1.10.0`; those floors assume both features
+first ship together in 1.10.0. Other content-only compositions retain `^1.6.0`,
+and CMS compositions without either feature retain `^1.9.0`.
 
 To opt in to bilingual content, declare both complete locale entries and make
 the shell's default match the first locale:

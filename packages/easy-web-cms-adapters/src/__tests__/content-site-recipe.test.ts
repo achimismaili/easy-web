@@ -68,6 +68,23 @@ describe('CMS content-site recipes', () => {
     expect(manifest.dependencies['@easy-web/cms-adapters']).toBe('^1.10.0');
   });
 
+  it('raises the generated runtime floor when optional order support is selected', async () => {
+    const ordered = {
+      ...composition,
+      contentTypes: [{
+        ...composition.contentTypes[0]!,
+        traits: ['title', 'slug', 'summary', 'image', 'body', 'order'],
+      }],
+    };
+    const { cms } = createCmsContentSiteRecipes(ordered, options);
+    const output = await cms.generate({ options: {}, capabilities: [], contributions: [] });
+    const manifest = JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content));
+
+    expect(manifest.dependencies['@easy-web/core']).toBe('^1.10.0');
+    expect(manifest.dependencies['@easy-web/cms-adapters']).toBe('^1.10.0');
+    expect(cms.compatibleRuntimeRange).toBe('^1.10.0');
+  });
+
   it('has exactly one schema/config owner and declares its dependency on typed definitions', async () => {
     const recipes = createCmsContentSiteRecipes(composition, options);
     expect(resolveCapabilityGraph(Object.values(recipes)).ok).toBe(true);
@@ -107,6 +124,29 @@ describe('CMS content-site recipes', () => {
     expect(entries.fields.find(({ name }) => name === 'image')?.fields?.find(({ name }) => name === 'alt')?.required).toBe(true);
     expect(entries.fields.find(({ name }) => name === 'slug')?.pattern).toBeDefined();
     expect(entries.fields.some(({ name }) => name === 'locale' || name === 'translationKey')).toBe(false);
+  });
+
+  it('exposes an optional, unbounded integer order field in CMS forms', () => {
+    const ordered = {
+      ...composition,
+      contentTypes: [{
+        ...composition.contentTypes[0]!,
+        traits: ['title', 'slug', 'summary', 'image', 'body', 'order'],
+      }],
+    };
+    const config = buildContentCompositionDecapConfig(ordered, options);
+    const collection = config.collections[0];
+    if (!collection || !('folder' in collection)) throw new Error('Missing folder collection');
+    const order = collection.fields.find(({ name }) => name === 'order');
+
+    expect(order).toMatchObject({
+      name: 'order',
+      widget: 'number',
+      required: false,
+      value_type: 'int',
+    });
+    expect(order?.min).toBeUndefined();
+    expect(order?.max).toBeUndefined();
   });
 
   it('requires an editor binding instead of exposing every content type', () => {

@@ -43,4 +43,17 @@ describe('trait field sets', () => {
         expect(currency?.decap.options).toContain('EUR');
         expect(currency?.decap.options).not.toContain('ZZZ');
     });
+
+    it('makes ordering optional and unbounded while retaining integer CMS input', () => {
+        const [order] = fieldsForTraits(['order']);
+
+        expect(order).toMatchObject({
+            name: 'order',
+            kind: 'number',
+            required: false,
+            decap: { name: 'order', widget: 'number', required: false, value_type: 'int' },
+        });
+        expect(order?.decap.min).toBeUndefined();
+        expect(order?.decap.max).toBeUndefined();
+    });
 });

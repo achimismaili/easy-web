@@ -94,6 +94,36 @@ describe('content-aware CLI composition', () => {
         expect(output.files.some(({ path }) => path === 'public/admin/config.yml')).toBe(false);
     });
 
+    it('admits the optional order trait and emits its shared generated schema', async () => {
+        const ordered = {
+            ...composition,
+            contentTypes: [{ ...composition.contentTypes[0], traits: ['title', 'slug', 'body', 'order'] }],
+        };
+        const selected = selectionsFor(parseCreateConfig({ target: join(root, 'site'), composition: ordered }));
+        const output = await composeRecipes(selected);
+        const definitions = String(output.files.find(({ path }) => path === 'src/content/definitions.ts')?.content);
+        const list = String(output.files.find(({ path }) => path === 'src/pages/entries/index.astro')?.content);
+
+        expect(definitions).toContain('optionalOrderTraitSchema');
+        expect(list).toContain('compareContentOrder(');
+        expect(list).toContain('"en"');
+        expect(JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content))
+            .dependencies['@easy-web/core']).toBe('^1.10.0');
+    });
+
+    it('rejects unsupported ordering configuration before creating a target', async () => {
+        const invalidComposition = {
+            ...composition,
+            contentTypes: [{
+                ...composition.contentTypes[0],
+                traits: ['title', 'slug', 'body', 'order', 'priority'],
+            }],
+        };
+
+        expect(() => parseCreateConfig({ target: join(root, 'site'), composition: invalidComposition })).toThrow();
+        expect(await readdir(root)).toEqual([]);
+    });
+
     it('rejects a second CMS-owned composition even when it matches the top-level selection', () => {
         expect(() => parseCreateConfig({
             target: join(root, 'site'), composition: cmsComposition,

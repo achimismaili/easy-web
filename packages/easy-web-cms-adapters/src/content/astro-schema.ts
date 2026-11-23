@@ -75,7 +75,7 @@ function fieldSchema(field: FieldDef, context: SchemaContext): z.ZodTypeAny {
             return field.required ? schema : optional(schema);
         }
         case 'number': {
-            let schema = z.number();
+            let schema = z.number().finite();
             if (field.decap.value_type === 'int') schema = schema.int();
             if (field.decap.min !== undefined) schema = schema.min(field.decap.min);
             if (field.decap.max !== undefined) schema = schema.max(field.decap.max);

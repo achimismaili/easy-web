@@ -43,9 +43,34 @@ describe('content site recipes', () => {
     it('omits optional image/summary fields and navigation rather than inventing capabilities', async () => {
         const recipes = createContentSiteRecipes({ ...composition, contentTypes: [{ ...type, traits: ['title', 'slug', 'body'], bindings: ['list', 'detail'] }] });
         const content = await recipes.content.generate({ options: {}, capabilities: [], contributions: [] });
+        const list = String(content.files.find(({ path }) => path === 'src/pages/entries/index.astro')?.content);
         expect(content.files.some(({ path }) => path.endsWith('.svg'))).toBe(false);
         expect(content.files.find(({ path }) => path === 'src/lib/content/entries.ts')?.content).not.toContain('data.summary');
+        expect(list).toContain('.map(toItem).sort((left, right) => left.href');
+        expect(list).not.toContain('compareContentOrder');
         expect(recipes.content.outputContributions.some(({ id }) => id.endsWith('.navigation'))).toBe(false);
+    });
+
+    it('generates optional ordered entries, locale-aware list comparison and the required runtime floor', async () => {
+        const orderedComposition = {
+            ...composition,
+            contentTypes: [{ ...type, traits: ['title', 'slug', 'body', 'order'] }],
+        };
+        const { content } = createContentSiteRecipes(orderedComposition);
+        const output = await content.generate({ options: {}, capabilities: [], contributions: [] });
+        const definitions = String(output.files.find(({ path }) => path === 'src/content/definitions.ts')?.content);
+        const adapter = String(output.files.find(({ path }) => path === 'src/lib/content/entries.ts')?.content);
+        const list = String(output.files.find(({ path }) => path === 'src/pages/entries/index.astro')?.content);
+        const manifest = JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content));
+
+        expect(definitions).toContain('optionalOrderTraitSchema');
+        expect(adapter).toContain('HasOptionalOrder');
+        expect(list).toContain("import { compareContentOrder } from '@easy-web/core/contracts'");
+        expect(list).toContain('compareContentOrder(');
+        expect(list).toContain('"en"');
+        expect(list).not.toContain('.map(toItem).sort((left, right) => left.href');
+        expect(manifest.dependencies['@easy-web/core']).toBe('^1.10.0');
+        expect(content.compatibleRuntimeRange).toBe('^1.10.0');
     });
 
     it('uses bracket access for kebab-case collection IDs and nested route imports', async () => {
