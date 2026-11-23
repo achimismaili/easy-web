@@ -163,6 +163,34 @@ describe('easyWebSeo integration factory', () => {
     );
   });
 
+  it('does not install the sitemap reconciliation hook when noIndex is enabled', () => {
+    const integration = easyWebSeo({
+      noIndex: true,
+      synchronizeRenderedAlternates: true,
+      localizedPaths: [{ de: '/', en: '/en/' }],
+      sitemapLocales: { de: 'de', en: 'en' },
+    });
+    const mockConfig = {
+      site: new URL('https://example.com'),
+      base: '/',
+      trailingSlash: 'always',
+      build: { format: 'directory' },
+      i18n: { locales: ['de', 'en'], defaultLocale: 'de', routing: {} },
+      integrations: [],
+    };
+    const updateConfig = vi.fn();
+
+    getConfigSetupHook(integration)({
+      config: mockConfig,
+      updateConfig,
+      injectRoute: vi.fn(),
+      logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+    });
+
+    expect(process.env.EASY_WEB_SEO_NO_INDEX).toBe('true');
+    expect(updateConfig).not.toHaveBeenCalled();
+  });
+
   it('handles Astro path-style locales (objects with .path) when falling back to language-only tags', () => {
     const integration = easyWebSeo();
     const mockConfig = {

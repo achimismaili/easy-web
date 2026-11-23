@@ -332,7 +332,7 @@ describe('localizedPaths validation', () => {
         ...baseConfig(),
         i18n: undefined,
       }),
-    ).toThrow(/requires `i18n` to be configured/)
+    ).toThrow(/require `i18n` to be configured/)
   })
 
   it('accepts a valid group', () => {
@@ -366,7 +366,7 @@ describe('localizedPaths build-time verification', () => {
     expect(names).toEqual(['@astrojs/sitemap', '@easy-web/seo:localized-paths-validation'])
   })
 
-  it('fails the build when a declared path was never emitted', () => {
+  it('fails the build when a declared path was never emitted', async () => {
     const { updateConfig } = run(
       easyWebSeo({
         sitemapLocales: { de: 'de-DE', en: 'en-US' },
@@ -375,12 +375,12 @@ describe('localizedPaths build-time verification', () => {
     )
 
     const validator = registeredValidator(updateConfig)[1] as Integration
-    const done = validator.hooks['astro:build:done'] as unknown as () => void
+    const done = validator.hooks['astro:build:done'] as unknown as (args: { dir: URL }) => Promise<void>
 
-    expect(() => done()).toThrow(/no such page was built/)
+    await expect(done({ dir: new URL('file:///tmp/') })).rejects.toThrow(/no such page was built/)
   })
 
-  it('passes when every declared path was emitted', () => {
+  it('passes when every declared path was emitted', async () => {
     const { updateConfig } = run(
       easyWebSeo({
         sitemapLocales: { de: 'de-DE', en: 'en-US' },
@@ -393,8 +393,8 @@ describe('localizedPaths build-time verification', () => {
     serialize({ url: `${SITE}/en/privacy/` })
 
     const validator = registeredValidator(updateConfig)[1] as Integration
-    const done = validator.hooks['astro:build:done'] as unknown as () => void
+    const done = validator.hooks['astro:build:done'] as unknown as (args: { dir: URL }) => Promise<void>
 
-    expect(() => done()).not.toThrow()
+    await expect(done({ dir: new URL('file:///tmp/') })).resolves.toBeUndefined()
   })
 })

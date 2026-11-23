@@ -9,6 +9,7 @@ const cmsContentRuntimeRange = '^1.9.0';
 export function createCmsContentSiteRecipes(rawComposition: unknown, rawOptions: unknown) {
   const composition = generatedContentCompositionSchema.parse(rawComposition);
   const options = cmsSiteOptionsSchema.parse(rawOptions);
+  const runtimeRange = composition.contentLocales.length > 1 ? '^1.10.0' : cmsContentRuntimeRange;
   buildContentCompositionDecapConfig(composition, options);
   const folders = options.mediaRoots.map((source) => ({ source, publicPath: `/${source}` }));
   const contentSite = createContentSiteRecipes(composition, {
@@ -25,7 +26,7 @@ export function createCmsContentSiteRecipes(rawComposition: unknown, rawOptions:
   });
   const cms: RecipeMetadata = {
     id: 'cms.decap-editor', version: '1.7.1', protocolVersion: 1,
-    compatibleCliRange: '^0.1.0 || ^0.2.0', compatibleRuntimeRange: cmsContentRuntimeRange,
+    compatibleCliRange: '^0.1.0 || ^0.2.0',     compatibleRuntimeRange: runtimeRange,
     provides: ['cms.decap-editor', 'media.preview-copy'],
     requires: ['site.shell', 'content.typed-definitions'], conflicts: [],
     order: { priority: 30, key: 'cms' }, optionsSchema: z.strictObject({}),
@@ -37,7 +38,7 @@ export function createCmsContentSiteRecipes(rawComposition: unknown, rawOptions:
     validators: [],
     generate: () => ({ files: [
         { path: 'package.json', content: `${JSON.stringify({ dependencies: {
-          '@easy-web/core': cmsContentRuntimeRange, '@easy-web/cms-adapters': cmsContentRuntimeRange,
+          '@easy-web/core': runtimeRange, '@easy-web/cms-adapters': runtimeRange,
           '@astrojs/markdown-remark': '^7.3.1', sharp: '^0.35.0',
         } }, null, 2)}\n` },
         { path: 'src/config/cms.ts', content: `export const cmsOptions = ${JSON.stringify(options, null, 2)} as const;\n` },

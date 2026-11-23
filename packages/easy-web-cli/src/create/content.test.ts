@@ -118,4 +118,27 @@ describe('content-aware CLI composition', () => {
         expect(() => parseCreateConfig({ target: join(root, 'site'), ...input })).toThrow();
         expect(await readdir(root)).toEqual([]);
     });
+
+    it('validates the bilingual locale set and per-locale labels/routes before target creation', async () => {
+        const bilingualType = {
+            ...composition.contentTypes[0],
+            labels: { de: 'Beiträge', en: 'Entries' },
+            routes: { de: '/beitraege/', en: '/entries/' },
+            traits: ['title', 'slug', 'body'],
+        };
+        const invalidInputs = [
+            { contentLocales: ['de', 'fr'], contentTypes: [bilingualType] },
+            { contentLocales: ['de', 'en'], contentTypes: [{ ...bilingualType, labels: { de: 'Beiträge' } }] },
+            { contentLocales: ['de', 'en'], contentTypes: [{ ...bilingualType, routes: { de: '/beitraege/' } }] },
+            { contentLocales: ['de', 'en', 'fr'], contentTypes: [bilingualType] },
+        ];
+        for (const invalidComposition of invalidInputs) {
+            expect(() => parseCreateConfig({
+                target: join(root, 'invalid-site'),
+                recipes: { shell: { defaultLocale: 'de' } },
+                composition: invalidComposition,
+            })).toThrow();
+            expect(await readdir(root)).toEqual([]);
+        }
+    });
 });
