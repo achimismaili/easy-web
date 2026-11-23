@@ -27,6 +27,10 @@ export interface HasOrder {
   readonly order: number;
 }
 
+export interface HasOptionalOrder {
+  readonly order?: number;
+}
+
 export interface HasTaxonomy {
   readonly taxonomy: readonly string[];
 }

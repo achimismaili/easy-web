@@ -20,6 +20,42 @@ const options = cmsSiteOptionsSchema.parse({
 });
 
 describe('CMS content-site recipes', () => {
+  it.each([
+    [false, false, '^1.6.0', '^1.9.0'],
+    [false, true, '^1.10.0', '^1.10.0'],
+    [true, false, '^1.10.0', '^1.10.0'],
+    [true, true, '^1.10.0', '^1.10.0'],
+  ])('uses the correct runtime floors and pipeline for bilingual=%s order=%s', async (bilingual, ordered, coreFloor, cmsFloor) => {
+    const selected = {
+      contentLocales: bilingual ? ['de', 'en'] : ['de'],
+      contentTypes: [{
+        id: 'entries', primary: true,
+        labels: bilingual ? { de: 'Eintraege', en: 'Entries' } : { de: 'Eintraege' },
+        routes: bilingual ? { de: '/eintraege/', en: '/entries/' } : { de: '/eintraege/' },
+        traits: ['title', 'slug', 'body', ...(ordered ? ['order'] : [])],
+        bindings: ['list', 'detail', 'cms-admin'],
+      }],
+    };
+    const recipes = createCmsContentSiteRecipes(selected, options);
+    expect(recipes.content.compatibleRuntimeRange).toBe(coreFloor);
+    expect(recipes.cms.compatibleRuntimeRange).toBe(cmsFloor);
+    const output = await recipes.content.generate({ options: {}, capabilities: [], contributions: [] });
+    const manifest = JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content));
+    expect(manifest.dependencies['@easy-web/core']).toBe(coreFloor);
+    const cmsOutput = await recipes.cms.generate({ options: {}, capabilities: [], contributions: [] });
+    const cmsManifest = JSON.parse(String(cmsOutput.files.find(({ path }) => path === 'package.json')?.content));
+    expect(cmsManifest.dependencies['@easy-web/core']).toBe(cmsFloor);
+    expect(cmsManifest.dependencies['@easy-web/cms-adapters']).toBe(cmsFloor);
+    const list = String(output.files.find(({ path }) => path === 'src/pages/eintraege/index.astro')?.content);
+    if (bilingual) {
+      expect(list.indexOf('data.locale === "de"')).toBeLessThan(list.indexOf('.sort('));
+      expect(list.indexOf('.sort(')).toBeLessThan(list.indexOf('.map((entry) => toItem(entry, "de", sitePrefix))'));
+    }
+    if (ordered) expect(list).toContain('compareContentOrder(');
+    else if (bilingual) expect(list).toContain('.sort((left, right) => left.data.slug');
+    else expect(list).toContain('.map(toItem).sort((left, right) => left.href < right.href ? -1 : left.href > right.href ? 1 : 0)');
+  });
+
   it('requires the first composition-helper release for both directly used packages', async () => {
     const { cms } = createCmsContentSiteRecipes(composition, options);
     const output = await cms.generate({ options: {}, capabilities: [], contributions: [] });
@@ -68,6 +104,23 @@ describe('CMS content-site recipes', () => {
     expect(manifest.dependencies['@easy-web/cms-adapters']).toBe('^1.10.0');
   });
 
+  it('raises the generated runtime floor when optional order support is selected', async () => {
+    const ordered = {
+      ...composition,
+      contentTypes: [{
+        ...composition.contentTypes[0]!,
+        traits: ['title', 'slug', 'summary', 'image', 'body', 'order'],
+      }],
+    };
+    const { cms } = createCmsContentSiteRecipes(ordered, options);
+    const output = await cms.generate({ options: {}, capabilities: [], contributions: [] });
+    const manifest = JSON.parse(String(output.files.find(({ path }) => path === 'package.json')?.content));
+
+    expect(manifest.dependencies['@easy-web/core']).toBe('^1.10.0');
+    expect(manifest.dependencies['@easy-web/cms-adapters']).toBe('^1.10.0');
+    expect(cms.compatibleRuntimeRange).toBe('^1.10.0');
+  });
+
   it('has exactly one schema/config owner and declares its dependency on typed definitions', async () => {
     const recipes = createCmsContentSiteRecipes(composition, options);
     expect(resolveCapabilityGraph(Object.values(recipes)).ok).toBe(true);
@@ -107,6 +160,29 @@ describe('CMS content-site recipes', () => {
     expect(entries.fields.find(({ name }) => name === 'image')?.fields?.find(({ name }) => name === 'alt')?.required).toBe(true);
     expect(entries.fields.find(({ name }) => name === 'slug')?.pattern).toBeDefined();
     expect(entries.fields.some(({ name }) => name === 'locale' || name === 'translationKey')).toBe(false);
+  });
+
+  it('exposes an optional, unbounded integer order field in CMS forms', () => {
+    const ordered = {
+      ...composition,
+      contentTypes: [{
+        ...composition.contentTypes[0]!,
+        traits: ['title', 'slug', 'summary', 'image', 'body', 'order'],
+      }],
+    };
+    const config = buildContentCompositionDecapConfig(ordered, options);
+    const collection = config.collections[0];
+    if (!collection || !('folder' in collection)) throw new Error('Missing folder collection');
+    const order = collection.fields.find(({ name }) => name === 'order');
+
+    expect(order).toMatchObject({
+      name: 'order',
+      widget: 'number',
+      required: false,
+      value_type: 'int',
+    });
+    expect(order?.min).toBeUndefined();
+    expect(order?.max).toBeUndefined();
   });
 
   it('requires an editor binding instead of exposing every content type', () => {

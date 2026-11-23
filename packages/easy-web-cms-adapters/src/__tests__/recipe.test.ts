@@ -87,4 +87,22 @@ describe('CMS media recipe fixture', () => {
     runAstro('build');
     expect(fs.existsSync(path.join(root, 'dist/src/assets/images/example.svg'))).toBe(true);
   }, 60_000);
+
+  it('raises only the CMS runtime floor when standalone order forms are generated', async () => {
+    const generated = await cmsMediaRecipe.generate({ options: {
+      composition: {
+        contentLocales: ['en'],
+        contentTypes: [{
+          id: 'entries', labels: { en: 'Entries' }, routes: { en: '/entries/' },
+          bindings: ['list', 'detail', 'cms-admin'], traits: ['title', 'slug', 'body', 'order'],
+        }],
+      },
+      backend: { repo: 'org/project/repo', tenantId: 'TENANT', appId: 'APP' },
+      mediaRoots: ['src/assets/images'], uiLocale: 'en',
+    }, capabilities: [], contributions: [] });
+    const manifest = JSON.parse(String(generated.files.find(({ path }) => path === 'package.json')?.content));
+
+    expect(manifest.dependencies['@easy-web/core']).toBe('^1.6.0');
+    expect(manifest.dependencies['@easy-web/cms-adapters']).toBe('^1.10.0');
+  });
 });

@@ -1,4 +1,5 @@
 import { assertImplements } from '../contracts/implements.js';
+import type { HasOptionalOrder, HasOrder } from '../contracts/capabilities.js';
 import type { DecorativeImage, Event, Product } from '../contracts/types.js';
 
 const product: Product = {
@@ -24,6 +25,11 @@ const _decorativeImage: DecorativeImage = { src: '/divider.svg', decorative: tru
 assertImplements<{ title: string }, Event>();
 
 assertImplements<{ title: string; startDate: Date }, Event>();
+assertImplements<{ order: number }, HasOrder>();
+assertImplements<{ order?: number }, HasOptionalOrder>();
+
+// @ts-expect-error The published HasOrder contract remains required.
+assertImplements<Record<string, never>, HasOrder>();
 
 void product;
 void productWithoutImage;

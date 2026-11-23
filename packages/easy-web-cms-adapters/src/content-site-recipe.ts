@@ -4,12 +4,15 @@ import type { RecipeMetadata } from '@easy-web/core/recipes';
 import { buildContentCompositionDecapConfig, cmsSiteOptionsSchema } from './recipe.js';
 
 const cmsContentRuntimeRange = '^1.9.0';
+const cmsOrderedContentRuntimeRange = '^1.10.0';
 
 /** Compose package-owned contributions before generation; never merge or rewrite generated JavaScript. */
 export function createCmsContentSiteRecipes(rawComposition: unknown, rawOptions: unknown) {
   const composition = generatedContentCompositionSchema.parse(rawComposition);
   const options = cmsSiteOptionsSchema.parse(rawOptions);
-  const runtimeRange = composition.contentLocales.length > 1 ? '^1.10.0' : cmsContentRuntimeRange;
+  const runtimeRange = composition.contentLocales.length > 1 || composition.contentTypes.some((type) => type.traits.includes('order'))
+    ? cmsOrderedContentRuntimeRange
+    : cmsContentRuntimeRange;
   buildContentCompositionDecapConfig(composition, options);
   const folders = options.mediaRoots.map((source) => ({ source, publicPath: `/${source}` }));
   const contentSite = createContentSiteRecipes(composition, {
@@ -26,7 +29,7 @@ export function createCmsContentSiteRecipes(rawComposition: unknown, rawOptions:
   });
   const cms: RecipeMetadata = {
     id: 'cms.decap-editor', version: '1.7.1', protocolVersion: 1,
-    compatibleCliRange: '^0.1.0 || ^0.2.0',     compatibleRuntimeRange: runtimeRange,
+    compatibleCliRange: '^0.1.0 || ^0.2.0 || ^0.3.0', compatibleRuntimeRange: runtimeRange,
     provides: ['cms.decap-editor', 'media.preview-copy'],
     requires: ['site.shell', 'content.typed-definitions'], conflicts: [],
     order: { priority: 30, key: 'cms' }, optionsSchema: z.strictObject({}),

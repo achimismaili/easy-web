@@ -4,6 +4,8 @@ import {
   contentCompositionSchema,
   contentTypeDefinitionSchema,
   moneyTraitSchema,
+  optionalOrderTraitSchema,
+  orderTraitSchema,
   presentationBindings,
 } from '../index.js';
 
@@ -154,6 +156,21 @@ describe('content trait data schemas', () => {
     // Then
     expect(selected.success).toBe(true);
     expect(unselected.success).toBe(false);
+  });
+
+  it('keeps the published order trait required and exposes a finite optional entry shape', () => {
+    // Given / When
+    const valid = [-12, 0, 24].map((order) => optionalOrderTraitSchema.safeParse({ order }));
+    const invalidValues: readonly unknown[] = [NaN, Infinity, -Infinity, 1.5, '2'];
+
+    // Then
+    expect(orderTraitSchema.safeParse({}).success).toBe(false);
+    expect(orderTraitSchema.parse({ order: -12 })).toEqual({ order: -12 });
+    expect(optionalOrderTraitSchema.parse({})).toEqual({});
+    expect(valid.every((result) => result.success)).toBe(true);
+    expect(invalidValues.every((order) => !optionalOrderTraitSchema.safeParse({ order }).success)).toBe(true);
+    expect(invalidValues.every((order) => !orderTraitSchema.safeParse({ order }).success)).toBe(true);
+    expect(composeContentTraitSchema(['order']).safeParse({}).success).toBe(false);
   });
 
   it.each([

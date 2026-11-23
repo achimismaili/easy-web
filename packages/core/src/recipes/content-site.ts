@@ -7,9 +7,15 @@ import type { ShellConfiguration, ShellRecipeOptions } from './shell-recipe.js';
 import type { RecipeGeneratedFile, RecipeMetadata } from './types.js';
 import type { RecipeOutputContribution } from './schema.js';
 
-const supportedTraits = new Set(['title', 'slug', 'summary', 'image', 'body']);
+const supportedTraits = new Set(['title', 'slug', 'summary', 'image', 'body', 'order']);
 const supportedBindings = new Set(['list', 'detail', 'navigation', 'cms-admin']);
 const contentRuntimeRange = '^1.6.0';
+const orderedContentRuntimeRange = '^1.10.0';
+
+function contentRuntimeFor(composition: ContentComposition): string {
+    return composition.contentLocales.length > 1 || composition.contentTypes.some((type) => type.traits.includes('order'))
+        ? orderedContentRuntimeRange : contentRuntimeRange;
+}
 
 export interface ContentSiteOptions {
     readonly mediaFolder?: string;
@@ -69,6 +75,7 @@ function collectionSchema(type: ContentTypeDefinition, locales: readonly string[
         shapes.push(`locale: z.enum(${JSON.stringify(locales)})`);
         shapes.push("translationKey: z.string().min(1).regex(/\\S/, 'Darf nicht nur aus Leerzeichen bestehen.')");
     }
+    if (type.traits.includes('order')) shapes.push('...optionalOrderTraitSchema.unwrap().shape');
     // File-based IDs keep duplicate public slugs visible to route validation.
     return `${JSON.stringify(type.id)}: defineCollection({
     loader: glob({ pattern: '**/*.md', base: ${JSON.stringify(`./src/content/${type.id}`)}, generateId: ({ entry }) => entry.replace(/\\.md$/, '') }),
@@ -77,7 +84,13 @@ function collectionSchema(type: ContentTypeDefinition, locales: readonly string[
 }
 
 function adapterSource(type: ContentTypeDefinition, index: number, locales: readonly string[]): string {
-    const contracts = ['HasTitle', 'HasSlug', ...(type.traits.includes('summary') ? ['HasSummary'] : []), ...(type.traits.includes('image') ? ['HasImage'] : [])];
+    const contracts = [
+        'HasTitle',
+        'HasSlug',
+        ...(type.traits.includes('summary') ? ['HasSummary'] : []),
+        ...(type.traits.includes('image') ? ['HasImage'] : []),
+        ...(type.traits.includes('order') ? ['HasOptionalOrder'] : []),
+    ];
     const localeType = locales.map((locale) => JSON.stringify(locale)).join(' | ');
     const defaultLocale = locales[0]!;
     const localized = locales.length > 1;
@@ -124,7 +137,14 @@ const alternates = getAlternateLinks({
 const alternateHref = alternates.find(({ hreflang }) => hreflang !== ${JSON.stringify(locale)} && hreflang !== 'x-default')?.href;
 ` : '';
     const localeArgument = localized ? `, ${JSON.stringify(locale)}, sitePrefix` : '';
-    const itemMapping = localized
+    const itemMapping = type.traits.includes('order')
+        ? `.sort((left, right) => compareContentOrder(
+    { order: left.data.order, slug: left.data.slug, id: left.id },
+    { order: right.data.order, slug: right.data.slug, id: right.id },
+    ${JSON.stringify(locale)},
+  ))
+  ${localized ? `.map((entry) => toItem(entry${localeArgument}))` : '.map(toItem)'}`
+        : localized
         ? `.sort((left, right) => left.data.slug < right.data.slug ? -1 : left.data.slug > right.data.slug ? 1 : left.id < right.id ? -1 : left.id > right.id ? 1 : 0)
   .map((entry) => toItem(entry${localeArgument}))`
         : `.map(toItem).sort((left, right) => left.href < right.href ? -1 : left.href > right.href ? 1 : 0)`;
@@ -132,6 +152,7 @@ const alternateHref = alternates.find(({ hreflang }) => hreflang !== ${JSON.stri
 import { getCollection } from 'astro:content';
 import Base from '${prefix}layouts/Base.astro';
 import { toItem } from '${prefix}lib/content/${type.id}';
+${type.traits.includes('order') ? "import { compareContentOrder } from '@easy-web/core/contracts';" : ''}
 import Card from '@easy-web/core/components/Card.astro';
 import CardGrid from '@easy-web/core/components/CardGrid.astro';
 ${localized ? "import { getAlternateLinks, ambientTrailingSlash } from '@easy-web/core/i18n';" : ''}
@@ -241,14 +262,14 @@ const { Content } = rendered;
 function contentFiles(composition: ContentComposition, options: ContentSiteOptions): readonly RecipeGeneratedFile[] {
     const locales = composition.contentLocales;
     const localized = locales.length > 1;
-    const runtimeRange = localized ? '^1.10.0' : contentRuntimeRange;
+    const runtimeRange = contentRuntimeFor(composition);
     const mediaFolder = z.string().regex(/^src\/assets(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/)
         .parse(options.mediaFolder ?? 'src/assets');
     const exampleImage = `${mediaFolder}/content-example.svg`;
     const files: RecipeGeneratedFile[] = [
         { path: 'src/content/definitions.ts', content: `import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
-import { titleTraitSchema, slugTraitSchema${composition.contentTypes.some((type) => type.traits.includes('summary')) ? ', summaryTraitSchema' : ''}${composition.contentTypes.some((type) => type.traits.includes('image')) ? ', imageTraitSchema' : ''} } from '@easy-web/core/contracts';
+import { titleTraitSchema, slugTraitSchema${composition.contentTypes.some((type) => type.traits.includes('summary')) ? ', summaryTraitSchema' : ''}${composition.contentTypes.some((type) => type.traits.includes('image')) ? ', imageTraitSchema' : ''}${composition.contentTypes.some((type) => type.traits.includes('order')) ? ', optionalOrderTraitSchema' : ''} } from '@easy-web/core/contracts';
 
 export const composition = ${JSON.stringify(composition, null, 2)} as const;
 
@@ -307,6 +328,7 @@ export function createContentSiteRecipes(rawComposition: unknown, options: Conte
     const composition = generatedContentCompositionSchema.parse(rawComposition);
     const locales = composition.contentLocales;
     const locale = locales[0]!;
+    const runtimeRange = contentRuntimeFor(composition);
     const navigationByLocale = Object.fromEntries(locales.map((contentLocale) => [
         contentLocale,
         composition.contentTypes.filter((type) => type.bindings.includes('navigation'))
@@ -361,7 +383,7 @@ export function createContentSiteRecipes(rawComposition: unknown, options: Conte
         },
         content: {
             id: 'content.pages', version: '1.7.1', protocolVersion: 1,
-            compatibleCliRange: '^0.1.0 || ^0.2.0', compatibleRuntimeRange: locales.length > 1 ? '^1.10.0' : contentRuntimeRange,
+            compatibleCliRange: '^0.1.0 || ^0.2.0 || ^0.3.0', compatibleRuntimeRange: runtimeRange,
             provides: ['content.pages', 'content.typed-definitions'], requires: ['site.shell'], conflicts: [],
             order: { priority: 10, key: 'content' }, optionsSchema: z.strictObject({}),
             outputContributions: contributions, validators: [],

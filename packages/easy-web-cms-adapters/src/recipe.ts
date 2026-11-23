@@ -10,6 +10,7 @@ import { fieldsForTraits } from './content/trait-field-sets.js';
 
 export const CMS_MEDIA_RECIPE_ID = 'cms.decap-media';
 const cmsMediaRuntimeRange = '^1.6.0';
+const cmsMediaOrderRuntimeRange = '^1.10.0';
 
 const rootSchema = z.string().regex(/^src\/assets\/[a-z0-9]+(?:[/-][a-z0-9]+)*$/);
 const cmsMediaRecipeOptionsSchema = z.strictObject({
@@ -123,7 +124,7 @@ export const cmsMediaRecipe = {
   id: CMS_MEDIA_RECIPE_ID,
   version: '1.5.0',
   protocolVersion: 1,
-  compatibleCliRange: '^0.1.0 || ^0.2.0',
+  compatibleCliRange: '^0.1.0 || ^0.2.0 || ^0.3.0',
   compatibleRuntimeRange: cmsMediaRuntimeRange,
   provides: ['cms.decap-media', 'content.typed-definitions', 'media.preview-copy'],
   requires: ['site.shell'],
@@ -141,6 +142,9 @@ export const cmsMediaRecipe = {
   validators: [],
   generate: ({ options }) => {
     const parsed = cmsMediaRecipeOptionsSchema.parse(options);
+    const cmsRuntimeRange = parsed.composition.contentTypes.some((type) => type.traits.includes('order'))
+      ? cmsMediaOrderRuntimeRange
+      : cmsMediaRuntimeRange;
     const definitions = runtimeDefinitions(parsed);
     const config = buildDecapConfig({
       backend: { name: 'azure', repo: parsed.backend.repo, tenant_id: parsed.backend.tenantId, app_id: parsed.backend.appId, branch: parsed.backend.branch },
@@ -149,7 +153,7 @@ export const cmsMediaRecipe = {
     });
     const folders = parsed.mediaRoots.map((source) => ({ source, publicPath: `/${source}` }));
     return { files: [
-      { path: 'package.json', content: `${JSON.stringify({ dependencies: { '@easy-web/core': cmsMediaRuntimeRange, '@easy-web/cms-adapters': cmsMediaRuntimeRange, '@astrojs/markdown-remark': '^7.3.1', astro: '^7.3.5', sharp: '^0.35.0' } }, null, 2)}\n` },
+      { path: 'package.json', content: `${JSON.stringify({ dependencies: { '@easy-web/core': cmsMediaRuntimeRange, '@easy-web/cms-adapters': cmsRuntimeRange, '@astrojs/markdown-remark': '^7.3.1', astro: '^7.3.5', sharp: '^0.35.0' } }, null, 2)}\n` },
       { path: 'src/content/definitions.ts', content: definitionsSource(parsed.composition, parsed.mediaRoots[0]!, parsed.uiLocale) },
       { path: 'src/content.config.ts', content: contentConfigSource(parsed.composition) },
       { path: 'public/admin/config.yml', content: `${JSON.stringify(config, null, 2)}\n` },

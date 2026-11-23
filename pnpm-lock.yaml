@@ -276,9 +276,15 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.2
+      '@types/semver':
+        specifier: ^7.8.0
+        version: 7.8.0
       execa:
         specifier: ^9.6.1
         version: 9.6.1
+      semver:
+        specifier: ^7.8.5
+        version: 7.8.5
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(postcss@8.5.28)(typescript@5.9.3)(yaml@2.9.1)
@@ -2345,6 +2351,9 @@ packages:
 
   '@types/sax@1.2.7':
     resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
+
+  '@types/semver@7.8.0':
+    resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -7074,6 +7083,8 @@ snapshots:
   '@types/sax@1.2.7':
     dependencies:
       '@types/node': 24.13.2
+
+  '@types/semver@7.8.0': {}
 
   '@types/unist@2.0.11': {}
 

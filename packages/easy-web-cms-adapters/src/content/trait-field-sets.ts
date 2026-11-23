@@ -45,7 +45,7 @@ function fieldsForTrait(trait: ContentTrait, options: TraitFieldOptions): readon
         case 'photos':
             return [field.images('photos', { label: label.photos, ...options })];
         case 'order':
-            return [field.number('order', { label: label.order })];
+            return [field.number('order', { label: label.order, required: false, valueType: 'int' })];
         case 'taxonomy':
             return [field.list('taxonomy', { label: label.taxonomy, field: field.string('term', { label: label.taxonomy }) })];
         case 'publication':

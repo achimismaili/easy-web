@@ -122,12 +122,19 @@ validated composition to shell navigation and a `content.pages` recipe. Its
 `generatedContentCompositionSchema` deliberately accepts a smaller implemented
 subset than the generic contract: one locale or the DE/EN pair,
 `title`/`slug`/`body`, optional
-`summary`/`image`, list/detail bindings and optional navigation or `cms-admin`. Other valid
+`summary`/`image`/`order`, list/detail bindings and optional navigation or `cms-admin`. Other valid
 contract selections fail with an explicit not-yet-supported diagnostic.
 
 The recipe generates Astro collections from shared trait schemas, deterministic
 example content, contract-checked entry adapters and list/detail pages using Card,
-Media and Prose. A body becomes `HasBody` only after Astro renders it. Content
+Media and Prose. The published `orderTraitSchema`/`HasOrder` pair remains required;
+generated collections use the additional `optionalOrderTraitSchema`/`HasOptionalOrder`
+shape so entries may omit an order. Present values must be finite integers (fractional
+values are rejected by the existing integer contract), including
+negative and zero; missing values sort last. Equal values sort by slug using the
+explicit content locale, then by collection ID using ordinal comparison. Sites
+without the `order` trait retain their existing slug/href ordering. A body becomes
+`HasBody` only after Astro renders it. Content
 roles and bindings are logical graph contributions, not output filenames.
 `primary` is a graph role; it does not select a homepage automatically.
 In DE/EN mode, entries live below their locale folder and require matching
@@ -145,12 +152,13 @@ single configuration renderer. These are package-owned source expressions, not
 user-configurable JavaScript or a post-generation config merge.
 Application-auth composition remains unsupported.
 
-Single-locale generated content sites require core `^1.6.0`, the first release
-with the trait schemas used in their collections and adapters, even without
-images. Bilingual generated content requires core `^1.10.0` for rendered
-alternate reconciliation; its CMS recipe uses the same minimum. These are the
-unpublished minimums from the current Changesets release and require those
-artifacts to be released together before registry consumption. This does not
-raise the shell-only floor of `^1.5.0`.
+Generated content sites require core `^1.6.0`, the first release with the trait
+schemas used in their collections and adapters, even without images. Selecting
+`order` or bilingual content raises the core and CMS floor to `^1.10.0` for
+the new ordering or alternate reconciliation APIs. These unpublished minimums
+require both features to be released together in 1.10.0 before registry consumption;
+otherwise the later feature's minimum must be raised to its first release.
+This does not raise the shell-only floor of `^1.5.0`. CMS compositions without
+either feature require `^1.9.0`.
 
 This package is published as part of the fixed `@easy-web/*` family through the Changesets and npm Trusted Publishing workflow.

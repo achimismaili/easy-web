@@ -67,6 +67,18 @@ describe('Astro schema primitive parity', () => {
         expect(schema.safeParse({ value: 4 }).success).toBe(false);
     });
 
+    it('accepts an omitted or finite integer ordering value and rejects invalid numbers', () => {
+        const schema = schemaFor([field.number('order', { label: 'Order', required: false, valueType: 'int' })]);
+
+        expect(schema.parse({})).toEqual({ order: undefined });
+        expect(schema.parse({ order: -2 })).toEqual({ order: -2 });
+        expect(schema.parse({ order: 0 })).toEqual({ order: 0 });
+        expect(schema.parse({ order: 3 })).toEqual({ order: 3 });
+        for (const order of [NaN, Infinity, -Infinity, 1.5, '2']) {
+            expect(schema.safeParse({ order }).success).toBe(false);
+        }
+    });
+
     it('applies boolean defaults and maps cleared values through the default', () => {
         // Given
         const schema = schemaFor([field.boolean('enabled', { label: 'Enabled', default: true })]);

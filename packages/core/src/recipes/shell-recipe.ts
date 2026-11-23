@@ -263,7 +263,7 @@ export const shellRecipe = {
     id: SHELL_RECIPE_ID,
     version: '1.5.0',
     protocolVersion: 1,
-    compatibleCliRange: '^0.1.0 || ^0.2.0',
+    compatibleCliRange: '^0.1.0 || ^0.2.0 || ^0.3.0',
     compatibleRuntimeRange: '^1.5.0',
     provides: [SHELL_RECIPE_ID],
     requires: [],
